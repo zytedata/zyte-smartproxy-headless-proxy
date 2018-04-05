@@ -1,5 +1,7 @@
 package main
 
+//go:generate scripts/generate_certs.sh
+
 import (
 	"os"
 

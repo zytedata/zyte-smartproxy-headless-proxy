@@ -7,3 +7,4 @@
 *.out
 crawlera-headless-proxy
 vendor/
+proxy/certs.go

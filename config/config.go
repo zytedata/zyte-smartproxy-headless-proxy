@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
@@ -18,6 +19,15 @@ type Config struct {
 	CrawleraHost string `toml:"crawlera_host"`
 	CrawleraPort int    `toml:"crawlera_port"`
 	XHeaders     map[string]string
+}
+
+func (c *Config) Bind() string {
+	return net.JoinHostPort(c.BindIP, string(c.BindPort))
+}
+
+func (c *Config) CrawleraURL() string {
+	return fmt.Sprintf("http://%s:@%s",
+		c.APIKey, net.JoinHostPort(c.CrawleraHost, string(c.CrawleraPort)))
 }
 
 func (c *Config) MaybeSetDebug(value bool) {

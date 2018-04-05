@@ -55,9 +55,15 @@
   revision = "947dcec5ba9c011838740e680966fd7087a71d0d"
   version = "v2.2.6"
 
+[[projects]]
+  name = "gopkg.in/elazarl/goproxy.v1"
+  packages = ["."]
+  revision = "0a5b8bdb09049ae4ae68e75437ded0b7a2e324e3"
+  version = "v1.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f12dac1cd78b202fd90e17f827a74a810a72226c0260cf6b2e96d34c398d912a"
+  inputs-digest = "51443ebebe4a9f43c4217e3342163ebd5bc02abf24338f562dfa41e86bb96714"
   solver-name = "gps-cdcl"
   solver-version = 1
