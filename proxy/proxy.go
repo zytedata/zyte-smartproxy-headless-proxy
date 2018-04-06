@@ -1,6 +1,6 @@
 package proxy
 
-//go:generate scripts/generate_certs.sh
+//go:generate ../scripts/generate_certs.sh
 
 import (
 	"crypto/tls"
