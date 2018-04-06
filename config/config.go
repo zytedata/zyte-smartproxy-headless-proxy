@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net"
+	"strconv"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -12,26 +13,31 @@ import (
 )
 
 type Config struct {
-	Debug        bool
-	BindIP       string
-	BindPort     int
-	APIKey       string
-	CrawleraHost string `toml:"crawlera_host"`
-	CrawleraPort int    `toml:"crawlera_port"`
-	XHeaders     map[string]string
+	Debug              bool
+	VerifyCrawleraCert bool `toml:"verify_crawlera_cert"`
+	BindIP             string
+	BindPort           int
+	APIKey             string
+	CrawleraHost       string `toml:"crawlera_host"`
+	CrawleraPort       int    `toml:"crawlera_port"`
+	XHeaders           map[string]string
 }
 
 func (c *Config) Bind() string {
-	return net.JoinHostPort(c.BindIP, string(c.BindPort))
+	return net.JoinHostPort(c.BindIP, strconv.Itoa(c.BindPort))
 }
 
 func (c *Config) CrawleraURL() string {
 	return fmt.Sprintf("http://%s:@%s",
-		c.APIKey, net.JoinHostPort(c.CrawleraHost, string(c.CrawleraPort)))
+		c.APIKey, net.JoinHostPort(c.CrawleraHost, strconv.Itoa(c.CrawleraPort)))
 }
 
 func (c *Config) MaybeSetDebug(value bool) {
 	c.Debug = c.Debug || value
+}
+
+func (c *Config) MaybeVerifyCrawleraCert(value bool) {
+	c.VerifyCrawleraCert = c.VerifyCrawleraCert || value
 }
 
 func (c *Config) MaybeSetBindIP(value net.IP) {
@@ -69,7 +75,7 @@ func (c *Config) SetXHeader(key, value string) {
 	if strings.HasPrefix(key, "x-crawlera-") {
 		key = key[len("x-crawlera-"):]
 	}
-	c.XHeaders[key] = value
+	c.XHeaders[fmt.Sprintf("X-Crawlera-%s", strings.Title(key))] = value
 }
 
 func Parse(file io.Reader) (*Config, error) {
