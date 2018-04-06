@@ -16,6 +16,7 @@ import (
 	"github.com/9seconds/crawlera-headless-proxy/config"
 )
 
+// NewProxy returns a new configured instance of goproxy.
 func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 	proxy := goproxy.NewProxyHttpServer()
 	proxy.Verbose = conf.Debug

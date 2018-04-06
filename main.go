@@ -94,6 +94,10 @@ func main() {
 		"dont-verify-crawlera-cert": conf.DoNotVerifyCrawleraCert,
 	}).Debugf("Listen on %s", listen)
 
+	if conf.APIKey == "" {
+		log.Fatal("API key is not set")
+	}
+
 	if crawleraProxy, err := proxy.NewProxy(conf); err == nil {
 		log.Fatal(http.ListenAndServe(listen, crawleraProxy))
 	} else {
