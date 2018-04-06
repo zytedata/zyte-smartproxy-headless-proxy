@@ -2,38 +2,26 @@ ROOT_DIR     := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 IMAGE_NAME   := crawlera-headless-proxy
 APP_NAME     := $(IMAGE_NAME)
 GOMETALINTER := gometalinter.v2
-CC_DIR       := $(ROOT_DIR)/crosscompile
 
-VENDOR_DIRS  := $(shell find "$(ROOT_DIR)/vendor" -type d 2>/dev/null || echo "$(ROOT_DIR)/vendor")
-VENDOR_FILES := $(shell find "$(ROOT_DIR)/vendor" -type f 2>/dev/null || echo "$(ROOT_DIR)/vendor")
-CC_BINARIES  := $(shell bash -c "echo $(APP_NAME)-{linux,windows,darwin}-{386,amd64} $(APP_NAME)-linux-{arm,arm64}")
-
-# -----------------------------------------------------------------------------
-
-.PHONY: all docker clean lint test install_cli install_dep install_lint \
-	crosscompile crosscompile-dir
+VENDOR_FILES := $(shell find "$(ROOT_DIR)/vendor" 2>/dev/null || echo -n "vendor")
+CC_BINARIES  := $(shell bash -c "echo -n $(APP_NAME)-{linux,windows,darwin}-{386,amd64} $(APP_NAME)-linux-{arm,arm64}")
+APP_DEPS     := version.go proxy/certs.go $(VENDOR_FILES)
 
 # -----------------------------------------------------------------------------
 
-define crosscompile
-  GOOS=$(2) GOARCH=$(3) go build -o "$(1)/$(APP_NAME)-$(2)-$(3)" -ldflags="-s -w"
-endef
-
-# -----------------------------------------------------------------------------
-
-all: $(APP_NAME)
-crosscompile: $(CC_BINARIES)
-
-$(APP_NAME): version.go proxy/certs.go $(VENDOR_DIRS) $(VENDOR_FILES)
+$(APP_NAME): $(APP_DEPS)
 	@go build -o "$(APP_NAME)" -ldflags="-s -w"
 
-$(APP_NAME)-%: GOOS=$(shell echo "$@" | sed 's?$(APP_NAME)-??' | cut -f1 -d-)
-$(APP_NAME)-%: GOARCH=$(shell echo "$@" | sed 's?$(APP_NAME)-??' | cut -f2 -d-)
-$(APP_NAME)-%: version.go proxy/certs.go $(VENDOR_DIRS) $(VENDOR_FILES) crosscompile-dir
-	@$(call crosscompile,$(CC_DIR),$(GOOS),$(GOARCH))
+$(APP_NAME)-%: GOOS=$(shell echo -n "$@" | sed 's?$(APP_NAME)-??' | cut -f1 -d-)
+$(APP_NAME)-%: GOARCH=$(shell echo -n "$@" | sed 's?$(APP_NAME)-??' | cut -f2 -d-)
+$(APP_NAME)-%: $(APP_DEPS) ccbuilds
+	@env "GOOS=$(GOOS)" "GOARCH=$(GOARCH)" \
+		go build \
+		-o "./ccbuilds/$(APP_NAME)-$(GOOS)-$(GOARCH)" \
+		-ldflags="-s -w"
 
-crosscompile-dir:
-	@rm -rf "$(CC_DIR)" && mkdir -p "$(CC_DIR)"
+ccbuilds:
+	@rm -rf ./ccbuilds && mkdir -p ./ccbuilds
 
 version.go:
 	@go generate main.go
@@ -41,28 +29,47 @@ version.go:
 proxy/certs.go:
 	@go generate proxy/proxy.go
 
-vendor: Gopkg.lock Gopkg.toml install_cli
+vendor: Gopkg.lock Gopkg.toml install-cli
 	@dep ensure
 
-test: install_cli
+# -----------------------------------------------------------------------------
+
+.PHONY: all
+all: $(APP_NAME)
+
+.PHONY: crosscompile
+crosscompile: $(CC_BINARIES)
+
+.PHONY: crosscompile-dir
+crosscompile-dir:
+	@rm -rf "$(CC_DIR)" && mkdir -p "$(CC_DIR)"
+
+.PHONY: test
+test: vendor install-cli
 	@go test -v ./...
 
-lint: vendor install_cli
+.PHONY: lint
+lint: vendor install-cli
 	@$(GOMETALINTER) --deadline=2m ./...
 
+.PHONY: clean
 clean:
 	@git clean -xfd && \
-		git reset --hard && \
-		git submodule foreach --recursive sh -c 'git clean -xfd && git reset --hard'
+		git reset --hard >/dev/null && \
+		git submodule foreach --recursive sh -c 'git clean -xfd && git reset --hard' >/dev/null
 
+.PHONY: docker
 docker:
 	@docker build --pull -t "$(IMAGE_NAME)" "$(ROOT_DIR)"
 
-install_cli: install_dep install_lint
+.PHONY: install-cli
+install-cli: install-dep install-lint
 
-install_dep:
+.PHONY: install-dep
+install-dep:
 	@go get github.com/golang/dep/cmd/dep
 
-install_lint:
+.PHONY: install-lint
+install-lint:
 	@go get gopkg.in/alecthomas/gometalinter.v2 && \
-		$(GOMETALINTER) --install
+		$(GOMETALINTER) --install >/dev/null
