@@ -6,3 +6,4 @@ verify_crawlera_cert = true
 
 [xheaders]
 cookies = "disable"
+profile = "desktop"

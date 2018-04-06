@@ -4,7 +4,7 @@
 FROM golang:alpine AS build-env
 
 RUN set -x \
-  && apk --update add git make
+  && apk --update add git make bash
 
 ADD . /go/src/github.com/9seconds/crawlera-headless-proxy
 

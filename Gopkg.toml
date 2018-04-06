@@ -11,6 +11,10 @@
   name = "github.com/juju/errors"
 
 [[constraint]]
+  branch = "master"
+  name = "github.com/elazarl/goproxy"
+
+[[constraint]]
   name = "github.com/BurntSushi/toml"
   version = "0.3.0"
 

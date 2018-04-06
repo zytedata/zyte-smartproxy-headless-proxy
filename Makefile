@@ -2,13 +2,16 @@ ROOT_DIR     := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 IMAGE_NAME   := crawlera-headless-proxy
 APP_NAME     := $(IMAGE_NAME)
 GOMETALINTER := gometalinter.v2
+CC_DIR       := $(ROOT_DIR)/crosscompile
 
-VENDOR_DIRS  := $(shell find ./vendor -type d 2>/dev/null || echo "vendor")
-VENDOR_FILES := $(shell find ./vendor -type f 2>/dev/null || echo "vendor")
+VENDOR_DIRS  := $(shell find "$(ROOT_DIR)/vendor" -type d 2>/dev/null || echo "$(ROOT_DIR)/vendor")
+VENDOR_FILES := $(shell find "$(ROOT_DIR)/vendor" -type f 2>/dev/null || echo "$(ROOT_DIR)/vendor")
+CC_BINARIES  := $(shell bash -c "echo $(APP_NAME)-{linux,windows,darwin}-{386,amd64} $(APP_NAME)-linux-{arm,arm64}")
 
 # -----------------------------------------------------------------------------
 
-.PHONY: all docker clean lint test install_cli install_dep install_lint
+.PHONY: all docker clean lint test install_cli install_dep install_lint \
+	crosscompile crosscompile-dir
 
 # -----------------------------------------------------------------------------
 
@@ -18,11 +21,19 @@ endef
 
 # -----------------------------------------------------------------------------
 
-
 all: $(APP_NAME)
+crosscompile: $(CC_BINARIES)
 
 $(APP_NAME): version.go proxy/certs.go $(VENDOR_DIRS) $(VENDOR_FILES)
 	@go build -o "$(APP_NAME)" -ldflags="-s -w"
+
+$(APP_NAME)-%: GOOS=$(shell echo "$@" | sed 's?$(APP_NAME)-??' | cut -f1 -d-)
+$(APP_NAME)-%: GOARCH=$(shell echo "$@" | sed 's?$(APP_NAME)-??' | cut -f2 -d-)
+$(APP_NAME)-%: version.go proxy/certs.go $(VENDOR_DIRS) $(VENDOR_FILES) crosscompile-dir
+	@$(call crosscompile,$(CC_DIR),$(GOOS),$(GOARCH))
+
+crosscompile-dir:
+	@rm -rf "$(CC_DIR)" && mkdir -p "$(CC_DIR)"
 
 version.go:
 	@go generate main.go
@@ -42,8 +53,7 @@ lint: vendor install_cli
 clean:
 	@git clean -xfd && \
 		git reset --hard && \
-		git submodule foreach --recursive sh -c 'git clean -xfd && git reset --hard' && \
-		rm -rf ./vendor
+		git submodule foreach --recursive sh -c 'git clean -xfd && git reset --hard'
 
 docker:
 	@docker build --pull -t "$(IMAGE_NAME)" "$(ROOT_DIR)"

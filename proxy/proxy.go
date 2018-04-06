@@ -22,7 +22,7 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 	proxy.Verbose = conf.Debug
 
 	crawleraURL := conf.CrawleraURL()
-	crawleraURLParsed, err := url.Parse(crawleraURL) // nolint: gas
+	crawleraURLParsed, err := url.Parse(crawleraURL)
 	if err != nil {
 		return nil, errors.Annotate(err, "Incorrect Crawlera URL")
 	}
