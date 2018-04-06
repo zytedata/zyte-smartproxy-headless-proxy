@@ -15,11 +15,11 @@ import (
 // Config stores global configuration data of the application.
 type Config struct {
 	Debug                   bool
-	DoNotVerifyCrawleraCert bool `toml:"dont_verify_crawlera_cert"`
-	BindPort                int
-	CrawleraPort            int `toml:"crawlera_port"`
-	BindIP                  string
-	APIKey                  string
+	DoNotVerifyCrawleraCert bool   `toml:"dont_verify_crawlera_cert"`
+	BindPort                int    `toml:"bind_port"`
+	CrawleraPort            int    `toml:"crawlera_port"`
+	BindIP                  string `toml:"bind_ip"`
+	APIKey                  string `toml:"api_key"`
 	CrawleraHost            string `toml:"crawlera_host"`
 	XHeaders                map[string]string
 }
