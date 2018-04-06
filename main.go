@@ -1,6 +1,6 @@
 package main
 
-//go:generate scripts/generate_certs.sh
+//go:generate scripts/generate_version.sh
 
 import (
 	"net/http"
@@ -52,7 +52,7 @@ var (
 		Short('o').
 		Envar("CRAWLERA_HEADLESS_CPORT").
 		Int()
-	VerifyCrawleraCert = app.Flag("verify-crawlera-cert",
+	verifyCrawleraCert = app.Flag("verify-crawlera-cert",
 		"Verify Crawlera certificate on proxy responses").
 		Short('v').
 		Envar("CRAWLERA_HEADLESS_VERIFYCERT").
@@ -65,7 +65,7 @@ var (
 )
 
 func init() {
-	app.Version("0.0.1")
+	app.Version(version)
 	log.SetFormatter(&log.TextFormatter{})
 	log.SetLevel(log.WarnLevel)
 }
@@ -108,7 +108,7 @@ func getConfig() (*config.Config, error) {
 	}
 
 	conf.MaybeSetDebug(*debug)
-	conf.MaybeVerifyCrawleraCert(*VerifyCrawleraCert)
+	conf.MaybeVerifyCrawleraCert(*verifyCrawleraCert)
 	conf.MaybeSetBindIP(*bindIP)
 	conf.MaybeSetBindPort(*bindPort)
 	conf.MaybeSetAPIKey(*apiKey)

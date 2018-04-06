@@ -1,5 +1,7 @@
 package proxy
 
+//go:generate scripts/generate_certs.sh
+
 import (
 	"crypto/tls"
 	"crypto/x509"
