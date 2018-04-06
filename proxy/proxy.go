@@ -41,7 +41,6 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 			for k, v := range conf.XHeaders {
 				req.Header.Set(k, v)
 			}
-
 			log.WithFields(log.Fields{
 				"method":         req.Method,
 				"url":            req.URL,
@@ -50,9 +49,21 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 				"remote-addr":    req.RemoteAddr,
 				"headers":        req.Header,
 			}).Debug("HTTP request")
-
 			return req, nil
 		})
+	proxy.OnResponse().DoFunc(func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
+		log.WithFields(log.Fields{
+			"method":          resp.Request.Method,
+			"url":             resp.Request.URL,
+			"proto":           resp.Proto,
+			"content-length":  resp.ContentLength,
+			"headers":         resp.Header,
+			"status":          resp.Status,
+			"uncompressed":    resp.Uncompressed,
+			"request-headers": resp.Request.Header,
+		}).Debug("HTTP response")
+		return resp
+	})
 
 	return proxy, nil
 }
