@@ -7,34 +7,53 @@ import (
 	"crypto/x509"
 	"net/http"
 	"net/url"
+	"regexp"
 
 	"github.com/elazarl/goproxy"
+	"github.com/juju/errors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/9seconds/crawlera-headless-proxy/config"
 )
 
-func NewProxy(conf *config.Config) *goproxy.ProxyHttpServer {
+func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 	proxy := goproxy.NewProxyHttpServer()
 	proxy.Verbose = conf.Debug
 
 	crawleraURL := conf.CrawleraURL()
-	crawleraURLParsed, _ := url.Parse(crawleraURL) // nolint: gas
+	crawleraURLParsed, err := url.Parse(crawleraURL) // nolint: gas
+	if err != nil {
+		return nil, errors.Annotate(err, "Incorrect Crawlera URL")
+	}
 	proxy.Tr = &http.Transport{
-		Proxy:           http.ProxyURL(crawleraURLParsed),
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: !conf.VerifyCrawleraCert}, // nolint: gas
+		Proxy: http.ProxyURL(crawleraURLParsed),
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: !conf.DoNotVerifyCrawleraCert, // nolint: gas
+		},
 	}
 	proxy.ConnectDial = proxy.NewConnectDialToProxy(crawleraURL)
 
+	proxy.OnRequest(goproxy.ReqHostMatches(regexp.MustCompile("^.*$"))).
+		HandleConnect(goproxy.AlwaysMitm)
 	proxy.OnRequest().DoFunc(
 		func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 			for k, v := range conf.XHeaders {
 				req.Header.Set(k, v)
 			}
+
+			log.WithFields(log.Fields{
+				"method":         req.Method,
+				"url":            req.URL,
+				"proto":          req.Proto,
+				"content-length": req.ContentLength,
+				"remote-addr":    req.RemoteAddr,
+				"headers":        req.Header,
+			}).Debug("HTTP request")
+
 			return req, nil
 		})
 
-	return proxy
+	return proxy, nil
 }
 
 func init() {
@@ -47,20 +66,21 @@ func init() {
 	}
 
 	goproxy.GoproxyCa = ca
+	tlsConfig := goproxy.TLSConfigFromCA(&ca)
 	goproxy.OkConnect = &goproxy.ConnectAction{
 		Action:    goproxy.ConnectAccept,
-		TLSConfig: goproxy.TLSConfigFromCA(&ca),
+		TLSConfig: tlsConfig,
 	}
 	goproxy.MitmConnect = &goproxy.ConnectAction{
 		Action:    goproxy.ConnectMitm,
-		TLSConfig: goproxy.TLSConfigFromCA(&ca),
+		TLSConfig: tlsConfig,
 	}
 	goproxy.HTTPMitmConnect = &goproxy.ConnectAction{
 		Action:    goproxy.ConnectHTTPMitm,
-		TLSConfig: goproxy.TLSConfigFromCA(&ca),
+		TLSConfig: tlsConfig,
 	}
 	goproxy.RejectConnect = &goproxy.ConnectAction{
 		Action:    goproxy.ConnectReject,
-		TLSConfig: goproxy.TLSConfigFromCA(&ca),
+		TLSConfig: tlsConfig,
 	}
 }

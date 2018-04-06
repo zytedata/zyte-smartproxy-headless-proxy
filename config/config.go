@@ -13,14 +13,14 @@ import (
 )
 
 type Config struct {
-	Debug              bool
-	VerifyCrawleraCert bool `toml:"verify_crawlera_cert"`
-	BindIP             string
-	BindPort           int
-	APIKey             string
-	CrawleraHost       string `toml:"crawlera_host"`
-	CrawleraPort       int    `toml:"crawlera_port"`
-	XHeaders           map[string]string
+	Debug                   bool
+	DoNotVerifyCrawleraCert bool `toml:"dont_verify_crawlera_cert"`
+	BindIP                  string
+	BindPort                int
+	APIKey                  string
+	CrawleraHost            string `toml:"crawlera_host"`
+	CrawleraPort            int    `toml:"crawlera_port"`
+	XHeaders                map[string]string
 }
 
 func (c *Config) Bind() string {
@@ -29,15 +29,16 @@ func (c *Config) Bind() string {
 
 func (c *Config) CrawleraURL() string {
 	return fmt.Sprintf("http://%s:@%s",
-		c.APIKey, net.JoinHostPort(c.CrawleraHost, strconv.Itoa(c.CrawleraPort)))
+		c.APIKey,
+		net.JoinHostPort(c.CrawleraHost, strconv.Itoa(c.CrawleraPort)))
 }
 
 func (c *Config) MaybeSetDebug(value bool) {
 	c.Debug = c.Debug || value
 }
 
-func (c *Config) MaybeVerifyCrawleraCert(value bool) {
-	c.VerifyCrawleraCert = c.VerifyCrawleraCert || value
+func (c *Config) MaybeDoNotVerifyCrawleraCert(value bool) {
+	c.DoNotVerifyCrawleraCert = c.DoNotVerifyCrawleraCert || value
 }
 
 func (c *Config) MaybeSetBindIP(value net.IP) {

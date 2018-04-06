@@ -52,10 +52,10 @@ var (
 		Short('o').
 		Envar("CRAWLERA_HEADLESS_CPORT").
 		Int()
-	verifyCrawleraCert = app.Flag("verify-crawlera-cert",
-		"Verify Crawlera certificate on proxy responses").
+	doNotVerifyCrawleraCert = app.Flag("dont-verify-crawlera-cert",
+		"Do not verify Crawlera own certificate").
 		Short('v').
-		Envar("CRAWLERA_HEADLESS_VERIFYCERT").
+		Envar("CRAWLERA_HEADLESS_DONTVERIFY").
 		Bool()
 	xheaders = app.Flag("xheader",
 		"Crawlera X-Headers.").
@@ -84,17 +84,21 @@ func main() {
 
 	listen := conf.Bind()
 	log.WithFields(log.Fields{
-		"debug":                conf.Debug,
-		"bindip":               conf.BindIP,
-		"bindport":             conf.BindPort,
-		"apikey":               conf.APIKey,
-		"crawlera-host":        conf.CrawleraHost,
-		"crawlera-port":        conf.CrawleraPort,
-		"xheaders":             conf.XHeaders,
-		"verify-crawlera-cert": conf.VerifyCrawleraCert,
+		"debug":                     conf.Debug,
+		"bindip":                    conf.BindIP,
+		"bindport":                  conf.BindPort,
+		"apikey":                    conf.APIKey,
+		"crawlera-host":             conf.CrawleraHost,
+		"crawlera-port":             conf.CrawleraPort,
+		"xheaders":                  conf.XHeaders,
+		"dont-verify-crawlera-cert": conf.DoNotVerifyCrawleraCert,
 	}).Debugf("Listen on %s", listen)
 
-	log.Fatal(http.ListenAndServe(listen, proxy.NewProxy(conf)))
+	if crawleraProxy, err := proxy.NewProxy(conf); err == nil {
+		log.Fatal(http.ListenAndServe(listen, crawleraProxy))
+	} else {
+		log.Fatal(err)
+	}
 }
 
 func getConfig() (*config.Config, error) {
@@ -108,7 +112,7 @@ func getConfig() (*config.Config, error) {
 	}
 
 	conf.MaybeSetDebug(*debug)
-	conf.MaybeVerifyCrawleraCert(*verifyCrawleraCert)
+	conf.MaybeDoNotVerifyCrawleraCert(*doNotVerifyCrawleraCert)
 	conf.MaybeSetBindIP(*bindIP)
 	conf.MaybeSetBindPort(*bindPort)
 	conf.MaybeSetAPIKey(*apiKey)

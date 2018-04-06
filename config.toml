@@ -1,7 +1,8 @@
 bindip = "127.0.0.1"
-bindport = 3128
+bindport = 3129
 apikey = "PREDEFINED_API_KEY"
 crawlera_host = "10.0.0.10"
+verify_crawlera_cert = true
 
 [xheaders]
 cookies = "disable"
