@@ -116,11 +116,6 @@ func prepareForCrawleraProfile(headers http.Header, requestURL string) {
 	for toRemove := range headersToRemove {
 		headers.Del(toRemove)
 	}
-	for header := range headers {
-		if strings.HasPrefix(header, "X-Crawlera-") { // nolint: megacheck
-			continue
-		}
-	}
 
 	if headers.Get("Referer") == "" {
 		if urlCopy, err := url.Parse(requestURL); err == nil {
