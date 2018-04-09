@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/elazarl/goproxy"
 	"github.com/juju/errors"
@@ -15,6 +17,13 @@ import (
 
 	"github.com/9seconds/crawlera-headless-proxy/config"
 )
+
+var headersToRemove = map[string]struct{}{
+	"accept-language":           struct{}{},
+	"accept":                    struct{}{},
+	"user-agent":                struct{}{},
+	"upgrade-insecure-requests": struct{}{},
+}
 
 // NewProxy returns a new configured instance of goproxy.
 func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
@@ -41,6 +50,11 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 			for k, v := range conf.XHeaders {
 				req.Header.Set(k, v)
 			}
+			profile := req.Header.Get("X-Crawlera-Profile")
+			if profile == "desktop" || profile == "mobile" {
+				prepareForCrawleraProfile(req.Header, req.URL)
+			}
+
 			log.WithFields(log.Fields{
 				"method":         req.Method,
 				"url":            req.URL,
@@ -49,6 +63,7 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 				"remote-addr":    req.RemoteAddr,
 				"headers":        req.Header,
 			}).Debug("HTTP request")
+
 			return req, nil
 		})
 	proxy.OnResponse().DoFunc(func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
@@ -95,4 +110,40 @@ func init() {
 		Action:    goproxy.ConnectReject,
 		TLSConfig: tlsConfig,
 	}
+}
+
+func prepareForCrawleraProfile(headers http.Header, requestURL *url.URL) {
+	for toRemove := range headersToRemove {
+		headers.Del(toRemove)
+	}
+	for header := range headers {
+		if strings.HasPrefix(header, "X-Crawlera-") {
+			continue
+		}
+	}
+
+	if headers.Get("Referer") == "" {
+		if urlCopy, err := url.Parse(requestURL.String()); err == nil {
+			urlCopy.Fragment = ""
+			urlCopy.RawQuery = ""
+			urlCopy.ForceQuery = false
+			urlCopy.Host = prepareHost(urlCopy)
+			headers.Set("Referer", urlCopy.String())
+		}
+	}
+}
+
+func prepareHost(data *url.URL) string {
+	splitted := strings.Split(data.Host, ":")
+	if len(splitted) == 1 {
+		return data.Host
+	}
+
+	if port, err := strconv.Atoi(splitted[len(splitted)-1]); err == nil {
+		if (data.Scheme == "http" && port == 80) || (data.Scheme == "https" && port == 443) {
+			return strings.Join(splitted[:len(splitted)-1], ":")
+		}
+	}
+
+	return data.Host
 }

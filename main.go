@@ -81,6 +81,9 @@ func main() {
 	if conf.Debug {
 		log.SetLevel(log.DebugLevel)
 	}
+	if conf.APIKey == "" {
+		log.Fatal("API key is not set")
+	}
 
 	listen := conf.Bind()
 	log.WithFields(log.Fields{
@@ -93,10 +96,6 @@ func main() {
 		"xheaders":                  conf.XHeaders,
 		"dont-verify-crawlera-cert": conf.DoNotVerifyCrawleraCert,
 	}).Debugf("Listen on %s", listen)
-
-	if conf.APIKey == "" {
-		log.Fatal("API key is not set")
-	}
 
 	if crawleraProxy, err := proxy.NewProxy(conf); err == nil {
 		log.Fatal(http.ListenAndServe(listen, crawleraProxy))
