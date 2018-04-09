@@ -18,7 +18,6 @@ RUN set -x \
 # PACKAGE STAGE
 
 FROM alpine:latest
-LABEL maintainer="Sergey Arkhipov <arkhipov@scrapinghub.com>" version="0.0.1"
 
 ENTRYPOINT ["/crawlera-headless-proxy"]
 ENV CRAWLERA_HEADLESS_IP=0.0.0.0 CRAWLERA_HEADLESS_PORT=3128
