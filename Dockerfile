@@ -34,7 +34,5 @@ RUN set -x \
 
 COPY --from=build-env \
   /go/src/github.com/9seconds/crawlera-headless-proxy/crawlera-headless-proxy \
-  /crawlera-headless-proxy
-COPY --from=build-env \
   /go/src/github.com/9seconds/crawlera-headless-proxy/config.toml \
-  /config.toml
+  /
