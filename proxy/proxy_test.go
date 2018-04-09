@@ -17,8 +17,7 @@ func TestPrepareForCrawleraProfile(t *testing.T) {
 	prepareForCrawleraProfile(headers, "https://scrapinghub.com/crawlera?hello=1")
 
 	assert.Equal(t, headers.Get("Accept"), "")
-	assert.Equal(t, headers.Get("Accept-Language"), "")
-	assert.Equal(t, headers.Get("Accept-Language"), "")
+	assert.Equal(t, headers.Get("Accept-Language"), "en")
 	assert.Equal(t, headers.Get("user-agent"), "")
 	assert.Equal(t, headers.Get("Cookie"), "k=v")
 	assert.Equal(t, headers.Get("Referer"), "https://scrapinghub.com/crawlera")

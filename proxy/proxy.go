@@ -18,11 +18,10 @@ import (
 	"github.com/9seconds/crawlera-headless-proxy/config"
 )
 
-var headersToRemove = map[string]struct{}{
-	"accept-language":           struct{}{},
-	"accept":                    struct{}{},
-	"user-agent":                struct{}{},
-	"upgrade-insecure-requests": struct{}{},
+var headersToRemove = [3]string{
+	"accept",
+	"user-agent",
+	"upgrade-insecure-requests",
 }
 
 // NewProxy returns a new configured instance of goproxy.
@@ -113,7 +112,7 @@ func init() {
 }
 
 func prepareForCrawleraProfile(headers http.Header, requestURL string) {
-	for toRemove := range headersToRemove {
+	for _, toRemove := range headersToRemove {
 		headers.Del(toRemove)
 	}
 
