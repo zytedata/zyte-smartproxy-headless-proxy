@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"net/http"
-	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,9 +13,9 @@ func TestPrepareForCrawleraProfile(t *testing.T) {
 	headers.Add("accept-Language", "en")
 	headers.Add("user-agent", "hello!")
 	headers.Add("Cookie", "k=v")
-	fakeURL, _ := url.Parse("https://scrapinghub.com/crawlera?hello=1")
 
-	prepareForCrawleraProfile(headers, fakeURL)
+	prepareForCrawleraProfile(headers, "https://scrapinghub.com/crawlera?hello=1")
+
 	assert.Equal(t, headers.Get("Accept"), "")
 	assert.Equal(t, headers.Get("Accept-Language"), "")
 	assert.Equal(t, headers.Get("Accept-Language"), "")

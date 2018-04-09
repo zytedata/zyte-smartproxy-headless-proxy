@@ -52,7 +52,7 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 			}
 			profile := req.Header.Get("X-Crawlera-Profile")
 			if profile == "desktop" || profile == "mobile" {
-				prepareForCrawleraProfile(req.Header, req.URL)
+				prepareForCrawleraProfile(req.Header, req.URL.String())
 			}
 
 			log.WithFields(log.Fields{
@@ -112,18 +112,18 @@ func init() {
 	}
 }
 
-func prepareForCrawleraProfile(headers http.Header, requestURL *url.URL) {
+func prepareForCrawleraProfile(headers http.Header, requestURL string) {
 	for toRemove := range headersToRemove {
 		headers.Del(toRemove)
 	}
 	for header := range headers {
-		if strings.HasPrefix(header, "X-Crawlera-") {
+		if strings.HasPrefix(header, "X-Crawlera-") { // nolint: megacheck
 			continue
 		}
 	}
 
 	if headers.Get("Referer") == "" {
-		if urlCopy, err := url.Parse(requestURL.String()); err == nil {
+		if urlCopy, err := url.Parse(requestURL); err == nil {
 			urlCopy.Fragment = ""
 			urlCopy.RawQuery = ""
 			urlCopy.ForceQuery = false
