@@ -25,17 +25,17 @@ var (
 	bindIP = app.Flag("bind-ip",
 		"IP to bind to. Default is 127.0.0.1.").
 		Short('b').
-		Envar("CRAWLERA_HEADLESS_IP").
+		Envar("CRAWLERA_HEADLESS_BINDIP").
 		IP()
-	bindPort = app.Flag("port",
+	bindPort = app.Flag("bind-port",
 		"Port to bind to. Default is 3128.").
 		Short('p').
-		Envar("CRAWLERA_HEADLESS_PORT").
+		Envar("CRAWLERA_HEADLESS_BINDPORT").
 		Int()
 	configFileName = app.Flag("config",
 		"Path to configuration file.").
 		Short('c').
-		Envar("CRAWLERA_HEADLESS_CONFIGPATH").
+		Envar("CRAWLERA_HEADLESS_CONFIG").
 		File()
 	apiKey = app.Flag("api-key",
 		"API key to Crawlera.").
