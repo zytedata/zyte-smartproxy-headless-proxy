@@ -1,26 +1,36 @@
 # Crawlera Headless Proxy
 
-Crawlera Headless proxy is a proxy which main intent is to help users
-with headless browsers to use Crawlera. These includes different
-implementations of headless browsers such as Splash, Headless Chrome
-and Firefox. Also, this proxy should help users of such frameworks as
-Selenium and Puppeteer to use Crawlera without a need to build Squid
-chains or install Polipo.
+Crawlera Headless proxy is a proxy which main intent
+is to help users with headless browsers to use
+[Crawlera](https://scrapinghub.com/crawlera). These
+includes different implementations of headless browsers
+such as [Splash](https://scrapinghub.com/splash),
+headless [Chrome](https://google.com/chrome/) and
+[Firefox](https://www.mozilla.org/en-US/firefox/).
+Also, this proxy should help users of such frameworks
+as [Selenium](https://www.seleniumhq.org/) and
+[Puppeteer](https://github.com/GoogleChrome/puppeteer) to use Crawlera
+without a need to build [Squid](http://www.squid-cache.org/) chains or
+install [Polipo](https://www.irif.fr/~jch/software/polipo/).
 
 The biggest problem with headless browsers is their configuration:
 
-1. Crawlera uses proxy authentication protocol described in RFC but it is
+1. Crawlera uses proxy authentication protocol described in
+   [RFC 7235](https://tools.ietf.org/html/rfc7235#section-4.3) but it is
    rather hard to configure such authentication in headless browsers. The
    most popular way of bypassing this problem is to use Polipo which is,
    unfortunately, unsupported for a long time.
-2. Crawlera uses X-Headers as configuration. To use this API with headless
-   browsers, users have to install plugins or extensions in their browsers
-   and configure them to propagate such headers to Crawlera.
+2. Crawlera uses
+   [X-Headers as configuration](https://doc.scrapinghub.com/crawlera.html#request-headers).
+   To use this API with headless browsers, users have to install plugins or
+   extensions in their browsers and configure them to propagate such headers
+   to Crawlera.
 3. Also, it is rather hard and complex to maintain best practices of using
-   these headers. For example, support of Browser Profiles requires
-   to have a minimal possible set headers. For example, it is recommended
-   to remove `Accept` header by default. It is rather hard to do that
-   using headless browsers API.
+   these headers. For example,
+   [support of Browser Profiles](https://doc.scrapinghub.com/crawlera.html#x-crawlera-profile)
+   requires to have a minimal possible set headers. For example, it is
+   recommended to remove `Accept` header by default. It is rather hard
+   to do that using headless browsers API.
 
 Crawlera Headless Proxy intended to help users to avoid such
 problems. You should generally think about it as a proxy which should
@@ -50,14 +60,11 @@ To install from sources, please do following:
 
 1. Install Go >= 1.7
 2. Download sources
-
    ```console
    $ git clone https://github.com/scrapinghub/crawlera-headless-proxy
    $ cd crawlera-headless-proxy
    ```
-
 3. Execute make
-
    ```console
    $ make
    ```
@@ -65,9 +72,9 @@ To install from sources, please do following:
 This will build binary `crawlera-headless-proxy`. If you are interesed in
 compiling for other OS/CPU architecture, please crosscompile:
 
-   ```console
-   $ make crosscompile
-   ```
+```console
+$ make crosscompile
+```
 
 ### Docker container
 
@@ -83,7 +90,10 @@ If you want to build this image locally, please do it with make
 $ make docker
 ```
 
-This will build image with tag `crawlera-headless-proxy`.
+This will build image with tag `crawlera-headless-proxy`. It can
+be configured by environment variables or command flags. Default
+configuration file path within a container is `/config.toml`.
+
 
 ## Usage
 
@@ -112,6 +122,8 @@ Flags:
       --version              Show application version.
 ```
 
+### Configuration
+
 Defaults are sensible. If you run this tool without any configuration,
 it will start HTTP/HTTPS proxy on `localhost:3128`. The only thing you
 usually need to do is to propagate API key.
@@ -138,4 +150,77 @@ Here is the complete table of configuration options.
 | Do not verify Crawlera own TLS certificate.                       | `CRAWLERA_HEADLESS_DONTVERIFY` | `-k`, `dont-verify-crawlera-cert` | `dont_verify_crawlera_cert`       |
 | Additional Crawlera X-Headers.                                    | `CRAWLERA_HEADLESS_XHEADERS`   | `-x`, `--xheaders`                | Section `xheaders`                |
 
+Configuration is implemented in
+[TOML language](https://github.com/toml-lang/toml). If you haven't heard about
+TOML, please consider it as a hardened INI configuration files. Every
+configuration goes to top level section (unnamed). X-Headers go to its
+own section. Let's express following commandline in configuration file:
 
+```console
+$ crawlera-headless-proxy -b 0.0.0.0 -p 3129 -u proxy.crawlera.com -o 8010 -x profile=desktop -x cookies=disable
+```
+
+Configuration file will look like:
+
+```toml
+bind_ip = "0.0.0.0"
+bind_port = 3129
+crawlera_host = "proxy.crawlera.com"
+crawlera_port = 8010
+
+[xheaders]
+profile = "desktop"
+cookies = "disable"
+```
+
+You can use both command line flags, environment variables and
+configuration files. This tool will resolve these options according to
+this order (1 has max priority, 4 - minimal):
+
+1. Environment variables
+2. Commandline flags
+3. Configuration file
+4. Defaults
+
+## TLS keys
+
+Since crawlera-headless-proxy has to inject X-Headers into responses,
+it works with your browser only by HTTP 1.1. Unfortunately, there is no
+clear way how to hijack HTTP2 connections. Also, since it is effectively
+MITM proxy, you need to use its own TLS certificate. This is hardcoded
+into the binary so you have to download it and apply it to your system.
+Please consult with manuals of your operating system how to do that.
+
+Link to certificate is
+Its SHA256 checksum is `100c7dd015814e7b8df16fc9e8689129682841d50f9a1b5a8a804a1eaf36322d`.
+
+## Examples
+
+### curl
+
+```console
+$ crawlera-headless-proxy -p 3128 -a "$MYAPIKEY" -x profile=desktop
+$ curl -x localhost:3128 -sLI https://scrapinghub.com
+```
+
+### Selenium (Python)
+
+```python
+from selenium import webdriver
+
+CRAWLERA_HEADLESS_PROXY = "localhost:3128"
+
+profile = webdriver.DesiredCapabilities.FIREFOX.copy()
+profile["proxy"] = {
+    "httpProxy": CRAWLERA_HEADLESS_PROXY,
+    "ftpProxy": CRAWLERA_HEADLESS_PROXY,
+    "sslProxy": CRAWLERA_HEADLESS_PROXY,
+    "noProxy": None,
+    "proxyType": "MANUAL",
+    "class": "org.openqa.selenium.Proxy",
+    "autodetect": False
+}
+
+driver = webdriver.Remote("http://localhost:4444/wd/hub", profile)
+driver.get("https://scrapinghub.com")
+```
