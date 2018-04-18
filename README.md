@@ -109,8 +109,12 @@ Flags:
       --help                 Show context-sensitive help (also try --help-long and --help-man).
   -d, --debug                Run in debug mode.
   -b, --bind-ip=BIND-IP      IP to bind to. Default is 127.0.0.1.
-  -p, --port=PORT            Port to bind to. Default is 3128.
+  -p, --bind-port=BIND-PORT  Port to bind to. Default is 3128.
   -c, --config=CONFIG        Path to configuration file.
+  -l, --tls-ca-certificate=TLS-CA-CERTIFICATE
+                             Path to TLS CA certificate file
+  -r, --tls-private-key=TLS-PRIVATE-KEY
+                             Path to TLS private key
   -a, --api-key=API-KEY      API key to Crawlera.
   -u, --crawlera-host=CRAWLERA-HOST
                              Hostname of Crawlera. Default is proxy.crawlera.com.
@@ -138,17 +142,19 @@ requests to `proxy.crawlera.com:8010` with API key `myapikey`.
 Also, it is possible to configure this tool using environment variables.
 Here is the complete table of configuration options.
 
-| *Description*                                                     | *Environment variable*         | *Comandline parameter*            | *Parameter in configuration file* |
-|-------------------------------------------------------------------|--------------------------------|-----------------------------------|-----------------------------------|
-| Run in debug/verbose mode.                                        | `CRAWLERA_HEADLESS_DEBUG`      | `-d`, `--debug`                   | `debug`                           |
-| Which IP this tool should listen on (0.0.0.0 for all interfaces). | `CRAWLERA_HEADLESS_BINDIP`     | `-b`, `--bind-ip`                 | `bind_ip`                         |
-| Which port this tool should listen.                               | `CRAWLERA_HEADLESS_BINDPORT`   | `-p`, `--bind-port`               | `bind_port`                       |
-| Path to the configuration file.                                   | `CRAWLERA_HEADLESS_CONFIG`     | `-c`, `--config`                  | -                                 |
-| API key of Crawlera.                                              | `CRAWLERA_HEADLESS_APIKEY`     | `-a`, `--api-key`                 | `api_key`                         |
-| Hostname of Crawlera.                                             | `CRAWLERA_HEADLESS_CHOST`      | `-u`, `--crawlera-host`           | `crawlera_host`                   |
-| Port of Crawlera.                                                 | `CRAWLERA_HEADLESS_CPORT`      | `-o`, `--crawlera-port`           | `crawlera_port`                   |
-| Do not verify Crawlera own TLS certificate.                       | `CRAWLERA_HEADLESS_DONTVERIFY` | `-k`, `dont-verify-crawlera-cert` | `dont_verify_crawlera_cert`       |
-| Additional Crawlera X-Headers.                                    | `CRAWLERA_HEADLESS_XHEADERS`   | `-x`, `--xheaders`                | Section `xheaders`                |
+| *Description*                                                     | *Environment variable*                | *Comandline parameter*            | *Parameter in configuration file* |
+|-------------------------------------------------------------------|---------------------------------------|-----------------------------------|-----------------------------------|
+| Run in debug/verbose mode.                                        | `CRAWLERA_HEADLESS_DEBUG`             | `-d`, `--debug`                   | `debug`                           |
+| Which IP this tool should listen on (0.0.0.0 for all interfaces). | `CRAWLERA_HEADLESS_BINDIP`            | `-b`, `--bind-ip`                 | `bind_ip`                         |
+| Which port this tool should listen.                               | `CRAWLERA_HEADLESS_BINDPORT`          | `-p`, `--bind-port`               | `bind_port`                       |
+| Path to the configuration file.                                   | `CRAWLERA_HEADLESS_CONFIG`            | `-c`, `--config`                  | -                                 |
+| API key of Crawlera.                                              | `CRAWLERA_HEADLESS_APIKEY`            | `-a`, `--api-key`                 | `api_key`                         |
+| Hostname of Crawlera.                                             | `CRAWLERA_HEADLESS_CHOST`             | `-u`, `--crawlera-host`           | `crawlera_host`                   |
+| Port of Crawlera.                                                 | `CRAWLERA_HEADLESS_CPORT`             | `-o`, `--crawlera-port`           | `crawlera_port`                   |
+| Do not verify Crawlera own TLS certificate.                       | `CRAWLERA_HEADLESS_DONTVERIFY`        | `-k`, `dont-verify-crawlera-cert` | `dont_verify_crawlera_cert`       |
+| Path to own TLS CA certificate.                                   | `CRAWLERA_HEADLESS_TLSCACERTPATH`     | `-l`, `tls-ca-certificate`        | `tls_ca_certificate`              |
+| Path to own TLS private key.                                      | `CRAWLERA_HEADLESS_TLSPRIVATEKEYPATH` | `-r`, `tls-private-key`           | `tls_private_key`                 |
+| Additional Crawlera X-Headers.                                    | `CRAWLERA_HEADLESS_XHEADERS`          | `-x`, `--xheaders`                | Section `xheaders`                |
 
 Configuration is implemented in
 [TOML language](https://github.com/toml-lang/toml). If you haven't heard about
@@ -193,6 +199,17 @@ Please consult with manuals of your operating system how to do that.
 
 Link to certificate is
 Its SHA256 checksum is `100c7dd015814e7b8df16fc9e8689129682841d50f9a1b5a8a804a1eaf36322d`.
+
+If you want to have your own certificate, please generate it. The
+simpliest way to do that is to execute following command:
+
+```console
+$ openssl req -x509 -newkey rsa:4096 -keyout private-key.pem -out ca.crt -days 3650 -nodes
+```
+
+This command will generate TLS private key `private-key.pem` and
+self-signed certificate `ca.crt`.
+
 
 ## Examples
 
