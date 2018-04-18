@@ -17,6 +17,8 @@ func TestConfigDefault(t *testing.T) {
 	assert.Equal(t, conf.CrawleraPort, 8010)
 	assert.Equal(t, conf.BindIP, "127.0.0.1")
 	assert.Equal(t, conf.APIKey, "")
+	assert.Equal(t, conf.TLSPrivateKey, "")
+	assert.Equal(t, conf.TLSCaCertificate, "")
 	assert.Equal(t, conf.CrawleraHost, "proxy.crawlera.com")
 	assert.Len(t, conf.XHeaders, 0)
 }
@@ -81,6 +83,30 @@ func TestConfigMaybeSetAPIKey(t *testing.T) {
 
 	conf.MaybeSetAPIKey("")
 	assert.Equal(t, conf.APIKey, "111")
+}
+
+func TestConfigMaybeSetTLSCaCertificate(t *testing.T) {
+	conf := NewConfig()
+
+	assert.Equal(t, conf.TLSCaCertificate, "")
+
+	conf.MaybeSetTLSCaCertificate("111")
+	assert.Equal(t, conf.TLSCaCertificate, "111")
+
+	conf.MaybeSetTLSCaCertificate("")
+	assert.Equal(t, conf.TLSCaCertificate, "111")
+}
+
+func TestConfigMaybeSetTLSPrivateKey(t *testing.T) {
+	conf := NewConfig()
+
+	assert.Equal(t, conf.TLSPrivateKey, "")
+
+	conf.MaybeSetTLSPrivateKey("111")
+	assert.Equal(t, conf.TLSPrivateKey, "111")
+
+	conf.MaybeSetTLSPrivateKey("")
+	assert.Equal(t, conf.TLSPrivateKey, "111")
 }
 
 func TestMaybeSetCrawleraHost(t *testing.T) {
