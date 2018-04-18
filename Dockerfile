@@ -19,7 +19,7 @@ RUN set -x \
 
 FROM alpine:latest
 
-ENTRYPOINT ["/crawlera-headless-proxy"]
+ENTRYPOINT ["/usr/local/bin/crawlera-headless-proxy"]
 ENV CRAWLERA_HEADLESS_BINDIP=0.0.0.0 CRAWLERA_HEADLESS_BINDPORT=3128
 CMD ["-c", "/config.toml"]
 EXPOSE 3128
@@ -38,6 +38,6 @@ RUN set -x \
   && rm -rf /var/cache/apk/*
 
 COPY --from=build-env \
-  /go/src/github.com/9seconds/crawlera-headless-proxy/crawlera-headless-proxy \
-  /go/src/github.com/9seconds/crawlera-headless-proxy/config.toml \
-  /
+  /go/src/github.com/9seconds/crawlera-headless-proxy/crawlera-headless-proxy /usr/local/bin/crawlera-headless-proxy
+COPY --from=build-env \
+  /go/src/github.com/9seconds/crawlera-headless-proxy/config.toml /
