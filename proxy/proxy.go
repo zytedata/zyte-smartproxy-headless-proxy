@@ -82,7 +82,8 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 	return proxy, nil
 }
 
-func init() {
+// InitCertificates sets certificates for goproxy
+func InitCertificates(certCA, certKey []byte) {
 	ca, err := tls.X509KeyPair(certCA, certKey)
 	if err != nil {
 		log.Fatal("Invalid certificates")

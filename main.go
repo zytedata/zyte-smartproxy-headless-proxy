@@ -3,6 +3,10 @@ package main
 //go:generate scripts/generate_version.sh
 
 import (
+	"bytes"
+	"crypto/sha1"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -36,6 +40,16 @@ var (
 		"Path to configuration file.").
 		Short('c').
 		Envar("CRAWLERA_HEADLESS_CONFIG").
+		File()
+	tlsCaCertificate = app.Flag("tls-ca-certificate",
+		"Path to TLS CA certificate file").
+		Short('l').
+		Envar("CRAWLERA_HEADLESS_TLSCACERTPATH").
+		File()
+	tlsPrivateKey = app.Flag("tls-private-key",
+		"Path to TLS private key").
+		Short('r').
+		Envar("CRAWLERA_HEADLESS_TLSPRIVATEKEYPATH").
 		File()
 	apiKey = app.Flag("api-key",
 		"API key to Crawlera.").
@@ -85,16 +99,37 @@ func main() {
 		log.Fatal("API key is not set")
 	}
 
+	tlsCaCertificateValue := proxy.DefaultCertCA
+	tlsPrivateKeyValue := proxy.DefaultPrivateKey
+	if *tlsCaCertificate != nil && *tlsPrivateKey != nil {
+		tlsCaCertificateValue, err = ioutil.ReadAll(*tlsCaCertificate)
+		if err != nil {
+			log.Fatal("Cannot read TLS CA certificate")
+		}
+		tlsCaCertificateValue = bytes.TrimSpace(tlsCaCertificateValue)
+
+		tlsPrivateKeyValue, err = ioutil.ReadAll(*tlsPrivateKey)
+		if err != nil {
+			log.Fatal("Cannot read TLS private key")
+		}
+		tlsPrivateKeyValue = bytes.TrimSpace(tlsPrivateKeyValue)
+	} else if !(*tlsCaCertificate == nil && *tlsPrivateKey == nil) {
+		log.Fatal("If one TLS parameter is defined, you have to define the second")
+	}
+	proxy.InitCertificates(tlsCaCertificateValue, tlsPrivateKeyValue)
+
 	listen := conf.Bind()
 	log.WithFields(log.Fields{
 		"debug":                     conf.Debug,
+		"apikey":                    conf.APIKey,
 		"bindip":                    conf.BindIP,
 		"bindport":                  conf.BindPort,
-		"apikey":                    conf.APIKey,
 		"crawlera-host":             conf.CrawleraHost,
 		"crawlera-port":             conf.CrawleraPort,
-		"xheaders":                  conf.XHeaders,
 		"dont-verify-crawlera-cert": conf.DoNotVerifyCrawleraCert,
+		"tls-cacert-sha1":           fmt.Sprintf("%x", sha1.Sum(tlsCaCertificateValue)),
+		"tls-privkey-sha1":          fmt.Sprintf("%x", sha1.Sum(tlsPrivateKeyValue)),
+		"xheaders":                  conf.XHeaders,
 	}).Debugf("Listen on %s", listen)
 
 	if crawleraProxy, err := proxy.NewProxy(conf); err == nil {
