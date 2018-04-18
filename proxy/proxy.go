@@ -83,13 +83,13 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 }
 
 // InitCertificates sets certificates for goproxy
-func InitCertificates(certCA, certKey []byte) {
+func InitCertificates(certCA, certKey []byte) error {
 	ca, err := tls.X509KeyPair(certCA, certKey)
 	if err != nil {
-		log.Fatal("Invalid certificates")
+		return errors.Annotate(err, "Invalid certificates")
 	}
 	if ca.Leaf, err = x509.ParseCertificate(ca.Certificate[0]); err != nil {
-		log.Fatal("Invalid certificates")
+		return errors.Annotate(err, "Invalid certificates")
 	}
 
 	goproxy.GoproxyCa = ca
@@ -110,6 +110,8 @@ func InitCertificates(certCA, certKey []byte) {
 		Action:    goproxy.ConnectReject,
 		TLSConfig: tlsConfig,
 	}
+
+	return nil
 }
 
 func prepareForCrawleraProfile(headers http.Header, requestURL string) {

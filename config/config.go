@@ -21,6 +21,8 @@ type Config struct {
 	BindIP                  string `toml:"bind_ip"`
 	APIKey                  string `toml:"api_key"`
 	CrawleraHost            string `toml:"crawlera_host"`
+	TLSCaCertificate        string `toml:"tls_ca_certificate"`
+	TLSPrivateKey           string `toml:"tls_private_key"`
 	XHeaders                map[string]string
 }
 
@@ -94,6 +96,22 @@ func (c *Config) MaybeSetCrawleraPort(value int) {
 	}
 }
 
+// MaybeSetTLSCaCertificate sets a content of the given file as TLS CA
+// certificate.
+func (c *Config) MaybeSetTLSCaCertificate(value string) {
+	if value != "" {
+		c.TLSCaCertificate = value
+	}
+}
+
+// MaybeSetTLSPrivateKey sets a content of the given file as TLS
+// private key.
+func (c *Config) MaybeSetTLSPrivateKey(value string) {
+	if value != "" {
+		c.TLSPrivateKey = value
+	}
+}
+
 // SetXHeader sets a header value of Crawlera X-Header. It is actually
 // allowed to pass values in both ways: with full name (x-crawlera-profile)
 // for example, and in the short form: just 'profile'. This effectively the
@@ -102,8 +120,9 @@ func (c *Config) SetXHeader(key, value string) {
 	key = strings.ToLower(key)
 	key = strings.TrimPrefix(key, "x-crawlera-")
 	key = strings.Title(key)
+	key = fmt.Sprintf("X-Crawlera-%s", key)
 
-	c.XHeaders[fmt.Sprintf("X-Crawlera-%s", key)] = value
+	c.XHeaders[key] = value
 }
 
 // Parse processes incoming file handler (usually, an instance of *os.File)

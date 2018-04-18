@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/juju/errors"
 	log "github.com/sirupsen/logrus"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
@@ -45,12 +46,12 @@ var (
 		"Path to TLS CA certificate file").
 		Short('l').
 		Envar("CRAWLERA_HEADLESS_TLSCACERTPATH").
-		File()
+		ExistingFile()
 	tlsPrivateKey = app.Flag("tls-private-key",
 		"Path to TLS private key").
 		Short('r').
 		Envar("CRAWLERA_HEADLESS_TLSPRIVATEKEYPATH").
-		File()
+		ExistingFile()
 	apiKey = app.Flag("api-key",
 		"API key to Crawlera.").
 		Short('a').
@@ -98,25 +99,9 @@ func main() {
 	if conf.APIKey == "" {
 		log.Fatal("API key is not set")
 	}
-
-	tlsCaCertificateValue := proxy.DefaultCertCA
-	tlsPrivateKeyValue := proxy.DefaultPrivateKey
-	if *tlsCaCertificate != nil && *tlsPrivateKey != nil {
-		tlsCaCertificateValue, err = ioutil.ReadAll(*tlsCaCertificate)
-		if err != nil {
-			log.Fatal("Cannot read TLS CA certificate")
-		}
-		tlsCaCertificateValue = bytes.TrimSpace(tlsCaCertificateValue)
-
-		tlsPrivateKeyValue, err = ioutil.ReadAll(*tlsPrivateKey)
-		if err != nil {
-			log.Fatal("Cannot read TLS private key")
-		}
-		tlsPrivateKeyValue = bytes.TrimSpace(tlsPrivateKeyValue)
-	} else if !(*tlsCaCertificate == nil && *tlsPrivateKey == nil) {
-		log.Fatal("If one TLS parameter is defined, you have to define the second")
+	if err = initCertificates(conf); err != nil {
+		log.Fatal(err)
 	}
-	proxy.InitCertificates(tlsCaCertificateValue, tlsPrivateKeyValue)
 
 	listen := conf.Bind()
 	log.WithFields(log.Fields{
@@ -127,8 +112,6 @@ func main() {
 		"crawlera-host":             conf.CrawleraHost,
 		"crawlera-port":             conf.CrawleraPort,
 		"dont-verify-crawlera-cert": conf.DoNotVerifyCrawleraCert,
-		"tls-cacert-sha1":           fmt.Sprintf("%x", sha1.Sum(tlsCaCertificateValue)),
-		"tls-privkey-sha1":          fmt.Sprintf("%x", sha1.Sum(tlsPrivateKeyValue)),
 		"xheaders":                  conf.XHeaders,
 	}).Debugf("Listen on %s", listen)
 
@@ -156,9 +139,39 @@ func getConfig() (*config.Config, error) {
 	conf.MaybeSetAPIKey(*apiKey)
 	conf.MaybeSetCrawleraHost(*crawleraHost)
 	conf.MaybeSetCrawleraPort(*crawleraPort)
+	conf.MaybeSetTLSCaCertificate(*tlsCaCertificate)
+	conf.MaybeSetTLSPrivateKey(*tlsPrivateKey)
 	for k, v := range *xheaders {
 		conf.SetXHeader(k, v)
 	}
 
 	return conf, nil
+}
+
+func initCertificates(conf *config.Config) (err error) {
+	caCertificate := proxy.DefaultCertCA
+	privateKey := proxy.DefaultPrivateKey
+
+	if conf.TLSCaCertificate != "" {
+		caCertificate, err = ioutil.ReadFile(conf.TLSCaCertificate)
+		if err != nil {
+			return errors.Annotate(err, "Cannot read TLS CA certificate")
+		}
+	}
+	if conf.TLSPrivateKey != "" {
+		privateKey, err = ioutil.ReadFile(conf.TLSPrivateKey)
+		if err != nil {
+			return errors.Annotate(err, "Cannot read TLS private key")
+		}
+	}
+
+	caCertificate = bytes.TrimSpace(caCertificate)
+	privateKey = bytes.TrimSpace(privateKey)
+
+	log.WithFields(log.Fields{
+		"ca-cert":  fmt.Sprintf("%x", sha1.Sum(caCertificate)),
+		"priv-key": fmt.Sprintf("%x", sha1.Sum(privateKey)),
+	}).Debug("TLS checksums.")
+
+	return proxy.InitCertificates(caCertificate, privateKey)
 }
