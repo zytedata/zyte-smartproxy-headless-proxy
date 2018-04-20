@@ -41,6 +41,12 @@
   revision = "c7d06af17c68cd34c835053720b21f6549d9b0ee"
 
 [[projects]]
+  name = "github.com/kamilsk/semaphore"
+  packages = ["."]
+  revision = "d748542cefc65c6270baa4eef1812374f3d57991"
+  version = "4.3.0"
+
+[[projects]]
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
@@ -82,6 +88,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7188b3d26f58a971f6543d074c2824e140f3b33fbf100929aaf24ba2d78358ef"
+  inputs-digest = "f0adc8799614902b8450242b622dadb19c0fa8ca752ab8f2a6624077a56736dd"
   solver-name = "gps-cdcl"
   solver-version = 1

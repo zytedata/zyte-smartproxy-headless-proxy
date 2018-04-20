@@ -33,6 +33,8 @@ func applyBestHeaders(proxy *goproxy.ProxyHttpServer, conf *config.Config) {
 			}
 
 			setReferer(req.Header, req.URL.String())
+			// this is required because golang's http client does not respect
+			// header order.
 			req.Header.Set("X-Crawlera-Profile", "desktop")
 			req.Header.Set("X-Crawlera-Cookies", "disable")
 
