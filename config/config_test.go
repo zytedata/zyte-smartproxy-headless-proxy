@@ -36,6 +36,19 @@ func TestConfigMaybeSetDebug(t *testing.T) {
 	assert.True(t, conf.Debug)
 }
 
+func TestConfigMaybeSetBestPractices(t *testing.T) {
+	conf := NewConfig()
+
+	conf.MaybeSetBestPractices(false)
+	assert.False(t, conf.BestPractices)
+
+	conf.MaybeSetBestPractices(true)
+	assert.True(t, conf.BestPractices)
+
+	conf.MaybeSetBestPractices(false)
+	assert.True(t, conf.BestPractices)
+}
+
 func TestConfigMaybeDoNotVerifyCrawleraCert(t *testing.T) {
 	conf := NewConfig()
 

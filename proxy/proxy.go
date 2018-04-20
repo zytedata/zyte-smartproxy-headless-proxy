@@ -18,10 +18,18 @@ import (
 	"github.com/9seconds/crawlera-headless-proxy/config"
 )
 
-var headersToRemove = [3]string{
+var profileHeadersToRemove = [3]string{
 	"accept",
 	"user-agent",
 	"upgrade-insecure-requests",
+}
+
+var bestPracticesHeadersToRemove = [5]string{
+	"accept",
+	"accept-language",
+	"dnt",
+	"upgrade-insecure-requests",
+	"user-agent",
 }
 
 // NewProxy returns a new configured instance of goproxy.
@@ -46,12 +54,25 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 		HandleConnect(goproxy.AlwaysMitm)
 	proxy.OnRequest().DoFunc(
 		func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-			for k, v := range conf.XHeaders {
-				req.Header.Set(k, v)
-			}
-			profile := req.Header.Get("X-Crawlera-Profile")
-			if profile == "desktop" || profile == "mobile" {
-				prepareForCrawleraProfile(req.Header, req.URL.String())
+			log.WithFields(log.Fields{
+				"method":         req.Method,
+				"url":            req.URL,
+				"proto":          req.Proto,
+				"content-length": req.ContentLength,
+				"remote-addr":    req.RemoteAddr,
+				"headers":        req.Header,
+			}).Debug("Incoming HTTP request.")
+
+			if conf.BestPractices {
+				applyBestPractices(req.Header, req.URL.String())
+			} else {
+				for k, v := range conf.XHeaders {
+					req.Header.Set(k, v)
+				}
+				profile := req.Header.Get("X-Crawlera-Profile")
+				if profile == "desktop" || profile == "mobile" {
+					prepareForCrawleraProfile(req.Header, req.URL.String())
+				}
 			}
 
 			log.WithFields(log.Fields{
@@ -61,7 +82,7 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 				"content-length": req.ContentLength,
 				"remote-addr":    req.RemoteAddr,
 				"headers":        req.Header,
-			}).Debug("HTTP request")
+			}).Debug("HTTP request to send.")
 
 			return req, nil
 		})
@@ -114,11 +135,23 @@ func InitCertificates(certCA, certKey []byte) error {
 	return nil
 }
 
-func prepareForCrawleraProfile(headers http.Header, requestURL string) {
-	for _, toRemove := range headersToRemove {
+func applyBestPractices(headers http.Header, requestURL string) {
+	for _, toRemove := range bestPracticesHeadersToRemove {
 		headers.Del(toRemove)
 	}
+	setReferer(headers, requestURL)
+	headers.Set("X-Crawlera-Profile", "desktop")
+	headers.Set("X-Crawlera-Cookies", "disable")
+}
 
+func prepareForCrawleraProfile(headers http.Header, requestURL string) {
+	for _, toRemove := range profileHeadersToRemove {
+		headers.Del(toRemove)
+	}
+	setReferer(headers, requestURL)
+}
+
+func setReferer(headers http.Header, requestURL string) {
 	if headers.Get("Referer") == "" {
 		if urlCopy, err := url.Parse(requestURL); err == nil {
 			urlCopy.Fragment = ""

@@ -3,6 +3,7 @@ bind_port = 3129
 api_key = "PREDEFINED_API_KEY"
 crawlera_host = "10.0.0.10"
 dont_verify_crawlera_cert = true
+best_practices = true
 
 [xheaders]
 cookies = "disable"

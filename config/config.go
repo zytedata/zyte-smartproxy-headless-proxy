@@ -16,6 +16,7 @@ import (
 type Config struct {
 	Debug                   bool
 	DoNotVerifyCrawleraCert bool   `toml:"dont_verify_crawlera_cert"`
+	BestPractices           bool   `toml:"best_practices"`
 	BindPort                int    `toml:"bind_port"`
 	CrawleraPort            int    `toml:"crawlera_port"`
 	BindIP                  string `toml:"bind_ip"`
@@ -44,6 +45,11 @@ func (c *Config) CrawleraURL() string {
 // mostly). If given value is not defined (false) then changes nothing.
 func (c *Config) MaybeSetDebug(value bool) {
 	c.Debug = c.Debug || value
+}
+
+// MaybeSetBestPractices forces this proxy to use best Crawlera practices.
+func (c *Config) MaybeSetBestPractices(value bool) {
+	c.BestPractices = c.BestPractices || value
 }
 
 // MaybeDoNotVerifyCrawleraCert defines is it necessary to verify Crawlera

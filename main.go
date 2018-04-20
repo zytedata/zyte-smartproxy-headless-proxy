@@ -27,6 +27,11 @@ var (
 		Short('d').
 		Envar("CRAWLERA_HEADLESS_DEBUG").
 		Bool()
+	bestPractices = app.Flag("best-practices",
+		"Use Crawlera best practices.").
+		Short('s').
+		Envar("CRAWLERA_HEADLESS_BESTPRACTICES").
+		Bool()
 	bindIP = app.Flag("bind-ip",
 		"IP to bind to. Default is 127.0.0.1.").
 		Short('b').
@@ -112,6 +117,7 @@ func main() {
 		"crawlera-host":             conf.CrawleraHost,
 		"crawlera-port":             conf.CrawleraPort,
 		"dont-verify-crawlera-cert": conf.DoNotVerifyCrawleraCert,
+		"best-practices":            conf.BestPractices,
 		"xheaders":                  conf.XHeaders,
 	}).Debugf("Listen on %s", listen)
 
@@ -141,6 +147,7 @@ func getConfig() (*config.Config, error) {
 	conf.MaybeSetCrawleraPort(*crawleraPort)
 	conf.MaybeSetTLSCaCertificate(*tlsCaCertificate)
 	conf.MaybeSetTLSPrivateKey(*tlsPrivateKey)
+	conf.MaybeSetBestPractices(*bestPractices)
 	for k, v := range *xheaders {
 		conf.SetXHeader(k, v)
 	}
