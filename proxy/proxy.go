@@ -62,19 +62,17 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 				"remote-addr":    req.RemoteAddr,
 				"headers":        req.Header,
 			}).Debug("Incoming HTTP request.")
+			return req, nil
+		})
 
-			if conf.BestPractices {
-				applyBestPractices(req.Header, req.URL.String())
-			} else {
-				for k, v := range conf.XHeaders {
-					req.Header.Set(k, v)
-				}
-				profile := req.Header.Get("X-Crawlera-Profile")
-				if profile == "desktop" || profile == "mobile" {
-					prepareForCrawleraProfile(req.Header, req.URL.String())
-				}
-			}
+	if conf.BestPractices {
+		applyBestPractices(proxy, conf)
+	} else {
+		applyCommonPractices(proxy, conf)
+	}
 
+	proxy.OnRequest().DoFunc(
+		func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 			log.WithFields(log.Fields{
 				"method":         req.Method,
 				"url":            req.URL,
@@ -86,19 +84,21 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 
 			return req, nil
 		})
-	proxy.OnResponse().DoFunc(func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
-		log.WithFields(log.Fields{
-			"method":          resp.Request.Method,
-			"url":             resp.Request.URL,
-			"proto":           resp.Proto,
-			"content-length":  resp.ContentLength,
-			"headers":         resp.Header,
-			"status":          resp.Status,
-			"uncompressed":    resp.Uncompressed,
-			"request-headers": resp.Request.Header,
-		}).Debug("HTTP response")
-		return resp
-	})
+
+	proxy.OnResponse().DoFunc(
+		func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
+			log.WithFields(log.Fields{
+				"method":          resp.Request.Method,
+				"url":             resp.Request.URL,
+				"proto":           resp.Proto,
+				"content-length":  resp.ContentLength,
+				"headers":         resp.Header,
+				"status":          resp.Status,
+				"uncompressed":    resp.Uncompressed,
+				"request-headers": resp.Request.Header,
+			}).Debug("HTTP response")
+			return resp
+		})
 
 	return proxy, nil
 }
@@ -135,20 +135,41 @@ func InitCertificates(certCA, certKey []byte) error {
 	return nil
 }
 
-func applyBestPractices(headers http.Header, requestURL string) {
-	for _, toRemove := range bestPracticesHeadersToRemove {
-		headers.Del(toRemove)
-	}
-	setReferer(headers, requestURL)
-	headers.Set("X-Crawlera-Profile", "desktop")
-	headers.Set("X-Crawlera-Cookies", "disable")
+func applyBestPractices(proxy *goproxy.ProxyHttpServer, conf *config.Config) {
+	proxy.OnRequest().DoFunc(
+		func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+			for _, toRemove := range bestPracticesHeadersToRemove {
+				req.Header.Del(toRemove)
+			}
+
+			setReferer(req.Header, req.URL.String())
+			req.Header.Set("X-Crawlera-Profile", "desktop")
+			req.Header.Set("X-Crawlera-Cookies", "disable")
+
+			return req, nil
+		})
+}
+
+func applyCommonPractices(proxy *goproxy.ProxyHttpServer, conf *config.Config) {
+	proxy.OnRequest().DoFunc(
+		func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+			for k, v := range conf.XHeaders {
+				req.Header.Set(k, v)
+			}
+
+			profile := req.Header.Get("X-Crawlera-Profile")
+			if profile == "desktop" || profile == "mobile" {
+				for _, toRemove := range profileHeadersToRemove {
+					req.Header.Del(toRemove)
+				}
+				setReferer(req.Header, req.URL.String())
+			}
+
+			return req, nil
+		})
 }
 
 func prepareForCrawleraProfile(headers http.Header, requestURL string) {
-	for _, toRemove := range profileHeadersToRemove {
-		headers.Del(toRemove)
-	}
-	setReferer(headers, requestURL)
 }
 
 func setReferer(headers http.Header, requestURL string) {
