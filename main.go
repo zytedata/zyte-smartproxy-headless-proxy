@@ -43,12 +43,12 @@ var (
 		Envar("CRAWLERA_HEADLESS_CONFIG").
 		File()
 	tlsCaCertificate = app.Flag("tls-ca-certificate",
-		"Path to TLS CA certificate file").
+		"Path to TLS CA certificate file.").
 		Short('l').
 		Envar("CRAWLERA_HEADLESS_TLSCACERTPATH").
 		ExistingFile()
 	tlsPrivateKey = app.Flag("tls-private-key",
-		"Path to TLS private key").
+		"Path to TLS private key.").
 		Short('r').
 		Envar("CRAWLERA_HEADLESS_TLSPRIVATEKEYPATH").
 		ExistingFile()
@@ -57,8 +57,13 @@ var (
 		Short('s').
 		Envar("CRAWLERA_HEADLESS_BESTPRACTICES").
 		Bool()
+	autoSessions = app.Flag("auto-sessions",
+		"Enable automatic session management.").
+		Short('t').
+		Envar("CRAWLERA_HEADLESS_AUTOSESSIONS").
+		Bool()
 	concurrentConnections = app.Flag("concurrent-connections",
-		"Number of Concurrent connections").
+		"Number of concurrent connections.").
 		Short('n').
 		Envar("CRAWLERA_HEADLESS_CONCURRENTCONNECTIONS").
 		Int()
@@ -78,7 +83,7 @@ var (
 		Envar("CRAWLERA_HEADLESS_CPORT").
 		Int()
 	doNotVerifyCrawleraCert = app.Flag("dont-verify-crawlera-cert",
-		"Do not verify Crawlera own certificate").
+		"Do not verify Crawlera own certificate.").
 		Short('v').
 		Envar("CRAWLERA_HEADLESS_DONTVERIFY").
 		Bool()
@@ -116,6 +121,7 @@ func main() {
 	listen := conf.Bind()
 	log.WithFields(log.Fields{
 		"debug":                     conf.Debug,
+		"auto-sessions":             conf.AutoSessions,
 		"apikey":                    conf.APIKey,
 		"bindip":                    conf.BindIP,
 		"bindport":                  conf.BindPort,
@@ -155,6 +161,7 @@ func getConfig() (*config.Config, error) {
 	conf.MaybeSetTLSPrivateKey(*tlsPrivateKey)
 	conf.MaybeSetConcurrentConnections(*concurrentConnections)
 	conf.MaybeSetBestPractices(*bestPractices)
+	conf.MaybeSetAutoSessions(*autoSessions)
 	for k, v := range *xheaders {
 		conf.SetXHeader(k, v)
 	}

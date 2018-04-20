@@ -51,7 +51,11 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 
 	if conf.BestPractices {
 		applyBestHeaders(proxy, conf)
+		applyAutoSessions(proxy, conf)
 	} else {
+		if conf.AutoSessions {
+			applyAutoSessions(proxy, conf)
+		}
 		applyCommonHeaders(proxy, conf)
 	}
 

@@ -15,6 +15,7 @@ import (
 // Config stores global configuration data of the application.
 type Config struct {
 	Debug                   bool
+	AutoSessions            bool   `toml:"auto_sessions"`
 	DoNotVerifyCrawleraCert bool   `toml:"dont_verify_crawlera_cert"`
 	BestPractices           bool   `toml:"best_practices"`
 	ConcurrentConnections   int    `toml:"concurrent_connections"`
@@ -40,6 +41,12 @@ func (c *Config) CrawleraURL() string {
 	return fmt.Sprintf("http://%s:@%s",
 		c.APIKey,
 		net.JoinHostPort(c.CrawleraHost, strconv.Itoa(c.CrawleraPort)))
+}
+
+// MaybeSetAutoSessions defines is it is required to enable automatic
+// session management or not.
+func (c *Config) MaybeSetAutoSessions(value bool) {
+	c.AutoSessions = c.AutoSessions || value
 }
 
 // MaybeSetDebug enabled debug mode of crawlera-headless-proxy (verbosity

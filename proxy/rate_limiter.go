@@ -32,5 +32,4 @@ func applyRateLimiter(proxy *goproxy.ProxyHttpServer, conf *config.Config) {
 			}
 			return resp
 		})
-
 }
