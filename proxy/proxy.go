@@ -55,6 +55,10 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 		applyCommonHeaders(proxy, conf)
 	}
 
+	if conf.ConcurrentConnections > 0 {
+		applyRateLimiter(proxy, conf)
+	}
+
 	proxy.OnRequest().DoFunc(
 		func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 			log.WithFields(log.Fields{

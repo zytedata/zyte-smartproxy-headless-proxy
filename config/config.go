@@ -17,6 +17,7 @@ type Config struct {
 	Debug                   bool
 	DoNotVerifyCrawleraCert bool   `toml:"dont_verify_crawlera_cert"`
 	BestPractices           bool   `toml:"best_practices"`
+	ConcurrentConnections   int    `toml:"concurrent_connections"`
 	BindPort                int    `toml:"bind_port"`
 	CrawleraPort            int    `toml:"crawlera_port"`
 	BindIP                  string `toml:"bind_ip"`
@@ -50,6 +51,14 @@ func (c *Config) MaybeSetDebug(value bool) {
 // MaybeSetBestPractices forces this proxy to use best Crawlera practices.
 func (c *Config) MaybeSetBestPractices(value bool) {
 	c.BestPractices = c.BestPractices || value
+}
+
+// MaybeSetConcurrentConnections sets a number of concurrent connections
+// if necessary.
+func (c *Config) MaybeSetConcurrentConnections(value int) {
+	if value > 0 {
+		c.ConcurrentConnections = value
+	}
 }
 
 // MaybeDoNotVerifyCrawleraCert defines is it necessary to verify Crawlera
