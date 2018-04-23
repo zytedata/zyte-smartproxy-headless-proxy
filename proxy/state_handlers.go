@@ -16,14 +16,12 @@ type state struct {
 }
 
 func newState() (*state, error) {
-	newId, err := uuid.GenerateUUID()
+	newID, err := uuid.GenerateUUID()
 	if err != nil {
-		return nil, errors.Annotate(err, "Cannot generate uniq id")
+		return nil, errors.Annotate(err, "Cannot generate unique id")
 	}
 
-	return &state{
-		id: newId,
-	}, nil
+	return &state{id: newID}, nil
 }
 
 func getState(ctx *goproxy.ProxyCtx) *state {

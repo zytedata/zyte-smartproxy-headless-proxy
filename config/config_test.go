@@ -12,6 +12,7 @@ func TestConfigDefault(t *testing.T) {
 	conf := NewConfig()
 
 	assert.False(t, conf.Debug)
+	assert.False(t, conf.AutoSessions)
 	assert.False(t, conf.DoNotVerifyCrawleraCert)
 	assert.Equal(t, conf.BindPort, 3128)
 	assert.Equal(t, conf.CrawleraPort, 8010)
@@ -36,17 +37,17 @@ func TestConfigMaybeSetDebug(t *testing.T) {
 	assert.True(t, conf.Debug)
 }
 
-func TestConfigMaybeSetBestPractices(t *testing.T) {
+func TestConfigMaybeSetAutoSessions(t *testing.T) {
 	conf := NewConfig()
 
-	conf.MaybeSetBestPractices(false)
-	assert.False(t, conf.BestPractices)
+	conf.MaybeSetAutoSessions(false)
+	assert.False(t, conf.AutoSessions)
 
-	conf.MaybeSetBestPractices(true)
-	assert.True(t, conf.BestPractices)
+	conf.MaybeSetAutoSessions(true)
+	assert.True(t, conf.AutoSessions)
 
-	conf.MaybeSetBestPractices(false)
-	assert.True(t, conf.BestPractices)
+	conf.MaybeSetAutoSessions(false)
+	assert.True(t, conf.AutoSessions)
 }
 
 func TestConfigMaybeDoNotVerifyCrawleraCert(t *testing.T) {
