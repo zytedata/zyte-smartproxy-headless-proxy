@@ -60,7 +60,7 @@ var (
 	concurrentConnections = app.Flag("concurrent-connections",
 		"Number of concurrent connections.").
 		Short('n').
-		Envar("CRAWLERA_HEADLESS_CONCURRENTCONNECTIONS").
+		Envar("CRAWLERA_HEADLESS_CONCURRENCY").
 		Int()
 	apiKey = app.Flag("api-key",
 		"API key to Crawlera.").

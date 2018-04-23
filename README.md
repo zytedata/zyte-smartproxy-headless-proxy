@@ -154,6 +154,8 @@ Here is the complete table of configuration options.
 | Do not verify Crawlera own TLS certificate.                       | `CRAWLERA_HEADLESS_DONTVERIFY`        | `-k`, `dont-verify-crawlera-cert` | `dont_verify_crawlera_cert`       |
 | Path to own TLS CA certificate.                                   | `CRAWLERA_HEADLESS_TLSCACERTPATH`     | `-l`, `tls-ca-certificate`        | `tls_ca_certificate`              |
 | Path to own TLS private key.                                      | `CRAWLERA_HEADLESS_TLSPRIVATEKEYPATH` | `-r`, `tls-private-key`           | `tls_private_key`                 |
+| Automatic session management                                      | `CRAWLERA_HEADLESS_AUTOSESSIONS`      | `-t`, `--auto-sessions`           | `auto_sessions`                   |
+| Maximal ammount of concurrent connections to process              | `CRAWLERA_HEADLESS_CONCURRENCY`       | `-n`, `--concurrent-connections`  | `concurrent_connections`          |
 | Additional Crawlera X-Headers.                                    | `CRAWLERA_HEADLESS_XHEADERS`          | `-x`, `--xheaders`                | Section `xheaders`                |
 
 Configuration is implemented in
@@ -187,6 +189,46 @@ this order (1 has max priority, 4 - minimal):
 2. Commandline flags
 3. Configuration file
 4. Defaults
+
+## Concurrency
+
+There is a limiter on maxmial amount of concurrent connections
+`--concurrent-connections`. This is required because default Crawlera
+limits amount of concurrent connections based on billing plan of the
+user. If user exceeds this amount, Crawlera returns response with status
+code 429. This can be rather irritating so there is internal limiter
+which is more friendly to the browsers. You need to setup an amount of
+concurrent connections for your plan and crawlera-headless-proxy will
+throttle your requests _before_ they will go to Crawlera. It won't send
+429 back, it just holds excess requests.
+
+## Automatic session management
+
+Crawlera allows to use sessions and sessions are natural if we are talking
+about browsers. Session binds a certain IP to some session ID so all requests
+will go through the same IP, in the same way as ordinary work with browser
+looks like. It can slow down your crawl but increase its quality for some
+websites.
+
+Current implementation of automatic session management is done with
+assumption that only one browser is used to access this proxy. There is
+no clear and simple way how to distinguish the browsers accessing this
+proxy concurrently.
+
+Basic behavior is here:
+
+1. If session is not created, it would be created on the first request.
+2. Until session is known, all other requests are on hold
+3. After session id is known, other requests will start to use that session.
+4. If session became broken, all requests are set on hold until new session
+   will be created.
+5. All requests which were failed because of broken session would be
+   retried with new. If new session is not ready yet, they will wait until
+   this moment.
+
+Such retries will be done only once because they might potentially block
+browser for the long time. All retries are also done with 30 seconds
+timeout.
 
 ## TLS keys
 
