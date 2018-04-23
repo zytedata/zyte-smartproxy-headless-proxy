@@ -36,6 +36,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/hashicorp/go-uuid"
+  packages = ["."]
+  revision = "27454136f0364f2d44b1276c552d69105cf8c498"
+
+[[projects]]
+  branch = "master"
   name = "github.com/juju/errors"
   packages = ["."]
   revision = "c7d06af17c68cd34c835053720b21f6549d9b0ee"
@@ -88,6 +94,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f0adc8799614902b8450242b622dadb19c0fa8ca752ab8f2a6624077a56736dd"
+  inputs-digest = "6bc0196b94b2b3a1b2cc88e5019e608a94d9b73ab8b438a06223def9332f2d8e"
   solver-name = "gps-cdcl"
   solver-version = 1

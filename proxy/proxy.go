@@ -11,15 +11,17 @@ import (
 
 	"github.com/elazarl/goproxy"
 	"github.com/juju/errors"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/9seconds/crawlera-headless-proxy/config"
 )
 
+type handlerTypeReq func(*http.Request, *goproxy.ProxyCtx) (*http.Request, *http.Response)
+type handlerTypeResp func(*http.Response, *goproxy.ProxyCtx) *http.Response
+
 // NewProxy returns a new configured instance of goproxy.
 func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 	proxy := goproxy.NewProxyHttpServer()
-	proxy.Verbose = conf.Debug
+	// proxy.Verbose = conf.Debug
 
 	crawleraURL := conf.CrawleraURL()
 	crawleraURLParsed, err := url.Parse(crawleraURL)
@@ -36,61 +38,39 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 
 	proxy.OnRequest(goproxy.ReqHostMatches(regexp.MustCompile("^.*$"))).
 		HandleConnect(goproxy.AlwaysMitm)
-	proxy.OnRequest().DoFunc(
-		func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-			log.WithFields(log.Fields{
-				"method":         req.Method,
-				"url":            req.URL,
-				"proto":          req.Proto,
-				"content-length": req.ContentLength,
-				"remote-addr":    req.RemoteAddr,
-				"headers":        req.Header,
-			}).Debug("Incoming HTTP request.")
-			return req, nil
-		})
 
-	if conf.BestPractices {
-		applyBestHeaders(proxy, conf)
-		applyAutoSessions(proxy, conf)
-	} else {
-		if conf.AutoSessions {
-			applyAutoSessions(proxy, conf)
-		}
-		applyCommonHeaders(proxy, conf)
+	handlersReq := []handlerTypeReq{
+		handlerStateReq(proxy, conf),
 	}
+	handlersResp := []handlerTypeResp{}
 
+	installHTTPClient(proxy.Tr)
 	if conf.ConcurrentConnections > 0 {
-		applyRateLimiter(proxy, conf)
+		installRateLimiter(conf.ConcurrentConnections)
+		handlersReq = append(handlersReq, handlerRateLimiterReq(proxy, conf))
 	}
 
-	proxy.OnRequest().DoFunc(
-		func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-			log.WithFields(log.Fields{
-				"method":         req.Method,
-				"url":            req.URL,
-				"proto":          req.Proto,
-				"content-length": req.ContentLength,
-				"remote-addr":    req.RemoteAddr,
-				"headers":        req.Header,
-			}).Debug("HTTP request to send.")
+	if conf.AutoSessions {
+		handlersReq = append(handlersReq, handlerSessionReq(proxy, conf))
+		handlersResp = append(handlersResp, handlerSessionResp(proxy, conf))
+	}
 
-			return req, nil
-		})
+	handlersReq = append(handlersReq,
+		handlerLogReqInitial(proxy, conf),
+		handlerHeadersReq(proxy, conf),
+		handlerLogReqSent(proxy, conf))
 
-	proxy.OnResponse().DoFunc(
-		func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
-			log.WithFields(log.Fields{
-				"method":          resp.Request.Method,
-				"url":             resp.Request.URL,
-				"proto":           resp.Proto,
-				"content-length":  resp.ContentLength,
-				"headers":         resp.Header,
-				"status":          resp.Status,
-				"uncompressed":    resp.Uncompressed,
-				"request-headers": resp.Request.Header,
-			}).Debug("HTTP response")
-			return resp
-		})
+	handlersResp = append(handlersResp, handlerLogRespInitial(proxy, conf))
+	if conf.ConcurrentConnections > 0 {
+		handlersResp = append(handlersResp, handlerRateLimiterResp(proxy, conf))
+	}
+
+	for _, v := range handlersReq {
+		proxy.OnRequest().DoFunc(v)
+	}
+	for _, v := range handlersResp {
+		proxy.OnResponse().DoFunc(v)
+	}
 
 	return proxy, nil
 }

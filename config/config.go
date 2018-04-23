@@ -15,9 +15,8 @@ import (
 // Config stores global configuration data of the application.
 type Config struct {
 	Debug                   bool
-	AutoSessions            bool   `toml:"auto_sessions"`
 	DoNotVerifyCrawleraCert bool   `toml:"dont_verify_crawlera_cert"`
-	BestPractices           bool   `toml:"best_practices"`
+	AutoSessions            bool   `toml:"auto_sessions"`
 	ConcurrentConnections   int    `toml:"concurrent_connections"`
 	BindPort                int    `toml:"bind_port"`
 	CrawleraPort            int    `toml:"crawlera_port"`
@@ -53,11 +52,6 @@ func (c *Config) MaybeSetAutoSessions(value bool) {
 // mostly). If given value is not defined (false) then changes nothing.
 func (c *Config) MaybeSetDebug(value bool) {
 	c.Debug = c.Debug || value
-}
-
-// MaybeSetBestPractices forces this proxy to use best Crawlera practices.
-func (c *Config) MaybeSetBestPractices(value bool) {
-	c.BestPractices = c.BestPractices || value
 }
 
 // MaybeSetConcurrentConnections sets a number of concurrent connections

@@ -52,11 +52,6 @@ var (
 		Short('r').
 		Envar("CRAWLERA_HEADLESS_TLSPRIVATEKEYPATH").
 		ExistingFile()
-	bestPractices = app.Flag("best-practices",
-		"Use Crawlera best practices.").
-		Short('s').
-		Envar("CRAWLERA_HEADLESS_BESTPRACTICES").
-		Bool()
 	autoSessions = app.Flag("auto-sessions",
 		"Enable automatic session management.").
 		Short('t').
@@ -129,7 +124,6 @@ func main() {
 		"crawlera-port":             conf.CrawleraPort,
 		"dont-verify-crawlera-cert": conf.DoNotVerifyCrawleraCert,
 		"concurrent-connections":    conf.ConcurrentConnections,
-		"best-practices":            conf.BestPractices,
 		"xheaders":                  conf.XHeaders,
 	}).Debugf("Listen on %s", listen)
 
@@ -160,7 +154,6 @@ func getConfig() (*config.Config, error) {
 	conf.MaybeSetTLSCaCertificate(*tlsCaCertificate)
 	conf.MaybeSetTLSPrivateKey(*tlsPrivateKey)
 	conf.MaybeSetConcurrentConnections(*concurrentConnections)
-	conf.MaybeSetBestPractices(*bestPractices)
 	conf.MaybeSetAutoSessions(*autoSessions)
 	for k, v := range *xheaders {
 		conf.SetXHeader(k, v)
