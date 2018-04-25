@@ -16,7 +16,7 @@ import (
 type Config struct {
 	Debug                   bool
 	DoNotVerifyCrawleraCert bool   `toml:"dont_verify_crawlera_cert"`
-	AutoSessions            bool   `toml:"auto_sessions"`
+	NoAutoSessions          bool   `toml:"no_auto_sessions"`
 	ConcurrentConnections   int    `toml:"concurrent_connections"`
 	BindPort                int    `toml:"bind_port"`
 	CrawleraPort            int    `toml:"crawlera_port"`
@@ -42,10 +42,10 @@ func (c *Config) CrawleraURL() string {
 		net.JoinHostPort(c.CrawleraHost, strconv.Itoa(c.CrawleraPort)))
 }
 
-// MaybeSetAutoSessions defines is it is required to enable automatic
+// MaybeSetNoAutoSessions defines is it is required to enable automatic
 // session management or not.
-func (c *Config) MaybeSetAutoSessions(value bool) {
-	c.AutoSessions = c.AutoSessions || value
+func (c *Config) MaybeSetNoAutoSessions(value bool) {
+	c.NoAutoSessions = c.NoAutoSessions || value
 }
 
 // MaybeSetDebug enabled debug mode of crawlera-headless-proxy (verbosity

@@ -50,7 +50,7 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 		handlersReq = append(handlersReq, handlerRateLimiterReq(proxy, conf))
 	}
 
-	if conf.AutoSessions {
+	if !conf.NoAutoSessions {
 		handlersReq = append(handlersReq, handlerSessionReq(proxy, conf))
 		handlersResp = append(handlersResp, handlerSessionResp(proxy, conf))
 	}

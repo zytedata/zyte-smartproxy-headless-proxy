@@ -52,10 +52,10 @@ var (
 		Short('r').
 		Envar("CRAWLERA_HEADLESS_TLSPRIVATEKEYPATH").
 		ExistingFile()
-	autoSessions = app.Flag("auto-sessions",
-		"Enable automatic session management.").
+	noAutoSessions = app.Flag("no-auto-sessions",
+		"Disable automatic session management.").
 		Short('t').
-		Envar("CRAWLERA_HEADLESS_AUTOSESSIONS").
+		Envar("CRAWLERA_HEADLESS_NOAUTOSESSIONS").
 		Bool()
 	concurrentConnections = app.Flag("concurrent-connections",
 		"Number of concurrent connections.").
@@ -116,7 +116,7 @@ func main() {
 	listen := conf.Bind()
 	log.WithFields(log.Fields{
 		"debug":                     conf.Debug,
-		"auto-sessions":             conf.AutoSessions,
+		"no-auto-sessions":          conf.NoAutoSessions,
 		"apikey":                    conf.APIKey,
 		"bindip":                    conf.BindIP,
 		"bindport":                  conf.BindPort,
@@ -154,7 +154,7 @@ func getConfig() (*config.Config, error) {
 	conf.MaybeSetTLSCaCertificate(*tlsCaCertificate)
 	conf.MaybeSetTLSPrivateKey(*tlsPrivateKey)
 	conf.MaybeSetConcurrentConnections(*concurrentConnections)
-	conf.MaybeSetAutoSessions(*autoSessions)
+	conf.MaybeSetNoAutoSessions(*noAutoSessions)
 	for k, v := range *xheaders {
 		conf.SetXHeader(k, v)
 	}
