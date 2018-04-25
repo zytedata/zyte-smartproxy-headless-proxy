@@ -44,15 +44,15 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 	}
 	handlersResp := []handlerTypeResp{}
 
-	if len(conf.AdblockLists) > 0 {
-		installAdblocker(conf.AdblockLists)
-		handlersReq = append(handlersReq, handlerAdblockReq(proxy, conf))
-	}
-
 	installHTTPClient(proxy.Tr)
 	if conf.ConcurrentConnections > 0 {
 		installRateLimiter(conf.ConcurrentConnections)
 		handlersReq = append(handlersReq, handlerRateLimiterReq(proxy, conf))
+	}
+
+	if len(conf.AdblockLists) > 0 {
+		installAdblocker(conf.AdblockLists)
+		handlersReq = append(handlersReq, handlerAdblockReq(proxy, conf))
 	}
 
 	if !conf.NoAutoSessions {

@@ -1,8 +1,7 @@
-bind_ip = "127.0.0.1"
-bind_port = 3129
-api_key = "PREDEFINED_API_KEY"
-crawlera_host = "10.0.0.10"
-dont_verify_crawlera_cert = true
+adblock_lists = [
+  "https://easylist.to/easylist/easylist.txt",
+  "https://easylist.to/easylist/easyprivacy.txt"
+]
 
 [xheaders]
 cookies = "disable"
