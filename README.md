@@ -58,16 +58,19 @@ required one for your operating system and CPU architecture.
 
 To install from sources, please do following:
 
-1. Install Go >= 1.7
-2. Download sources
-   ```console
-   $ git clone https://github.com/scrapinghub/crawlera-headless-proxy
-   $ cd crawlera-headless-proxy
-   ```
-3. Execute make
-   ```console
-   $ make
-   ```
+* Install Go >= 1.7
+* Download sources
+
+```console
+$ git clone https://github.com/scrapinghub/crawlera-headless-proxy
+$ cd crawlera-headless-proxy
+```
+
+* Execute make
+
+```console
+$ make
+```
 
 This will build binary `crawlera-headless-proxy`. If you are interesed in
 compiling for other OS/CPU architecture, please crosscompile:
@@ -106,23 +109,28 @@ usage: crawlera-headless-proxy [<flags>]
 Local proxy for Crawlera to be used with headless browsers.
 
 Flags:
-      --help                 Show context-sensitive help (also try --help-long and --help-man).
+--help                 Show context-sensitive help (also try --help-long and --help-man).
   -d, --debug                Run in debug mode.
   -b, --bind-ip=BIND-IP      IP to bind to. Default is 127.0.0.1.
   -p, --bind-port=BIND-PORT  Port to bind to. Default is 3128.
   -c, --config=CONFIG        Path to configuration file.
   -l, --tls-ca-certificate=TLS-CA-CERTIFICATE
-                             Path to TLS CA certificate file
+                             Path to TLS CA certificate file.
   -r, --tls-private-key=TLS-PRIVATE-KEY
-                             Path to TLS private key
+                             Path to TLS private key.
+  -t, --no-auto-sessions     Disable automatic session management.
+  -n, --concurrent-connections=CONCURRENT-CONNECTIONS
+                             Number of concurrent connections.
   -a, --api-key=API-KEY      API key to Crawlera.
   -u, --crawlera-host=CRAWLERA-HOST
                              Hostname of Crawlera. Default is proxy.crawlera.com.
   -o, --crawlera-port=CRAWLERA-PORT
                              Port of Crawlera. Default is 8010.
   -v, --dont-verify-crawlera-cert
-                             Do not verify Crawlera own certificate
+                             Do not verify Crawlera own certificate.
   -x, --xheader=XHEADER ...  Crawlera X-Headers.
+  -k, --adblock-list=ADBLOCK-LIST ...
+                             A list to requests to filter out (ADBlock compatible).
       --version              Show application version.
 ```
 
@@ -157,6 +165,7 @@ Here is the complete table of configuration options.
 | Disable automatic session management                              | `CRAWLERA_HEADLESS_NOAUTOSESSIONS`    | `-t`, `--no-auto-sessions`        | `no_auto_sessions`                |
 | Maximal ammount of concurrent connections to process              | `CRAWLERA_HEADLESS_CONCURRENCY`       | `-n`, `--concurrent-connections`  | `concurrent_connections`          |
 | Additional Crawlera X-Headers.                                    | `CRAWLERA_HEADLESS_XHEADERS`          | `-x`, `--xheaders`                | Section `xheaders`                |
+| Adblock-compatible filter lists.                                  | `CRAWLERA_HEADLESS_ADBLOCKLISTS`      | `-k`, `--adblock-list`            | `adblock_lists`                   |
 
 Configuration is implemented in
 [TOML language](https://github.com/toml-lang/toml). If you haven't heard about
@@ -187,7 +196,7 @@ this order (1 has max priority, 4 - minimal):
 
 1. Environment variables
 2. Commandline flags
-3. Configuration file
+3. Config;uration file
 4. Defaults
 
 ## Concurrency
@@ -229,6 +238,21 @@ Basic behavior is here:
 Such retries will be done only once because they might potentially block
 browser for the long time. All retries are also done with 30 seconds
 timeout.
+
+## Adblock list support
+
+crawlera-headless-proxy supports preventive filtering by;
+adblock-compatible filter lists like EasyList. If you start the tool
+with such a lists, they are going to be downloaded and requests to
+trackers/advertisment platforms will be filtered. This will save you a;
+lot of throughput and requests passed to Crawlera.
+
+If you do not pass any list, such filtering won't
+be enabled. The list we recommend to use are
+[EasyList](https://easylist.to/easylist/easylist.txt)
+(please do not forget to add region-specific lists),
+[EasyPrivacy](https://easylist.to/easylist/easyprivacy.txt) and
+[Disconnect](https://s3.amazonaws.com/lists.disconnect.me/simple_malware.txt).
 
 ## TLS keys
 

@@ -1,6 +1,7 @@
 adblock_lists = [
   "https://easylist.to/easylist/easylist.txt",
-  "https://easylist.to/easylist/easyprivacy.txt"
+  "https://easylist.to/easylist/easyprivacy.txt",
+  "https://s3.amazonaws.com/lists.disconnect.me/simple_malware.txt"
 ]
 
 [xheaders]
