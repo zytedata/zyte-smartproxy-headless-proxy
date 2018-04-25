@@ -33,3 +33,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/hashicorp/go-uuid"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/pmezard/adblock"

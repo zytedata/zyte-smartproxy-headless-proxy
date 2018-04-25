@@ -15,16 +15,17 @@ import (
 // Config stores global configuration data of the application.
 type Config struct {
 	Debug                   bool
-	DoNotVerifyCrawleraCert bool   `toml:"dont_verify_crawlera_cert"`
-	NoAutoSessions          bool   `toml:"no_auto_sessions"`
-	ConcurrentConnections   int    `toml:"concurrent_connections"`
-	BindPort                int    `toml:"bind_port"`
-	CrawleraPort            int    `toml:"crawlera_port"`
-	BindIP                  string `toml:"bind_ip"`
-	APIKey                  string `toml:"api_key"`
-	CrawleraHost            string `toml:"crawlera_host"`
-	TLSCaCertificate        string `toml:"tls_ca_certificate"`
-	TLSPrivateKey           string `toml:"tls_private_key"`
+	DoNotVerifyCrawleraCert bool     `toml:"dont_verify_crawlera_cert"`
+	NoAutoSessions          bool     `toml:"no_auto_sessions"`
+	ConcurrentConnections   int      `toml:"concurrent_connections"`
+	BindPort                int      `toml:"bind_port"`
+	CrawleraPort            int      `toml:"crawlera_port"`
+	BindIP                  string   `toml:"bind_ip"`
+	APIKey                  string   `toml:"api_key"`
+	CrawleraHost            string   `toml:"crawlera_host"`
+	TLSCaCertificate        string   `toml:"tls_ca_certificate"`
+	TLSPrivateKey           string   `toml:"tls_private_key"`
+	AdblockLists            []string `toml:"adblock_lists"`
 	XHeaders                map[string]string
 }
 
@@ -128,6 +129,13 @@ func (c *Config) MaybeSetTLSPrivateKey(value string) {
 	}
 }
 
+// MaybeSetAdblockLists sets a list to URLs
+func (c *Config) MaybeSetAdblockLists(value []string) {
+	if len(value) > 0 {
+		c.AdblockLists = value
+	}
+}
+
 // SetXHeader sets a header value of Crawlera X-Header. It is actually
 // allowed to pass values in both ways: with full name (x-crawlera-profile)
 // for example, and in the short form: just 'profile'. This effectively the
@@ -171,6 +179,7 @@ func Parse(file io.Reader) (*Config, error) {
 // fields set to sensible defaults.
 func NewConfig() *Config {
 	return &Config{
+		AdblockLists: []string{},
 		BindIP:       "127.0.0.1",
 		BindPort:     3128,
 		CrawleraHost: "proxy.crawlera.com",

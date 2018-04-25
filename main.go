@@ -87,6 +87,11 @@ var (
 		Short('x').
 		Envar("CRAWLERA_HEADLESS_XHEADERS").
 		StringMap()
+	adblockLists = app.Flag("adblock-list",
+		"A list to requests to filter out (ADBlock compatible).").
+		Short('k').
+		Envar("CRAWLERA_HEADLESS_ADBLOCKLISTS").
+		Strings()
 )
 
 func init() {
@@ -116,6 +121,7 @@ func main() {
 	listen := conf.Bind()
 	log.WithFields(log.Fields{
 		"debug":                     conf.Debug,
+		"adblock-lists":             conf.AdblockLists,
 		"no-auto-sessions":          conf.NoAutoSessions,
 		"apikey":                    conf.APIKey,
 		"bindip":                    conf.BindIP,
@@ -128,6 +134,7 @@ func main() {
 	}).Debugf("Listen on %s", listen)
 
 	if crawleraProxy, err := proxy.NewProxy(conf); err == nil {
+		log.Info("Start to serve")
 		log.Fatal(http.ListenAndServe(listen, crawleraProxy))
 	} else {
 		log.Fatal(err)
@@ -146,15 +153,16 @@ func getConfig() (*config.Config, error) {
 
 	conf.MaybeSetDebug(*debug)
 	conf.MaybeDoNotVerifyCrawleraCert(*doNotVerifyCrawleraCert)
+	conf.MaybeSetAdblockLists(*adblockLists)
+	conf.MaybeSetAPIKey(*apiKey)
 	conf.MaybeSetBindIP(*bindIP)
 	conf.MaybeSetBindPort(*bindPort)
-	conf.MaybeSetAPIKey(*apiKey)
+	conf.MaybeSetConcurrentConnections(*concurrentConnections)
 	conf.MaybeSetCrawleraHost(*crawleraHost)
 	conf.MaybeSetCrawleraPort(*crawleraPort)
+	conf.MaybeSetNoAutoSessions(*noAutoSessions)
 	conf.MaybeSetTLSCaCertificate(*tlsCaCertificate)
 	conf.MaybeSetTLSPrivateKey(*tlsPrivateKey)
-	conf.MaybeSetConcurrentConnections(*concurrentConnections)
-	conf.MaybeSetNoAutoSessions(*noAutoSessions)
 	for k, v := range *xheaders {
 		conf.SetXHeader(k, v)
 	}

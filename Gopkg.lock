@@ -53,6 +53,12 @@
   version = "4.3.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/pmezard/adblock"
+  packages = ["adblock"]
+  revision = "edfb97ad89cd57ae8675175539a55aceaf2a05d3"
+
+[[projects]]
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
@@ -94,6 +100,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6bc0196b94b2b3a1b2cc88e5019e608a94d9b73ab8b438a06223def9332f2d8e"
+  inputs-digest = "de22f115a132655d6173898f2a5f43bd6066562413bb57c6a6b5d26e36fffa01"
   solver-name = "gps-cdcl"
   solver-version = 1
