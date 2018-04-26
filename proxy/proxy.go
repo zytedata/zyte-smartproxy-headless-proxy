@@ -35,49 +35,55 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 		},
 	}
 	proxy.ConnectDial = proxy.NewConnectDialToProxy(crawleraURL)
+	installHTTPClient(proxy.Tr)
 
 	proxy.OnRequest(goproxy.ReqHostMatches(regexp.MustCompile("^.*$"))).
 		HandleConnect(goproxy.AlwaysMitm)
 
-	handlersReq := []handlerTypeReq{
-		handlerStateReq(proxy, conf),
-	}
-	handlersResp := []handlerTypeResp{}
-
-	installHTTPClient(proxy.Tr)
-	if conf.ConcurrentConnections > 0 {
-		installRateLimiter(conf.ConcurrentConnections)
-		handlersReq = append(handlersReq, handlerRateLimiterReq(proxy, conf))
-	}
-
-	if len(conf.AdblockLists) > 0 {
-		installAdblocker(conf.AdblockLists)
-		handlersReq = append(handlersReq, handlerAdblockReq(proxy, conf))
-	}
-
-	if !conf.NoAutoSessions {
-		handlersReq = append(handlersReq, handlerSessionReq(proxy, conf))
-		handlersResp = append(handlersResp, handlerSessionResp(proxy, conf))
-	}
-
-	handlersReq = append(handlersReq,
-		handlerLogReqInitial(proxy, conf),
-		handlerHeadersReq(proxy, conf),
-		handlerLogReqSent(proxy, conf))
-
-	handlersResp = append(handlersResp, handlerLogRespInitial(proxy, conf))
-	if conf.ConcurrentConnections > 0 {
-		handlersResp = append(handlersResp, handlerRateLimiterResp(proxy, conf))
-	}
-
-	for _, v := range handlersReq {
+	for _, v := range getReqHandlers(proxy, conf) {
 		proxy.OnRequest().DoFunc(v)
 	}
-	for _, v := range handlersResp {
+	for _, v := range getRespHandlers(proxy, conf) {
 		proxy.OnResponse().DoFunc(v)
 	}
 
 	return proxy, nil
+}
+
+func getReqHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config) (handlers []handlerTypeReq) {
+	handlers = append(handlers, handlerStateReq(proxy, conf))
+
+	if conf.ConcurrentConnections > 0 {
+		installRateLimiter(conf.ConcurrentConnections)
+		handlers = append(handlers, handlerRateLimiterReq(proxy, conf))
+	}
+	if len(conf.AdblockLists) > 0 {
+		go installAdblocker(conf.AdblockLists)
+		handlers = append(handlers, handlerAdblockReq(proxy, conf))
+	}
+	if !conf.NoAutoSessions {
+		handlers = append(handlers, handlerSessionReq(proxy, conf))
+	}
+
+	handlers = append(handlers,
+		handlerLogReqInitial(proxy, conf),
+		handlerHeadersReq(proxy, conf),
+		handlerLogReqSent(proxy, conf))
+
+	return
+}
+
+func getRespHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config) (handlers []handlerTypeResp) {
+	handlers = append(handlers, handlerLogRespInitial(proxy, conf))
+
+	if !conf.NoAutoSessions {
+		handlers = append(handlers, handlerSessionResp(proxy, conf))
+	}
+	if conf.ConcurrentConnections > 0 {
+		handlers = append(handlers, handlerRateLimiterResp(proxy, conf))
+	}
+
+	return
 }
 
 // InitCertificates sets certificates for goproxy

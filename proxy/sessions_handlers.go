@@ -78,6 +78,7 @@ func handlerSessionResp(proxy *goproxy.ProxyHttpServer, conf *config.Config) han
 		if resp.Header.Get("X-Crawlera-Error") == "" {
 			return handlerSessionRespOK(resp, sessionState)
 		}
+
 		return handlerSessionRespError(resp, sessionState)
 	}
 }

@@ -21,6 +21,8 @@ import (
 var (
 	adblockRules   []*adblock.Rule
 	adblockMatcher *adblock.RuleMatcher
+	adblockLoaded  bool
+	adblockCond    *sync.Cond
 )
 
 const adblockTimeout = 2 * time.Second
@@ -42,6 +44,7 @@ func installAdblocker(list []string) {
 			var reader io.ReadCloser
 			var err error
 			result := &adblockParsedResult{}
+
 			if strings.HasPrefix(item, "http://") || strings.HasPrefix(item, "https://") {
 				reader, err = adblockFetchURL(item)
 			} else {
@@ -52,6 +55,7 @@ func installAdblocker(list []string) {
 				channel <- result
 				return
 			}
+
 			defer reader.Close()                  // nolint: errcheck
 			defer io.Copy(ioutil.Discard, reader) // nolint: errcheck
 
@@ -72,11 +76,16 @@ func installAdblocker(list []string) {
 		}
 		adblockRules = append(adblockRules, item.rules...)
 	}
+
+	adblockCond.L.Lock()
+	defer adblockCond.L.Unlock()
 	for idx, value := range adblockRules {
 		if err := adblockMatcher.AddRule(value, idx); err != nil {
 			log.Infof("Cannot add rule '%s': %s", value.Raw, err.Error())
 		}
 	}
+	adblockLoaded = true
+	adblockCond.Broadcast()
 }
 
 func handlerAdblockReq(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
@@ -92,6 +101,15 @@ func handlerAdblockReq(proxy *goproxy.ProxyHttpServer, conf *config.Config) hand
 			Domain:  host,
 			Timeout: adblockTimeout,
 		}
+
+		if !adblockLoaded {
+			adblockCond.L.Lock()
+			for !adblockLoaded {
+				adblockCond.Wait()
+			}
+			adblockCond.L.Unlock()
+		}
+
 		matched, id, err := adblockMatcher.Match(adblockRequest)
 		if err != nil {
 			log.WithFields(log.Fields{
@@ -143,4 +161,5 @@ func adblockReadFileSystem(path string) (io.ReadCloser, error) {
 
 func init() {
 	adblockMatcher = adblock.NewMatcher()
+	adblockCond = sync.NewCond(&sync.Mutex{})
 }
