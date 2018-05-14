@@ -9,7 +9,16 @@ import (
 	"github.com/9seconds/crawlera-headless-proxy/config"
 )
 
-func handlerLogReqInitial(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
+type logHandlerInterface interface {
+	handlerInterface
+	installRequestInitial(*goproxy.ProxyHttpServer, *config.Config) handlerTypeReq
+}
+
+type logHandler struct {
+	handler
+}
+
+func (l *logHandler) installRequestInitial(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
 	return func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 		log.WithFields(log.Fields{
 			"reqid":          getState(ctx).id,
@@ -24,7 +33,7 @@ func handlerLogReqInitial(proxy *goproxy.ProxyHttpServer, conf *config.Config) h
 	}
 }
 
-func handlerLogReqSent(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
+func (l *logHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
 	return func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 		log.WithFields(log.Fields{
 			"reqid":          getState(ctx).id,
@@ -39,7 +48,7 @@ func handlerLogReqSent(proxy *goproxy.ProxyHttpServer, conf *config.Config) hand
 	}
 }
 
-func handlerLogRespInitial(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeResp {
+func (l *logHandler) installResponse(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeResp {
 	return func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
 		log.WithFields(log.Fields{
 			"reqid":           getState(ctx).id,
@@ -54,4 +63,8 @@ func handlerLogRespInitial(proxy *goproxy.ProxyHttpServer, conf *config.Config) 
 		}).Debug("HTTP response")
 		return resp
 	}
+}
+
+func newLogHandler() logHandlerInterface {
+	return &logHandler{}
 }

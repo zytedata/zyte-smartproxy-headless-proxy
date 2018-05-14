@@ -11,8 +11,23 @@ import (
 	"github.com/9seconds/crawlera-headless-proxy/config"
 )
 
+type stateHandler struct {
+	handler
+}
+
 type state struct {
 	id string
+}
+
+func (sh *stateHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
+	return func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+		state, err := newState()
+		if err != nil {
+			log.Fatalf("Cannot create new state of request")
+		}
+		ctx.UserData = state
+		return req, nil
+	}
 }
 
 func newState() (*state, error) {
@@ -28,14 +43,6 @@ func getState(ctx *goproxy.ProxyCtx) *state {
 	return ctx.UserData.(*state)
 }
 
-func handlerStateReq(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
-	return func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-		state, err := newState()
-		if err != nil {
-			log.Fatalf("Cannot create new state of request")
-		}
-		ctx.UserData = state
-
-		return req, nil
-	}
+func newStateHandler() handlerInterface {
+	return &stateHandler{}
 }

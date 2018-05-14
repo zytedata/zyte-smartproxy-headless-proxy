@@ -37,41 +37,45 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 	proxy.OnRequest(goproxy.ReqHostMatches(regexp.MustCompile("^.*$"))).
 		HandleConnect(goproxy.AlwaysMitm)
 
-	for _, v := range getReqHandlers(proxy, conf) {
+	adblock := newAdblockHandler(conf.AdblockLists)
+	headers := newHeaderHandler()
+	logs := newLogHandler()
+	state := newStateHandler()
+
+	for _, v := range getReqHandlers(proxy, conf, state, adblock, headers, logs) {
 		proxy.OnRequest().DoFunc(v)
 	}
-	for _, v := range getRespHandlers(proxy, conf) {
+	for _, v := range getRespHandlers(proxy, conf, logs) {
 		proxy.OnResponse().DoFunc(v)
 	}
 
 	return proxy, nil
 }
 
-func getReqHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config) (handlers []handlerTypeReq) {
-	handlers = append(handlers, handlerStateReq(proxy, conf))
+func getReqHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config, state, adblock, headers handlerInterface, logs logHandlerInterface) (handlers []handlerTypeReq) {
+	handlers = append(handlers, state.installRequest(proxy, conf))
 
 	if conf.ConcurrentConnections > 0 {
 		installRateLimiter(conf.ConcurrentConnections)
 		handlers = append(handlers, handlerRateLimiterReq(proxy, conf))
 	}
 	if len(conf.AdblockLists) > 0 {
-		handlers = append(handlers,
-			newAdblockHandler(conf.AdblockLists).installRequest(proxy, conf))
+		handlers = append(handlers, adblock.installRequest(proxy, conf))
 	}
 	if !conf.NoAutoSessions {
 		handlers = append(handlers, handlerSessionReq(proxy, conf))
 	}
 
 	handlers = append(handlers,
-		handlerLogReqInitial(proxy, conf),
-		newHeaderHandler().installRequest(proxy, conf),
-		handlerLogReqSent(proxy, conf))
+		logs.installRequestInitial(proxy, conf),
+		headers.installRequest(proxy, conf),
+		logs.installRequest(proxy, conf))
 
 	return
 }
 
-func getRespHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config) (handlers []handlerTypeResp) {
-	handlers = append(handlers, handlerLogRespInitial(proxy, conf))
+func getRespHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config, logs logHandlerInterface) (handlers []handlerTypeResp) {
+	handlers = append(handlers, logs.installResponse(proxy, conf))
 
 	if !conf.NoAutoSessions {
 		handlers = append(handlers, handlerSessionResp(proxy, conf))
