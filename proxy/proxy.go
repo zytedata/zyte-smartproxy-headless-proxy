@@ -15,9 +15,6 @@ import (
 	"github.com/9seconds/crawlera-headless-proxy/config"
 )
 
-type handlerTypeReq func(*http.Request, *goproxy.ProxyCtx) (*http.Request, *http.Response)
-type handlerTypeResp func(*http.Response, *goproxy.ProxyCtx) *http.Response
-
 // NewProxy returns a new configured instance of goproxy.
 func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 	proxy := goproxy.NewProxyHttpServer()
@@ -58,8 +55,8 @@ func getReqHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config) (handle
 		handlers = append(handlers, handlerRateLimiterReq(proxy, conf))
 	}
 	if len(conf.AdblockLists) > 0 {
-		go installAdblocker(conf.AdblockLists)
-		handlers = append(handlers, handlerAdblockReq(proxy, conf))
+		handlers = append(handlers,
+			newAdblockHandler(conf.AdblockLists).installRequest(proxy, conf))
 	}
 	if !conf.NoAutoSessions {
 		handlers = append(handlers, handlerSessionReq(proxy, conf))
