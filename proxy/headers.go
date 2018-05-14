@@ -20,7 +20,15 @@ var headersProfileToRemove = [6]string{
 	"user-agent",
 }
 
-func handlerHeadersReq(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
+type headerHandler struct {
+	handler
+}
+
+func newHeaderHandler() handlerInterface {
+	return &headerHandler{}
+}
+
+func (hh *headerHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
 	return func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 		for k, v := range conf.XHeaders {
 			req.Header.Set(k, v)

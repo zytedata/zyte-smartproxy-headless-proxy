@@ -64,7 +64,7 @@ func getReqHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config) (handle
 
 	handlers = append(handlers,
 		handlerLogReqInitial(proxy, conf),
-		handlerHeadersReq(proxy, conf),
+		newHeaderHandler().installRequest(proxy, conf),
 		handlerLogReqSent(proxy, conf))
 
 	return
