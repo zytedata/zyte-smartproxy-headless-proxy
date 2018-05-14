@@ -10,15 +10,15 @@ import (
 	"github.com/9seconds/crawlera-headless-proxy/config"
 )
 
-var rateLimiter semaphore.Semaphore
+type rateLimitHandler struct {
+	handler
 
-func installRateLimiter(number int) {
-	rateLimiter = semaphore.New(number)
+	limiter semaphore.Semaphore
 }
 
-func handlerRateLimiterReq(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
+func (rl *rateLimitHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
 	return func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-		if _, err := rateLimiter.Acquire(nil); err != nil {
+		if _, err := rl.limiter.Acquire(nil); err != nil {
 			log.WithFields(log.Fields{
 				"reqid": getState(ctx).id,
 				"error": err,
@@ -28,9 +28,9 @@ func handlerRateLimiterReq(proxy *goproxy.ProxyHttpServer, conf *config.Config) 
 	}
 }
 
-func handlerRateLimiterResp(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeResp {
+func (rl *rateLimitHandler) installResponse(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeResp {
 	return func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
-		if err := rateLimiter.Release(); err != nil {
+		if err := rl.limiter.Release(); err != nil {
 			log.WithFields(log.Fields{
 				"reqid": getState(ctx).id,
 				"error": err,
@@ -38,4 +38,8 @@ func handlerRateLimiterResp(proxy *goproxy.ProxyHttpServer, conf *config.Config)
 		}
 		return resp
 	}
+}
+
+func newRateLimiter(number int) handlerInterface {
+	return &rateLimitHandler{limiter: semaphore.New(number)}
 }

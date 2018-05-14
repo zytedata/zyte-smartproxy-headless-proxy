@@ -41,23 +41,23 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 	headers := newHeaderHandler()
 	logs := newLogHandler()
 	state := newStateHandler()
+	limiter := newRateLimiter(conf.ConcurrentConnections)
 
-	for _, v := range getReqHandlers(proxy, conf, state, adblock, headers, logs) {
+	for _, v := range getReqHandlers(proxy, conf, state, limiter, adblock, headers, logs) {
 		proxy.OnRequest().DoFunc(v)
 	}
-	for _, v := range getRespHandlers(proxy, conf, logs) {
+	for _, v := range getRespHandlers(proxy, conf, limiter, logs) {
 		proxy.OnResponse().DoFunc(v)
 	}
 
 	return proxy, nil
 }
 
-func getReqHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config, state, adblock, headers handlerInterface, logs logHandlerInterface) (handlers []handlerTypeReq) {
+func getReqHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config, state, limiter, adblock, headers handlerInterface, logs logHandlerInterface) (handlers []handlerTypeReq) {
 	handlers = append(handlers, state.installRequest(proxy, conf))
 
 	if conf.ConcurrentConnections > 0 {
-		installRateLimiter(conf.ConcurrentConnections)
-		handlers = append(handlers, handlerRateLimiterReq(proxy, conf))
+		handlers = append(handlers, limiter.installRequest(proxy, conf))
 	}
 	if len(conf.AdblockLists) > 0 {
 		handlers = append(handlers, adblock.installRequest(proxy, conf))
@@ -74,14 +74,14 @@ func getReqHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config, state, 
 	return
 }
 
-func getRespHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config, logs logHandlerInterface) (handlers []handlerTypeResp) {
+func getRespHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config, limiter handlerInterface, logs logHandlerInterface) (handlers []handlerTypeResp) {
 	handlers = append(handlers, logs.installResponse(proxy, conf))
 
 	if !conf.NoAutoSessions {
 		handlers = append(handlers, handlerSessionResp(proxy, conf))
 	}
 	if conf.ConcurrentConnections > 0 {
-		handlers = append(handlers, handlerRateLimiterResp(proxy, conf))
+		handlers = append(handlers, limiter.installResponse(proxy, conf))
 	}
 
 	return
