@@ -32,7 +32,6 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 		},
 	}
 	proxy.ConnectDial = proxy.NewConnectDialToProxy(crawleraURL)
-	installHTTPClient(proxy.Tr)
 
 	proxy.OnRequest(goproxy.ReqHostMatches(regexp.MustCompile("^.*$"))).
 		HandleConnect(goproxy.AlwaysMitm)
@@ -42,18 +41,21 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 	logs := newLogHandler()
 	state := newStateHandler()
 	limiter := newRateLimiter(conf.ConcurrentConnections)
+	sessions := newSessionHandler(proxy.Tr)
 
-	for _, v := range getReqHandlers(proxy, conf, state, limiter, adblock, headers, logs) {
+	for _, v := range getReqHandlers(proxy, conf, state, limiter, adblock, headers, sessions, logs) {
 		proxy.OnRequest().DoFunc(v)
 	}
-	for _, v := range getRespHandlers(proxy, conf, limiter, logs) {
+	for _, v := range getRespHandlers(proxy, conf, limiter, sessions, logs) {
 		proxy.OnResponse().DoFunc(v)
 	}
 
 	return proxy, nil
 }
 
-func getReqHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config, state, limiter, adblock, headers handlerInterface, logs logHandlerInterface) (handlers []handlerTypeReq) {
+func getReqHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config,
+	state, limiter, adblock, headers, sessions handlerInterface,
+	logs logHandlerInterface) (handlers []handlerTypeReq) {
 	handlers = append(handlers, state.installRequest(proxy, conf))
 
 	if conf.ConcurrentConnections > 0 {
@@ -63,7 +65,7 @@ func getReqHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config, state, 
 		handlers = append(handlers, adblock.installRequest(proxy, conf))
 	}
 	if !conf.NoAutoSessions {
-		handlers = append(handlers, handlerSessionReq(proxy, conf))
+		handlers = append(handlers, sessions.installRequest(proxy, conf))
 	}
 
 	handlers = append(handlers,
@@ -74,11 +76,13 @@ func getReqHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config, state, 
 	return
 }
 
-func getRespHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config, limiter handlerInterface, logs logHandlerInterface) (handlers []handlerTypeResp) {
+func getRespHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config,
+	limiter, sessions handlerInterface,
+	logs logHandlerInterface) (handlers []handlerTypeResp) {
 	handlers = append(handlers, logs.installResponse(proxy, conf))
 
 	if !conf.NoAutoSessions {
-		handlers = append(handlers, handlerSessionResp(proxy, conf))
+		handlers = append(handlers, sessions.installResponse(proxy, conf))
 	}
 	if conf.ConcurrentConnections > 0 {
 		handlers = append(handlers, limiter.installResponse(proxy, conf))
