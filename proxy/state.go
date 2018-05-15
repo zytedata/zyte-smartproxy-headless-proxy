@@ -12,7 +12,6 @@ import (
 )
 
 type stateHandler struct {
-	handler
 }
 
 type state struct {
@@ -43,6 +42,6 @@ func getState(ctx *goproxy.ProxyCtx) *state {
 	return ctx.UserData.(*state)
 }
 
-func newStateHandler() handlerInterface {
+func newStateHandler() handlerReqInterface {
 	return &stateHandler{}
 }

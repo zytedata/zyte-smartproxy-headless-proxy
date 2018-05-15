@@ -10,12 +10,11 @@ import (
 )
 
 type logHandlerInterface interface {
-	handlerInterface
+	handlerReqRespInterface
 	installRequestInitial(*goproxy.ProxyHttpServer, *config.Config) handlerTypeReq
 }
 
 type logHandler struct {
-	handler
 }
 
 func (l *logHandler) installRequestInitial(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {

@@ -21,8 +21,6 @@ import (
 const adblockTimeout = 2 * time.Second
 
 type adblockHandler struct {
-	handler
-
 	adblockRules   []*adblock.Rule
 	adblockMatcher *adblock.RuleMatcher
 	adblockLoaded  bool
@@ -96,34 +94,6 @@ func (ah *adblockHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *c
 	}
 }
 
-func newAdblockHandler(list []string) handlerInterface {
-	newHandler := &adblockHandler{
-		adblockRules:   []*adblock.Rule{},
-		adblockMatcher: adblock.NewMatcher(),
-		adblockCond:    sync.NewCond(&sync.Mutex{}),
-	}
-
-	go func() {
-		channel := make(chan *adblockParsedResult, len(list))
-		wg := &sync.WaitGroup{}
-
-		for _, v := range list {
-			wg.Add(1)
-			go func(channel chan<- *adblockParsedResult, item string) {
-				defer wg.Done()
-				fetchList(channel, item)
-			}(channel, v)
-		}
-
-		wg.Wait()
-		close(channel)
-
-		newHandler.consumeItems(channel)
-	}()
-
-	return newHandler
-}
-
 func fetchList(channel chan<- *adblockParsedResult, item string) {
 	var reader io.ReadCloser
 	var err error
@@ -140,11 +110,8 @@ func fetchList(channel chan<- *adblockParsedResult, item string) {
 		channel <- result
 		return
 	}
-
-	defer func() {
-		io.Copy(ioutil.Discard, reader)
-		reader.Close()
-	}()
+	defer reader.Close()                  // nolint: errcheck
+	defer io.Copy(ioutil.Discard, reader) // nolint: errcheck
 
 	if rules, err := adblock.ParseRules(reader); err != nil {
 		result.err = errors.Annotatef(err, "Cannot parse rules of item %s", item)
@@ -184,4 +151,32 @@ func adblockReadFileSystem(path string) (io.ReadCloser, error) {
 	}
 
 	return fp, nil
+}
+
+func newAdblockHandler(list []string) handlerReqInterface {
+	newHandler := &adblockHandler{
+		adblockRules:   []*adblock.Rule{},
+		adblockMatcher: adblock.NewMatcher(),
+		adblockCond:    sync.NewCond(&sync.Mutex{}),
+	}
+
+	go func() {
+		channel := make(chan *adblockParsedResult, len(list))
+		wg := &sync.WaitGroup{}
+
+		for _, v := range list {
+			wg.Add(1)
+			go func(channel chan<- *adblockParsedResult, item string) {
+				defer wg.Done()
+				fetchList(channel, item)
+			}(channel, v)
+		}
+
+		wg.Wait()
+		close(channel)
+
+		newHandler.consumeItems(channel)
+	}()
+
+	return newHandler
 }

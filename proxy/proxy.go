@@ -18,7 +18,7 @@ import (
 // NewProxy returns a new configured instance of goproxy.
 func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 	proxy := goproxy.NewProxyHttpServer()
-	// proxy.Verbose = conf.Debug
+	proxy.Verbose = conf.Debug
 
 	crawleraURL := conf.CrawleraURL()
 	crawleraURLParsed, err := url.Parse(crawleraURL)
@@ -54,7 +54,7 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 }
 
 func getReqHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config,
-	state, limiter, adblock, headers, sessions handlerInterface,
+	state, limiter, adblock, headers, sessions handlerReqInterface,
 	logs logHandlerInterface) (handlers []handlerTypeReq) {
 	handlers = append(handlers, state.installRequest(proxy, conf))
 
@@ -77,8 +77,7 @@ func getReqHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config,
 }
 
 func getRespHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config,
-	limiter, sessions handlerInterface,
-	logs logHandlerInterface) (handlers []handlerTypeResp) {
+	limiter, sessions, logs handlerRespInterface) (handlers []handlerTypeResp) {
 	handlers = append(handlers, logs.installResponse(proxy, conf))
 
 	if !conf.NoAutoSessions {

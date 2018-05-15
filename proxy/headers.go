@@ -21,7 +21,6 @@ var headersProfileToRemove = [6]string{
 }
 
 type headerHandler struct {
-	handler
 }
 
 func (hh *headerHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
@@ -69,6 +68,6 @@ func prepareHost(data *url.URL) string {
 	return data.Host
 }
 
-func newHeaderHandler() handlerInterface {
+func newHeaderHandler() handlerReqInterface {
 	return &headerHandler{}
 }

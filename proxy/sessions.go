@@ -14,8 +14,6 @@ import (
 const sessionClientTimeout = 30 * time.Second
 
 type sessionHandler struct {
-	handler
-
 	httpClient     *http.Client
 	sessionID      string
 	sessionCreator string
@@ -145,7 +143,7 @@ func (sh *sessionHandler) handlerSessionRespError(resp *http.Response, sessionSt
 	return resp
 }
 
-func newSessionHandler(transport http.RoundTripper) handlerInterface {
+func newSessionHandler(transport http.RoundTripper) handlerReqRespInterface {
 	return &sessionHandler{
 		sessionCond: sync.NewCond(&sync.Mutex{}),
 		httpClient: &http.Client{

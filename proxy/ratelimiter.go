@@ -11,8 +11,6 @@ import (
 )
 
 type rateLimitHandler struct {
-	handler
-
 	limiter semaphore.Semaphore
 }
 
@@ -40,6 +38,6 @@ func (rl *rateLimitHandler) installResponse(proxy *goproxy.ProxyHttpServer, conf
 	}
 }
 
-func newRateLimiter(number int) handlerInterface {
+func newRateLimiter(number int) handlerReqRespInterface {
 	return &rateLimitHandler{limiter: semaphore.New(number)}
 }
