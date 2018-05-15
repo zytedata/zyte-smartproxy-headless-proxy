@@ -33,8 +33,9 @@ RUN set -x \
 FROM alpine:latest
 
 ENTRYPOINT ["/usr/local/bin/crawlera-headless-proxy"]
-ENV CRAWLERA_HEADLESS_BINDIP=0.0.0.0 CRAWLERA_HEADLESS_BINDPORT=3128
-CMD ["-c", "/config.toml"]
+ENV CRAWLERA_HEADLESS_BINDIP=0.0.0.0 \
+    CRAWLERA_HEADLESS_BINDPORT=3128 \
+    CRAWLERA_HEADLESS_CONFIG=/config.toml
 EXPOSE 3128
 
 COPY --from=build-env \

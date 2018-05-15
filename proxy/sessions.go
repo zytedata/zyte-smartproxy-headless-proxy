@@ -65,7 +65,7 @@ func (sh *sessionHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *c
 	}
 }
 
-func (sh *sessionHandler) handlerSessionResp(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeResp {
+func (sh *sessionHandler) installResponse(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeResp {
 	return func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
 		sessionState := getState(ctx)
 
