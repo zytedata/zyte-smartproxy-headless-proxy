@@ -1,9 +1,97 @@
+# This is an example of configuration file for crawlera-headless-proxy
+# All options here are optional, basically to run the proxy all you
+# need is to provide API key. It is doable with environment variable
+# or command line parameter. But of course, it is settable with config.
+
+# Should we run this tool in debug mode or not. Basically, this makes
+# the tool more verbose on stderr.
+debug = true
+
+# This tool talks with Crawlera and Crawlera has its own TLS certificate
+# authority. This option defines if if we need to verify TLS certificate
+# given by Crawlera or not.
+#
+# This certificate is placed here:
+# https://doc.scrapinghub.com/_downloads/crawlera-ca.crt
+#
+# SHA1 checksum of this certificate is 5798e59f6f7ecad3c0e1284f42b07dcaa63fbd37
+dont_verify_crawlera_cert = false
+
+# Do not use automatic session management.
+# Basically, Crawlera works better with browsers only if you use sessions. If
+# you want to implement your own session management, please keep this option
+# as 'true'. Usually you want to have automatic session management.
+#
+# Here is how to use Crawlera and sessions:
+# https://doc.scrapinghub.com/crawlera.html#x-crawlera-session
+#
+# ATTENTION!
+# If you want to have a better experience in session management, we would
+# recommend you to have 1 instance of headless proxy per browser but then
+# please pay attention to 'concurrent_connections' option.
+no_auto_sessions = false
+
+# Set the limit of concurrent connections based on your billing plan.
+# If your plan does not have any limitations, it makes sense to set this
+# option to 0 (disable internal throttling).
+#
+# In case of this parameter > 0 headless proxy is going to throttle your
+# requests before Crawlera. This really help to avoid you the problems
+# of 429 errors if you exceed this number and brings better overall experience.
+concurrent_connections = 0
+
+# Which port crawlera-headless-proxy should listen on. Usually people like to
+# set it to 3128.
+bind_port = 3128
+
+# Which IP should crawlera-headless-proxy to use. As usual, 0.0.0.0 helps
+# to listen on every interface.
+bind_ip = "127.0.0.1"
+
+# Which port is Crawlera listen on. In 99.999% of cases it is 8010 and you
+# do not need to change that.
+crawlera_port = 8010
+
+# Which host is Crawlera placed on.
+crawlera_host = "proxy.crawlera.com"
+
+# What is API key for accessing Crawlera.
+api_key = "MY_API_KEY"
+
+# Path to your own TLS CA certificate if you do not like to use
+# own crawlera-headless-proxy certificate.
+# tls_ca_certificate = "/path/to/your/own/ca/certificate"
+
+# Path to your own TLS CA certificate if you do not like to use
+# own crawlera-headless-proxy private key.
+# tls_private_key = "/path/to/your/own/tls/private/key"
+
+# The list of adblock-compatible filters.
+# Usually you do not want to spend resources (and concurrent connetions) on
+# advertisment, different trackers and other spyware. If you want to filter
+# these requests before they even go to Crawlera, please specify the lists
+# here. They can be HTTP(S) links or file paths.
+#
+# Here is documentation on how to build your own filter list:
+# https://adblockplus.org/en/filters
 adblock_lists = [
   "https://easylist.to/easylist/easylist.txt",
   "https://easylist.to/easylist/easyprivacy.txt",
   "https://s3.amazonaws.com/lists.disconnect.me/simple_malware.txt"
 ]
 
+# A list of Crawlera XHeaders to propagate to real Crawlera from this
+# headless proxy.
+#
+# As you are going to use headless browser, we would recommend you
+# to use at least X-Crawlera-Cookies:disable and X-Crawlera-Profile:desktop
+# headers.
+
+# You can speficy sucn headers in full and short form. For example,
+# `X-Crawlera-Cookies` and `cookies` define the same header.
+#
+# A full list can be found here:
+# https://doc.scrapinghub.com/crawlera.html#request-headers
 [xheaders]
 cookies = "disable"
 profile = "desktop"
