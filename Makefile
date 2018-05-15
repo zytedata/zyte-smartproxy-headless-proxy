@@ -12,6 +12,9 @@ APP_DEPS     := version.go proxy/certs.go $(VENDOR_FILES)
 $(APP_NAME): $(APP_DEPS)
 	@go build -o "$(APP_NAME)" -ldflags="-s -w"
 
+static-$(APP_NAME): $(APP_DEPS)
+	@env CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-s -w"
+
 $(APP_NAME)-%: GOOS=$(shell echo -n "$@" | sed 's?$(APP_NAME)-??' | cut -f1 -d-)
 $(APP_NAME)-%: GOARCH=$(shell echo -n "$@" | sed 's?$(APP_NAME)-??' | cut -f2 -d-)
 $(APP_NAME)-%: $(APP_DEPS) ccbuilds
@@ -36,6 +39,9 @@ vendor: Gopkg.lock Gopkg.toml install-cli
 
 .PHONY: all
 all: $(APP_NAME)
+
+.PHONY: static
+static: static-$(APP_NAME)
 
 .PHONY: crosscompile
 crosscompile: $(CC_BINARIES)
