@@ -196,7 +196,7 @@ this order (1 has max priority, 4 - minimal):
 
 1. Environment variables
 2. Commandline flags
-3. Config;uration file
+3. Configuration file
 4. Defaults
 
 ## Concurrency
