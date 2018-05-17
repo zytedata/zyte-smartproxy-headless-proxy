@@ -1,7 +1,10 @@
 package proxy
 
 import (
+	"crypto/md5"
+	"io"
 	"net/http"
+	"time"
 
 	"github.com/elazarl/goproxy"
 	uuid "github.com/hashicorp/go-uuid"
@@ -15,12 +18,16 @@ type stateHandler struct {
 }
 
 type state struct {
-	id string
+	id               string
+	clientID         []byte
+	requestStarted   time.Time
+	crawleraStarted  time.Time
+	crawleraFinished time.Time
 }
 
 func (sh *stateHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
 	return func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-		state, err := newState()
+		state, err := newState(req.RemoteAddr, req.Header.Get("User-Agent"))
 		if err != nil {
 			log.Fatalf("Cannot create new state of request")
 		}
@@ -29,13 +36,22 @@ func (sh *stateHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *con
 	}
 }
 
-func newState() (*state, error) {
+func newState(remoteAddr string, userAgent string) (*state, error) {
 	newID, err := uuid.GenerateUUID()
 	if err != nil {
 		return nil, errors.Annotate(err, "Cannot generate unique id")
 	}
 
-	return &state{id: newID}, nil
+	hash := md5.New()
+	io.WriteString(hash, remoteAddr)
+	hash.Write([]byte{0})
+	io.WriteString(hash, userAgent)
+
+	return &state{
+		id:             newID,
+		clientID:       hash.Sum(nil),
+		requestStarted: time.Now(),
+	}, nil
 }
 
 func getState(ctx *goproxy.ProxyCtx) *state {

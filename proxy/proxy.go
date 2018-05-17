@@ -77,8 +77,9 @@ func getReqHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config,
 }
 
 func getRespHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config,
-	limiter, sessions, logs handlerRespInterface) (handlers []handlerTypeResp) {
-	handlers = append(handlers, logs.installResponse(proxy, conf))
+	limiter, sessions handlerRespInterface,
+	logs logHandlerInterface) (handlers []handlerTypeResp) {
+	handlers = append(handlers, logs.installResponseInitial(proxy, conf))
 
 	if !conf.NoAutoSessions {
 		handlers = append(handlers, sessions.installResponse(proxy, conf))
@@ -86,6 +87,8 @@ func getRespHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config,
 	if conf.ConcurrentConnections > 0 {
 		handlers = append(handlers, limiter.installResponse(proxy, conf))
 	}
+
+	handlers = append(handlers, logs.installResponse(proxy, conf))
 
 	return
 }

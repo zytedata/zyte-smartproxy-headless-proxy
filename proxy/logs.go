@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/elazarl/goproxy"
 	log "github.com/sirupsen/logrus"
@@ -12,6 +13,7 @@ import (
 type logHandlerInterface interface {
 	handlerReqRespInterface
 	installRequestInitial(*goproxy.ProxyHttpServer, *config.Config) handlerTypeReq
+	installResponseInitial(*goproxy.ProxyHttpServer, *config.Config) handlerTypeResp
 }
 
 type logHandler struct {
@@ -43,14 +45,23 @@ func (l *logHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *config
 			"remote-addr":    req.RemoteAddr,
 			"headers":        req.Header,
 		}).Debug("HTTP request sent.")
+		getState(ctx).crawleraStarted = time.Now()
 		return req, nil
+	}
+}
+
+func (l *logHandler) installResponseInitial(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeResp {
+	return func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
+		getState(ctx).crawleraFinished = time.Now()
+		return resp
 	}
 }
 
 func (l *logHandler) installResponse(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeResp {
 	return func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
+		state := getState(ctx)
 		log.WithFields(log.Fields{
-			"reqid":           getState(ctx).id,
+			"reqid":           state.id,
 			"method":          resp.Request.Method,
 			"url":             resp.Request.URL,
 			"proto":           resp.Proto,
@@ -59,6 +70,8 @@ func (l *logHandler) installResponse(proxy *goproxy.ProxyHttpServer, conf *confi
 			"status":          resp.Status,
 			"uncompressed":    resp.Uncompressed,
 			"request-headers": resp.Request.Header,
+			"overall-time":    time.Since(state.requestStarted),
+			"crawlera-time":   state.crawleraFinished.Sub(state.crawleraStarted),
 		}).Debug("HTTP response")
 		return resp
 	}
