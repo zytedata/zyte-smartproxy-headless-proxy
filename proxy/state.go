@@ -1,7 +1,8 @@
 package proxy
 
 import (
-	"crypto/md5"
+	"crypto/md5" // nolint: gas
+	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -19,7 +20,7 @@ type stateHandler struct {
 
 type state struct {
 	id               string
-	clientID         []byte
+	clientID         string
 	requestStarted   time.Time
 	crawleraStarted  time.Time
 	crawleraFinished time.Time
@@ -42,14 +43,14 @@ func newState(remoteAddr string, userAgent string) (*state, error) {
 		return nil, errors.Annotate(err, "Cannot generate unique id")
 	}
 
-	hash := md5.New()
-	io.WriteString(hash, remoteAddr)
-	hash.Write([]byte{0})
-	io.WriteString(hash, userAgent)
+	hash := md5.New()                // nolint: errcheck, gas
+	io.WriteString(hash, remoteAddr) // nolint: errcheck
+	hash.Write([]byte{0})            // nolint: errcheck
+	io.WriteString(hash, userAgent)  // nolint: errcheck
 
 	return &state{
 		id:             newID,
-		clientID:       hash.Sum(nil),
+		clientID:       fmt.Sprintf("%x", hash.Sum(nil)),
 		requestStarted: time.Now(),
 	}, nil
 }

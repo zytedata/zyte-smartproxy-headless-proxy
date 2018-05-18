@@ -14,49 +14,55 @@ import (
 const sessionClientTimeout = 30 * time.Second
 
 type sessionHandler struct {
-	httpClient     *http.Client
-	sessionID      string
-	sessionCreator string
-	sessionCond    *sync.Cond
+	httpClient *http.Client
+	clients    *sync.Map
+}
+
+type sessionState struct {
+	id      string
+	creator string
+	cond    *sync.Cond
 }
 
 func (sh *sessionHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
 	return func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-		sessionState := getState(ctx)
+		requestState := getState(ctx)
+		sessionStateRaw, _ := sh.clients.LoadOrStore(requestState.clientID, newSessionState())
+		sess := sessionStateRaw.(*sessionState)
 
-		if sh.sessionID == "" && sh.sessionCreator == "" {
-			sh.sessionCond.L.Lock()
-			if sh.sessionID == "" && sh.sessionCreator == "" {
-				sh.sessionID = ""
-				sh.sessionCreator = sessionState.id
-				sh.sessionCond.L.Unlock()
+		if sess.id == "" && sess.creator == "" {
+			sess.cond.L.Lock()
+			if sess.id == "" && sess.creator == "" {
+				sess.id = ""
+				sess.creator = requestState.id
+				sess.cond.L.Unlock()
 				req.Header.Set("X-Crawlera-Session", "create")
 
 				log.WithFields(log.Fields{
-					"reqid": sessionState.id,
+					"reqid": requestState.id,
 				}).Debug("Initialize fresh session without retries.")
 
 				return req, nil
 			}
-			sh.sessionCond.L.Unlock()
+			sess.cond.L.Unlock()
 		}
 
-		sh.sessionCond.L.Lock()
-		defer sh.sessionCond.L.Unlock()
-		for sh.sessionID == "" {
-			sh.sessionCond.Wait()
+		sess.cond.L.Lock()
+		defer sess.cond.L.Unlock()
+		for sess.id == "" {
+			sess.cond.Wait()
 		}
 
 		// only 1 goroutine is awaken to create new session
-		if sh.sessionID == "" {
-			sh.sessionCreator = sessionState.id
+		if sess.id == "" {
+			sess.creator = requestState.id
 			req.Header.Set("X-Crawlera-Session", "create")
 
 			log.WithFields(log.Fields{
-				"reqid": sessionState.id,
+				"reqid": requestState.id,
 			}).Debug("Reinitialize session without retries.")
 		} else {
-			req.Header.Set("X-Crawlera-Session", sh.sessionID)
+			req.Header.Set("X-Crawlera-Session", sess.id)
 		}
 
 		return req, nil
@@ -65,87 +71,95 @@ func (sh *sessionHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *c
 
 func (sh *sessionHandler) installResponse(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeResp {
 	return func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
-		sessionState := getState(ctx)
+		requestState := getState(ctx)
+		sessionStateRaw, _ := sh.clients.LoadOrStore(requestState.clientID, newSessionState())
+		sess := sessionStateRaw.(*sessionState)
 
 		if resp.Header.Get("X-Crawlera-Error") == "" {
-			return sh.handlerSessionRespOK(resp, sessionState)
+			return sh.handlerSessionRespOK(resp, requestState, sess)
 		}
 
-		return sh.handlerSessionRespError(resp, sessionState)
+		return sh.handlerSessionRespError(resp, requestState, sess)
 	}
 }
 
-func (sh *sessionHandler) handlerSessionRespOK(resp *http.Response, sessionState *state) *http.Response {
-	if sh.sessionCreator == sessionState.id {
-		sh.sessionCond.L.Lock()
-		defer sh.sessionCond.L.Unlock()
+func (sh *sessionHandler) handlerSessionRespOK(resp *http.Response, requestState *state, sess *sessionState) *http.Response {
+	if sess.creator == requestState.id {
+		sess.cond.L.Lock()
+		defer sess.cond.L.Unlock()
 
-		sh.sessionCreator = ""
-		sh.sessionID = resp.Header.Get("X-Crawlera-Session")
+		sess.creator = ""
+		sess.id = resp.Header.Get("X-Crawlera-Session")
 
 		log.WithFields(log.Fields{
-			"reqid":     sessionState.id,
-			"sessionid": sh.sessionID,
+			"reqid":     requestState.id,
+			"sessionid": sess.id,
 		}).Debug("Initialized new session.")
 
-		sh.sessionCond.Broadcast()
+		sess.cond.Broadcast()
 	}
 	return resp
 }
 
-func (sh *sessionHandler) handlerSessionRespError(resp *http.Response, sessionState *state) *http.Response {
-	sh.sessionCond.L.Lock()
-	defer sh.sessionCond.L.Unlock()
+func (sh *sessionHandler) handlerSessionRespError(resp *http.Response, requestState *state, sess *sessionState) *http.Response {
+	sess.cond.L.Lock()
+	defer sess.cond.L.Unlock()
 
-	if resp.Header.Get("X-Crawlera-Session") == sh.sessionID {
-		sh.sessionID = ""
+	if resp.Header.Get("X-Crawlera-Session") == sess.id {
+		sess.id = ""
 	}
-	for !(sh.sessionCreator == "" || sh.sessionCreator == sessionState.id || sh.sessionID != "") {
-		sh.sessionCond.Wait()
+	for !(sess.creator == "" || sess.creator == requestState.id || sess.id != "") {
+		sess.cond.Wait()
 	}
 
 	req := resp.Request
-	if sh.sessionID != "" {
-		req.Header.Set("X-Crawlera-Session", sh.sessionID)
+	if sess.id != "" {
+		req.Header.Set("X-Crawlera-Session", sess.id)
 		if newResp, err := sh.httpClient.Do(req); err == nil {
 			resp = newResp
 		}
 		return resp
 	}
 
-	sh.sessionCreator = sessionState.id
-	defer func() { sh.sessionCreator = "" }()
+	sess.creator = requestState.id
+	defer func() { sess.creator = "" }()
 	req.Header.Set("X-Crawlera-Session", "create")
 
 	log.WithFields(log.Fields{
-		"reqid": sessionState.id,
+		"reqid": requestState.id,
 	}).Info("Retry without new session, fetching new one.")
 
 	if newResp, err := sh.httpClient.Do(req); err == nil && newResp.Header.Get("X-Crawlera-Error") == "" {
-		sh.sessionID = newResp.Header.Get("X-Crawlera-Session")
+		sess.id = newResp.Header.Get("X-Crawlera-Session")
 
 		log.WithFields(log.Fields{
-			"reqid":     sessionState.id,
-			"sessionid": sh.sessionID,
+			"reqid":     requestState.id,
+			"sessionid": sess.id,
 		}).Info("Got new session after retry.")
 
-		sh.sessionCond.Broadcast()
+		sess.cond.Broadcast()
 
 		return newResp
 	}
 
 	log.WithFields(log.Fields{
-		"reqid": sessionState.id,
+		"reqid": requestState.id,
 	}).Info("Failed to get new session.")
 
-	sh.sessionCond.Signal()
+	sess.cond.Signal()
 
 	return resp
 }
 
+func newSessionState() *sessionState {
+	return &sessionState{
+		cond: sync.NewCond(&sync.Mutex{}),
+	}
+}
+
 func newSessionHandler(transport http.RoundTripper) handlerReqRespInterface {
 	return &sessionHandler{
-		sessionCond: sync.NewCond(&sync.Mutex{}),
+		clients: &sync.Map{},
 		httpClient: &http.Client{
 			Timeout:   sessionClientTimeout,
 			Transport: transport,
