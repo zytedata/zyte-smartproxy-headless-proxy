@@ -53,6 +53,12 @@
   version = "4.3.0"
 
 [[projects]]
+  name = "github.com/karlseguin/ccache"
+  packages = ["."]
+  revision = "a2d62155777b39595c825ed3824279e642a5db3c"
+  version = "v2.0.2"
+
+[[projects]]
   branch = "master"
   name = "github.com/pmezard/adblock"
   packages = ["adblock"]
@@ -80,7 +86,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "034e5325b6ab92faa14d15c30e86919e911cf8e0"
+  revision = "1a580b3eff7814fc9b40602fd35256c63b50f491"
 
 [[projects]]
   branch = "master"
@@ -89,7 +95,7 @@
     "unix",
     "windows"
   ]
-  revision = "d0faeb539838e250bd0a9db4182d48d4a1915181"
+  revision = "7c87d13f8e835d2fb3a70a2912c811ed0c1d241b"
 
 [[projects]]
   name = "gopkg.in/alecthomas/kingpin.v2"
@@ -100,6 +106,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "de22f115a132655d6173898f2a5f43bd6066562413bb57c6a6b5d26e36fffa01"
+  inputs-digest = "de4d1030466f13a08ff1223a0ba684db97c2a119e52acee3ae0a460995f34444"
   solver-name = "gps-cdcl"
   solver-version = 1

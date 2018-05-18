@@ -42,8 +42,9 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 	state := newStateHandler()
 	limiter := newRateLimiter(conf.ConcurrentConnections)
 	sessions := newSessionHandler(proxy.Tr)
+	referer := newRefererHandler()
 
-	for _, v := range getReqHandlers(proxy, conf, state, limiter, adblock, headers, sessions, logs) {
+	for _, v := range getReqHandlers(proxy, conf, state, limiter, adblock, headers, sessions, referer, logs) {
 		proxy.OnRequest().DoFunc(v)
 	}
 	for _, v := range getRespHandlers(proxy, conf, limiter, sessions, logs) {
@@ -54,7 +55,7 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 }
 
 func getReqHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config,
-	state, limiter, adblock, headers, sessions handlerReqInterface,
+	state, limiter, adblock, headers, sessions, referer handlerReqInterface,
 	logs logHandlerInterface) (handlers []handlerTypeReq) {
 	handlers = append(handlers, state.installRequest(proxy, conf))
 
@@ -71,6 +72,7 @@ func getReqHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config,
 	handlers = append(handlers,
 		logs.installRequestInitial(proxy, conf),
 		headers.installRequest(proxy, conf),
+		referer.installRequest(proxy, conf),
 		logs.installRequest(proxy, conf))
 
 	return

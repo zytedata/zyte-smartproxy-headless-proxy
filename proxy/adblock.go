@@ -57,7 +57,7 @@ func (ah *adblockHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *c
 	return func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 		var newResponse *http.Response
 
-		host := req.URL.Host
+		host := req.URL.Hostname()
 		if host == "" {
 			host = req.Host
 		}
