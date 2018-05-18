@@ -16,15 +16,16 @@ RUN set -x \
     if [ "${sum}" != "5798e59f6f7ecad3c0e1284f42b07dcaa63fbd37" ]; then \
       echo "Incorrect CA certificate checksum ${sum}"; \
       exit 1; \
-  fi; done \
-  && update-ca-certificates
+  fi; done
 
 ADD . /go/src/github.com/9seconds/crawlera-headless-proxy
 
 RUN set -x \
   && cd /go/src/github.com/9seconds/crawlera-headless-proxy \
   && make clean \
-  && make -j 4 static
+  && make -j 4 static \
+  && cp ca.crt /usr/local/share/ca-certificates/own-cert.crt \
+  && update-ca-certificates
 
 
 ###############################################################################
