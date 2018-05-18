@@ -7,21 +7,23 @@ VENDOR_FILES := $(shell find "$(ROOT_DIR)/vendor" 2>/dev/null || echo -n "vendor
 CC_BINARIES  := $(shell bash -c "echo -n $(APP_NAME)-{linux,windows,darwin,freebsd,openbsd}-{386,amd64} $(APP_NAME)-linux-{arm,arm64}")
 APP_DEPS     := version.go proxy/certs.go $(VENDOR_FILES)
 
+COMMON_BUILD_FLAGS := -ldflags="-s -w"
+
 # -----------------------------------------------------------------------------
 
 $(APP_NAME): $(APP_DEPS)
-	@go build -o "$(APP_NAME)" -ldflags="-s -w"
+	@go build $(COMMON_BUILD_FLAGS) -o "$(APP_NAME)"
 
 static-$(APP_NAME): $(APP_DEPS)
-	@env CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-s -w"
+	@env CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo $(COMMON_BUILD_FLAGS) -o "$(APP_NAME)"
 
 $(APP_NAME)-%: GOOS=$(shell echo -n "$@" | sed 's?$(APP_NAME)-??' | cut -f1 -d-)
 $(APP_NAME)-%: GOARCH=$(shell echo -n "$@" | sed 's?$(APP_NAME)-??' | cut -f2 -d-)
 $(APP_NAME)-%: $(APP_DEPS) ccbuilds
 	@env "GOOS=$(GOOS)" "GOARCH=$(GOARCH)" \
 		go build \
-		-o "./ccbuilds/$(APP_NAME)-$(GOOS)-$(GOARCH)" \
-		-ldflags="-s -w"
+		$(COMMON_BUILD_FLAGS) \
+		-o "./ccbuilds/$(APP_NAME)-$(GOOS)-$(GOARCH)"
 
 ccbuilds:
 	@rm -rf ./ccbuilds && mkdir -p ./ccbuilds
