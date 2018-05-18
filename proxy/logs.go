@@ -21,8 +21,10 @@ type logHandler struct {
 
 func (l *logHandler) installRequestInitial(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
 	return func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+		state := getState(ctx)
 		log.WithFields(log.Fields{
-			"reqid":          getState(ctx).id,
+			"reqid":          state.id,
+			"clientid":       state.clientID,
 			"method":         req.Method,
 			"url":            req.URL,
 			"proto":          req.Proto,
@@ -36,8 +38,10 @@ func (l *logHandler) installRequestInitial(proxy *goproxy.ProxyHttpServer, conf 
 
 func (l *logHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
 	return func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+		state := getState(ctx)
 		log.WithFields(log.Fields{
-			"reqid":          getState(ctx).id,
+			"reqid":          state.id,
+			"clientid":       state.clientID,
 			"method":         req.Method,
 			"url":            req.URL,
 			"proto":          req.Proto,
@@ -62,6 +66,7 @@ func (l *logHandler) installResponse(proxy *goproxy.ProxyHttpServer, conf *confi
 		state := getState(ctx)
 		log.WithFields(log.Fields{
 			"reqid":           state.id,
+			"clientid":        state.clientID,
 			"method":          resp.Request.Method,
 			"url":             resp.Request.URL,
 			"proto":           resp.Proto,

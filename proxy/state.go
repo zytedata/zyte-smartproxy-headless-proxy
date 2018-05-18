@@ -4,6 +4,7 @@ import (
 	"crypto/md5" // nolint: gas
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"time"
 
@@ -28,7 +29,12 @@ type state struct {
 
 func (sh *stateHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
 	return func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-		state, err := newState(req.RemoteAddr, req.Header.Get("User-Agent"))
+		addr := ""
+		if host, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
+			addr = host
+		}
+
+		state, err := newState(addr, req.Header.Get("User-Agent"))
 		if err != nil {
 			log.Fatalf("Cannot create new state of request")
 		}
