@@ -32,27 +32,6 @@ type adblockParsedResult struct {
 	err   error
 }
 
-func (ah *adblockHandler) consumeItems(channel <-chan *adblockParsedResult) {
-	for item := range channel {
-		if item.err != nil {
-			log.Fatal(item.err.Error())
-		}
-		ah.adblockRules = append(ah.adblockRules, item.rules...)
-	}
-
-	ah.adblockCond.L.Lock()
-	defer ah.adblockCond.L.Unlock()
-
-	for idx, value := range ah.adblockRules {
-		if err := ah.adblockMatcher.AddRule(value, idx); err != nil {
-			log.Infof("Cannot add rule '%s': %s", value.Raw, err.Error())
-		}
-	}
-
-	ah.adblockLoaded = true
-	ah.adblockCond.Broadcast()
-}
-
 func (ah *adblockHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
 	return func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 		var newResponse *http.Response
@@ -92,6 +71,27 @@ func (ah *adblockHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *c
 
 		return req, newResponse
 	}
+}
+
+func (ah *adblockHandler) consumeItems(channel <-chan *adblockParsedResult) {
+	for item := range channel {
+		if item.err != nil {
+			log.Fatal(item.err.Error())
+		}
+		ah.adblockRules = append(ah.adblockRules, item.rules...)
+	}
+
+	ah.adblockCond.L.Lock()
+	defer ah.adblockCond.L.Unlock()
+
+	for idx, value := range ah.adblockRules {
+		if err := ah.adblockMatcher.AddRule(value, idx); err != nil {
+			log.Infof("Cannot add rule '%s': %s", value.Raw, err.Error())
+		}
+	}
+
+	ah.adblockLoaded = true
+	ah.adblockCond.Broadcast()
 }
 
 func fetchList(channel chan<- *adblockParsedResult, item string) {

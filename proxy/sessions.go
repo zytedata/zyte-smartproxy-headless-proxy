@@ -75,11 +75,11 @@ func (sh *sessionHandler) installResponse(proxy *goproxy.ProxyHttpServer, conf *
 		sessionStateRaw, _ := sh.clients.LoadOrStore(requestState.clientID, newSessionState())
 		sess := sessionStateRaw.(*sessionState)
 
-		if resp.Header.Get("X-Crawlera-Error") == "" {
+		if resp != nil && resp.Header.Get("X-Crawlera-Error") == "" {
 			return sh.handlerSessionRespOK(resp, requestState, sess)
 		}
 
-		return sh.handlerSessionRespError(resp, requestState, sess)
+		return sh.handlerSessionRespError(requestState, sess, ctx)
 	}
 }
 
@@ -101,18 +101,19 @@ func (sh *sessionHandler) handlerSessionRespOK(resp *http.Response, requestState
 	return resp
 }
 
-func (sh *sessionHandler) handlerSessionRespError(resp *http.Response, requestState *state, sess *sessionState) *http.Response {
+func (sh *sessionHandler) handlerSessionRespError(requestState *state, sess *sessionState, ctx *goproxy.ProxyCtx) *http.Response {
 	sess.cond.L.Lock()
 	defer sess.cond.L.Unlock()
 
-	if resp.Header.Get("X-Crawlera-Session") == sess.id {
+	if ctx.Req.Header.Get("X-Crawlera-Session") == sess.id {
 		sess.id = ""
 	}
 	for !(sess.creator == "" || sess.creator == requestState.id || sess.id != "") {
 		sess.cond.Wait()
 	}
 
-	req := resp.Request
+	var resp *http.Response
+	req := ctx.Req
 	if sess.id != "" {
 		req.Header.Set("X-Crawlera-Session", sess.id)
 		if newResp, err := sh.httpClient.Do(req); err == nil {

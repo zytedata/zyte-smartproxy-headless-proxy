@@ -63,6 +63,10 @@ func (l *logHandler) installResponseInitial(proxy *goproxy.ProxyHttpServer, conf
 
 func (l *logHandler) installResponse(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeResp {
 	return func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
+		if resp == nil {
+			return resp
+		}
+
 		state := getState(ctx)
 		log.WithFields(log.Fields{
 			"reqid":           state.id,
