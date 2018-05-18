@@ -75,8 +75,9 @@ api_key = "MY_API_KEY"
 # Here is documentation on how to build your own filter list:
 # https://adblockplus.org/en/filters
 adblock_lists = [
-  "https://easylist.to/easylist/easylist.txt",
-  "https://easylist.to/easylist/easyprivacy.txt",
+  "https://fanboy.co.nz/r/fanboy-ultimate.txt",
+  "https://fanboy.co.nz/fanboy-antifonts.txt",
+  "https://fanboy.co.nz/fanboy-antifacebook.txt",
   "https://s3.amazonaws.com/lists.disconnect.me/simple_malware.txt"
 ]
 
