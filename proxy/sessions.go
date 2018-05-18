@@ -75,9 +75,19 @@ func (sh *sessionHandler) installResponse(proxy *goproxy.ProxyHttpServer, conf *
 		sessionStateRaw, _ := sh.clients.LoadOrStore(requestState.clientID, newSessionState())
 		sess := sessionStateRaw.(*sessionState)
 
-		if resp != nil && resp.Header.Get("X-Crawlera-Error") == "" {
-			return sh.handlerSessionRespOK(resp, requestState, sess)
+		err := ""
+		if resp != nil {
+			err = resp.Header.Get("X-Crawlera-Error")
+			if err == "" {
+				return sh.handlerSessionRespOK(resp, requestState, sess)
+			}
 		}
+
+		log.WithFields(log.Fields{
+			"respnil":   resp,
+			"error":     err,
+			"ctx-error": ctx.Error,
+		}).Debug("Reason of failed response.")
 
 		return sh.handlerSessionRespError(requestState, sess, ctx)
 	}
