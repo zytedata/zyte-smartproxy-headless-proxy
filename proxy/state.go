@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"crypto/hmac"
 	"crypto/md5" // nolint: gas
 	"fmt"
 	"io"
@@ -34,11 +35,12 @@ func (sh *stateHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *con
 			addr = host
 		}
 
-		state, err := newState(addr, req.Header.Get("User-Agent"))
+		state, err := newState(addr, req.UserAgent())
 		if err != nil {
 			log.Fatalf("Cannot create new state of request")
 		}
 		ctx.UserData = state
+
 		return req, nil
 	}
 }
@@ -49,10 +51,10 @@ func newState(remoteAddr string, userAgent string) (*state, error) {
 		return nil, errors.Annotate(err, "Cannot generate unique id")
 	}
 
-	hash := md5.New()                // nolint: errcheck, gas
-	io.WriteString(hash, remoteAddr) // nolint: errcheck
-	hash.Write([]byte{0})            // nolint: errcheck
-	io.WriteString(hash, userAgent)  // nolint: errcheck
+	hash := hmac.New(md5.New, []byte(remoteAddr))
+	if _, err := io.WriteString(hash, userAgent); err != nil {
+		return nil, errors.Annotate(err, "Cannot generate client id")
+	}
 
 	return &state{
 		id:             newID,
