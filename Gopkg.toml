@@ -27,10 +27,6 @@
   version = "1.2.1"
 
 [[constraint]]
-  name = "github.com/kamilsk/semaphore"
-  version = "4.3.0"
-
-[[constraint]]
   branch = "master"
   name = "github.com/hashicorp/go-uuid"
 

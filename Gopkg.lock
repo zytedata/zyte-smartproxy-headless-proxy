@@ -47,12 +47,6 @@
   revision = "c7d06af17c68cd34c835053720b21f6549d9b0ee"
 
 [[projects]]
-  name = "github.com/kamilsk/semaphore"
-  packages = ["."]
-  revision = "d748542cefc65c6270baa4eef1812374f3d57991"
-  version = "4.3.0"
-
-[[projects]]
   name = "github.com/karlseguin/ccache"
   packages = ["."]
   revision = "a2d62155777b39595c825ed3824279e642a5db3c"
@@ -106,6 +100,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "de4d1030466f13a08ff1223a0ba684db97c2a119e52acee3ae0a460995f34444"
+  inputs-digest = "0cea956361bf122216ba8423b086cfd0b592d2a984ae5fc869a28577e678ca76"
   solver-name = "gps-cdcl"
   solver-version = 1
