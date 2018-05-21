@@ -44,10 +44,10 @@ func (rl *rateLimiterMiddleware) OnResponse() RespType {
 	})
 }
 
-func NewRateLimiterMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) *rateLimiterMiddleware {
+// NewRateLimiterMiddleware returns middleware which limits an amount of
+// concurrent requests to Crawlera.
+func NewRateLimiterMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) Middleware {
 	ware := &rateLimiterMiddleware{}
-	ware.conf = conf
-	ware.proxy = proxy
 	ware.mtype = middlewareTypeRateLimiter
 
 	ware.limiter = semaphore.New(conf.ConcurrentConnections)

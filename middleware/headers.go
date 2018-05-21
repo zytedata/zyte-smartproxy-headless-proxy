@@ -10,6 +10,8 @@ import (
 
 type headersMiddleware struct {
 	UniqBase
+
+	xheaders map[string]string
 }
 
 var headersProfileToRemove = [6]string{
@@ -23,7 +25,7 @@ var headersProfileToRemove = [6]string{
 
 func (h *headersMiddleware) OnRequest() ReqType {
 	return h.BaseOnRequest(func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-		for k, v := range h.conf.XHeaders {
+		for k, v := range h.xheaders {
 			req.Header.Set(k, v)
 		}
 
@@ -44,10 +46,12 @@ func (h *headersMiddleware) OnResponse() RespType {
 	})
 }
 
-func NewHeadersMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) *headersMiddleware {
+// NewHeadersMiddleware returns a middleware which mangles request
+// headers. It injects x-headers for example and cleans up browser
+// profiles related headers.
+func NewHeadersMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) Middleware {
 	ware := &headersMiddleware{}
-	ware.conf = conf
-	ware.proxy = proxy
+	ware.xheaders = conf.XHeaders
 	ware.mtype = middlewareTypeHeaders
 
 	return ware

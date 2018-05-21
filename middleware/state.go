@@ -25,10 +25,10 @@ func (s *stateMiddleware) OnResponse() RespType {
 	})
 }
 
-func NewStateMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) *stateMiddleware {
+// NewStateMiddleware returns middleware which does things that
+// InitiMiddleware does not do.
+func NewStateMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) Middleware {
 	ware := &stateMiddleware{}
-	ware.conf = conf
-	ware.proxy = proxy
 	ware.mtype = middlewareTypeState
 
 	return ware

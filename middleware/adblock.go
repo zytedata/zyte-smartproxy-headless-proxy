@@ -23,9 +23,9 @@ const adblockTimeout = 2 * time.Second
 type adblockMiddleware struct {
 	UniqBase
 
+	loaded  bool
 	rules   []*adblock.Rule
 	matcher *adblock.RuleMatcher
-	loaded  bool
 	cond    *sync.Cond
 }
 
@@ -161,20 +161,21 @@ func (ab *adblockMiddleware) readFileSystem(path string) (io.ReadCloser, error) 
 	return fp, nil
 }
 
-func NewAdblockMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) *adblockMiddleware {
+// NewAdblockMiddleware returns a middleware which uses adblock lists to
+// filter out some requests which should not be performed BEFORE they
+// will go to Crawlera.
+func NewAdblockMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) Middleware {
 	ware := &adblockMiddleware{}
-	ware.conf = conf
-	ware.proxy = proxy
 	ware.mtype = middlewareTypeAdblock
 
 	ware.matcher = adblock.NewMatcher()
 	ware.cond = sync.NewCond(&sync.Mutex{})
 
 	go func() {
-		channel := make(chan *adblockParsedResult, len(ware.conf.AdblockLists))
+		channel := make(chan *adblockParsedResult, len(conf.AdblockLists))
 		wg := &sync.WaitGroup{}
 
-		for _, v := range ware.conf.AdblockLists {
+		for _, v := range conf.AdblockLists {
 			wg.Add(1)
 			go func(channel chan<- *adblockParsedResult, item string) {
 				defer wg.Done()

@@ -89,10 +89,10 @@ func (r *refererMiddleware) prepareHost(data *url.URL) string {
 	return data.Host
 }
 
-func NewRefererMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) *refererMiddleware {
+// NewRefererMiddleware returns middleware which manages Referer header.
+// If Referer is not set it tries to find out correct value for that.
+func NewRefererMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) Middleware {
 	ware := &refererMiddleware{}
-	ware.conf = conf
-	ware.proxy = proxy
 	ware.mtype = middlewareTypeReferer
 
 	ware.referers = ccache.Layered(ccache.Configure())

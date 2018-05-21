@@ -28,7 +28,9 @@ func (p *proxyRequestMiddleware) OnRequest() ReqType {
 			"headers":        req.Header,
 		}).Debug("HTTP request to sent to Crawlera")
 
-		rstate.StartCrawleraRequest()
+		if err := rstate.StartCrawleraRequest(); err != nil {
+			log.Fatal(err.Error())
+		}
 
 		return req, nil
 	})
@@ -36,16 +38,17 @@ func (p *proxyRequestMiddleware) OnRequest() ReqType {
 
 func (p *proxyRequestMiddleware) OnResponse() RespType {
 	return p.BaseOnResponse(func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
-		GetRequestState(ctx).FinishCrawleraRequest()
-
+		if err := GetRequestState(ctx).FinishCrawleraRequest(); err != nil {
+			log.Fatal(err.Error())
+		}
 		return resp
 	})
 }
 
-func NewProxyRequestMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) *proxyRequestMiddleware {
+// NewProxyRequestMiddleware returns middleware which tracks goproxy
+// requests to Crawlera.
+func NewProxyRequestMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) Middleware {
 	ware := &proxyRequestMiddleware{}
-	ware.conf = conf
-	ware.proxy = proxy
 	ware.mtype = middlewareTypeProxyRequest
 
 	return ware

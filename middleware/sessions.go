@@ -130,7 +130,7 @@ func (s *sessionsMiddleware) sessionRespError(rstate *RequestState, sess *sessio
 	req := ctx.Req
 	if sess.id != "" {
 		req.Header.Set("X-Crawlera-Session", sess.id)
-		if newResp, err := rstate.DoRequest(s.httpClient, req); err == nil {
+		if newResp, err := rstate.DoCrawleraRequest(s.httpClient, req); err == nil {
 			resp = newResp
 		}
 		return resp
@@ -145,7 +145,7 @@ func (s *sessionsMiddleware) sessionRespError(rstate *RequestState, sess *sessio
 		"client-id":  rstate.ClientID,
 	}).Info("Retry without new session, fetching new one.")
 
-	if newResp, err := rstate.DoRequest(s.httpClient, req); err == nil && newResp.Header.Get("X-Crawlera-Error") == "" {
+	if newResp, err := rstate.DoCrawleraRequest(s.httpClient, req); err == nil && newResp.Header.Get("X-Crawlera-Error") == "" {
 		sess.id = newResp.Header.Get("X-Crawlera-Session")
 
 		log.WithFields(log.Fields{
@@ -181,10 +181,10 @@ func newSessionState() *sessionState {
 	}
 }
 
-func NewSessionsMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) *sessionsMiddleware {
+// NewSessionsMiddleware returns middleware which is responsible for
+// automatic session management.
+func NewSessionsMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) Middleware {
 	ware := &sessionsMiddleware{}
-	ware.conf = conf
-	ware.proxy = proxy
 	ware.mtype = middlewareTypeSessions
 
 	ware.httpClient = &http.Client{
