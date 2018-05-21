@@ -26,7 +26,7 @@ func (p *proxyRequestMiddleware) OnRequest() ReqType {
 			"content-length": req.ContentLength,
 			"remote-addr":    req.RemoteAddr,
 			"headers":        req.Header,
-		}).Debug("HTTP request to sent to Crawlera")
+		}).Debug("HTTP request sent to Crawlera")
 
 		if err := rstate.StartCrawleraRequest(); err != nil {
 			log.Fatal(err.Error())

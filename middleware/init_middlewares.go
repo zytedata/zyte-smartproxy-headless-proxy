@@ -5,7 +5,6 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"net/http"
 	"time"
@@ -13,6 +12,7 @@ import (
 	"github.com/elazarl/goproxy"
 	uuid "github.com/hashicorp/go-uuid"
 	"github.com/juju/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 // RequestState stores basic metadata of every request (who, when etc)
@@ -75,12 +75,13 @@ func (rs *RequestState) FinishCrawleraRequest() (err error) {
 
 // CrawleraElapsed returns a duration which was spent accessing Crawlera.
 func (rs *RequestState) CrawleraElapsed() time.Duration {
-	duration := time.Duration(0)
-	crawleraTimes := []time.Time{}
-	copy(crawleraTimes, rs.crawleraTimes)
+	var crawleraTimes []time.Time
+	var duration time.Duration
 
 	if len(crawleraTimes)%2 == 1 {
-		crawleraTimes = append(crawleraTimes, time.Now())
+		crawleraTimes = append([]time.Time{}, rs.crawleraTimes...)
+	} else {
+		crawleraTimes = rs.crawleraTimes
 	}
 
 	for i := 0; i < len(crawleraTimes); i += 2 {

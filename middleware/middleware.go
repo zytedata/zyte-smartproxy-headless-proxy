@@ -78,7 +78,7 @@ func (u *UniqBase) BaseOnRequest(callback ReqType) ReqType {
 func (u *UniqBase) BaseOnResponse(callback RespType) RespType {
 	baseFunc := u.Base.BaseOnResponse(callback)
 	return func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
-		delete(GetRequestState(ctx).seenMiddlewares, u.mtype)
+		defer delete(GetRequestState(ctx).seenMiddlewares, u.mtype)
 		return baseFunc(resp, ctx)
 	}
 }
