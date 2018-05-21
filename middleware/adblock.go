@@ -1,4 +1,4 @@
-package proxy
+package middleware
 
 import (
 	"fmt"
@@ -20,11 +20,13 @@ import (
 
 const adblockTimeout = 2 * time.Second
 
-type adblockHandler struct {
-	adblockRules   []*adblock.Rule
-	adblockMatcher *adblock.RuleMatcher
-	adblockLoaded  bool
-	adblockCond    *sync.Cond
+type adblockMiddleware struct {
+	UniqBase
+
+	rules   []*adblock.Rule
+	matcher *adblock.RuleMatcher
+	loaded  bool
+	cond    *sync.Cond
 }
 
 type adblockParsedResult struct {
@@ -32,8 +34,8 @@ type adblockParsedResult struct {
 	err   error
 }
 
-func (ah *adblockHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *config.Config) handlerTypeReq {
-	return func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+func (ab *adblockMiddleware) OnRequest() ReqType {
+	return ab.BaseOnRequest(func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 		var newResponse *http.Response
 
 		host := req.URL.Hostname()
@@ -46,15 +48,15 @@ func (ah *adblockHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *c
 			Timeout: adblockTimeout,
 		}
 
-		if !ah.adblockLoaded {
-			ah.adblockCond.L.Lock()
-			for !ah.adblockLoaded {
-				ah.adblockCond.Wait()
+		if !ab.loaded {
+			ab.cond.L.Lock()
+			for !ab.loaded {
+				ab.cond.Wait()
 			}
-			ah.adblockCond.L.Unlock()
+			ab.cond.L.Unlock()
 		}
 
-		matched, id, err := ah.adblockMatcher.Match(adblockRequest)
+		matched, id, err := ab.matcher.Match(adblockRequest)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"url": req.URL.String(),
@@ -64,45 +66,51 @@ func (ah *adblockHandler) installRequest(proxy *goproxy.ProxyHttpServer, conf *c
 		if matched {
 			newResponse = goproxy.NewResponse(req,
 				goproxy.ContentTypeText,
-				http.StatusNotFound,
-				fmt.Sprintf("Adblocked by rule '%s'", ah.adblockRules[id].Raw),
+				http.StatusForbidden,
+				fmt.Sprintf("Adblocked by rule '%s'", ab.rules[id].Raw),
 			)
 		}
 
 		return req, newResponse
-	}
+	})
 }
 
-func (ah *adblockHandler) consumeItems(channel <-chan *adblockParsedResult) {
+func (ab *adblockMiddleware) OnResponse() RespType {
+	return ab.BaseOnResponse(func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
+		return resp
+	})
+}
+
+func (ab *adblockMiddleware) consumeItems(channel <-chan *adblockParsedResult) {
 	for item := range channel {
 		if item.err != nil {
 			log.Fatal(item.err.Error())
 		}
-		ah.adblockRules = append(ah.adblockRules, item.rules...)
+		ab.rules = append(ab.rules, item.rules...)
 	}
 
-	ah.adblockCond.L.Lock()
-	defer ah.adblockCond.L.Unlock()
+	ab.cond.L.Lock()
+	defer ab.cond.L.Unlock()
 
-	for idx, value := range ah.adblockRules {
-		if err := ah.adblockMatcher.AddRule(value, idx); err != nil {
+	for idx, value := range ab.rules {
+		if err := ab.matcher.AddRule(value, idx); err != nil {
 			log.Infof("Cannot add rule '%s': %s", value.Raw, err.Error())
 		}
 	}
 
-	ah.adblockLoaded = true
-	ah.adblockCond.Broadcast()
+	ab.loaded = true
+	ab.cond.Broadcast()
 }
 
-func fetchList(channel chan<- *adblockParsedResult, item string) {
+func (ab *adblockMiddleware) fetchList(channel chan<- *adblockParsedResult, item string) {
 	var reader io.ReadCloser
 	var err error
 	result := &adblockParsedResult{}
 
 	if strings.HasPrefix(item, "http://") || strings.HasPrefix(item, "https://") {
-		reader, err = adblockFetchURL(item)
+		reader, err = ab.fetchURL(item)
 	} else {
-		reader, err = adblockReadFileSystem(item)
+		reader, err = ab.readFileSystem(item)
 	}
 
 	if err != nil {
@@ -122,7 +130,7 @@ func fetchList(channel chan<- *adblockParsedResult, item string) {
 	channel <- result
 }
 
-func adblockFetchURL(url string) (io.ReadCloser, error) {
+func (ab *adblockMiddleware) fetchURL(url string) (io.ReadCloser, error) {
 	log.WithFields(log.Fields{"url": url}).Debug("Fetch adblock list")
 	resp, err := http.Get(url)
 	log.WithFields(log.Fields{
@@ -138,7 +146,7 @@ func adblockFetchURL(url string) (io.ReadCloser, error) {
 	return resp.Body, nil
 }
 
-func adblockReadFileSystem(path string) (io.ReadCloser, error) {
+func (ab *adblockMiddleware) readFileSystem(path string) (io.ReadCloser, error) {
 	log.WithFields(log.Fields{"path": path}).Debug("Open filesystem adblock list")
 	fp, err := os.Open(path)
 	log.WithFields(log.Fields{
@@ -153,30 +161,32 @@ func adblockReadFileSystem(path string) (io.ReadCloser, error) {
 	return fp, nil
 }
 
-func newAdblockHandler(list []string) handlerReqInterface {
-	newHandler := &adblockHandler{
-		adblockRules:   []*adblock.Rule{},
-		adblockMatcher: adblock.NewMatcher(),
-		adblockCond:    sync.NewCond(&sync.Mutex{}),
-	}
+func NewAdblockMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) *adblockMiddleware {
+	ware := &adblockMiddleware{}
+	ware.conf = conf
+	ware.proxy = proxy
+	ware.mtype = middlewareTypeAdblock
+
+	ware.matcher = adblock.NewMatcher()
+	ware.cond = sync.NewCond(&sync.Mutex{})
 
 	go func() {
-		channel := make(chan *adblockParsedResult, len(list))
+		channel := make(chan *adblockParsedResult, len(ware.conf.AdblockLists))
 		wg := &sync.WaitGroup{}
 
-		for _, v := range list {
+		for _, v := range ware.conf.AdblockLists {
 			wg.Add(1)
 			go func(channel chan<- *adblockParsedResult, item string) {
 				defer wg.Done()
-				fetchList(channel, item)
+				ware.fetchList(channel, item)
 			}(channel, v)
 		}
 
 		wg.Wait()
 		close(channel)
 
-		newHandler.consumeItems(channel)
+		ware.consumeItems(channel)
 	}()
 
-	return newHandler
+	return ware
 }

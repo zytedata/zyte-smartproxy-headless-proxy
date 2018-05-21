@@ -13,6 +13,7 @@ import (
 	"github.com/juju/errors"
 
 	"github.com/9seconds/crawlera-headless-proxy/config"
+	"github.com/9seconds/crawlera-headless-proxy/middleware"
 )
 
 // NewProxy returns a new configured instance of goproxy.
@@ -36,63 +37,32 @@ func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
 	proxy.OnRequest(goproxy.ReqHostMatches(regexp.MustCompile("^.*$"))).
 		HandleConnect(goproxy.AlwaysMitm)
 
-	adblock := newAdblockHandler(conf.AdblockLists)
-	headers := newHeaderHandler()
-	logs := newLogHandler()
-	state := newStateHandler()
-	limiter := newRateLimiter(conf.ConcurrentConnections)
-	sessions := newSessionHandler(proxy.Tr)
-	referer := newRefererHandler()
-
-	for _, v := range getReqHandlers(proxy, conf, state, limiter, adblock, headers, sessions, referer, logs) {
-		proxy.OnRequest().DoFunc(v)
+	proxy.OnRequest().DoFunc(middleware.InitMiddlewares)
+	middlewares := []middleware.Middleware{
+		middleware.NewIncomingLogMiddleware(conf, proxy),
+		middleware.NewStateMiddleware(conf, proxy),
 	}
-	for _, v := range getRespHandlers(proxy, conf, limiter, sessions, logs) {
-		proxy.OnResponse().DoFunc(v)
+	if len(conf.AdblockLists) > 0 {
+		middlewares = append(middlewares, middleware.NewAdblockMiddleware(conf, proxy))
+	}
+	if conf.ConcurrentConnections > 0 {
+		middlewares = append(middlewares, middleware.NewRateLimiterMiddleware(conf, proxy))
+	}
+	middlewares = append(middlewares,
+		middleware.NewHeadersMiddleware(conf, proxy),
+		middleware.NewRefererMiddleware(conf, proxy),
+	)
+	if !conf.NoAutoSessions {
+		middlewares = append(middlewares, middleware.NewSessionsMiddleware(conf, proxy))
+	}
+	middlewares = append(middlewares, middleware.NewProxyRequestMiddleware(conf, proxy))
+
+	for i := 0; i < len(middlewares); i++ {
+		proxy.OnRequest().DoFunc(middlewares[i].OnRequest())
+		proxy.OnResponse().DoFunc(middlewares[len(middlewares)-i-1].OnResponse())
 	}
 
 	return proxy, nil
-}
-
-func getReqHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config,
-	state, limiter, adblock, headers, sessions, referer handlerReqInterface,
-	logs logHandlerInterface) (handlers []handlerTypeReq) {
-	handlers = append(handlers, state.installRequest(proxy, conf))
-
-	if conf.ConcurrentConnections > 0 {
-		handlers = append(handlers, limiter.installRequest(proxy, conf))
-	}
-	if len(conf.AdblockLists) > 0 {
-		handlers = append(handlers, adblock.installRequest(proxy, conf))
-	}
-	if !conf.NoAutoSessions {
-		handlers = append(handlers, sessions.installRequest(proxy, conf))
-	}
-
-	handlers = append(handlers,
-		logs.installRequestInitial(proxy, conf),
-		headers.installRequest(proxy, conf),
-		referer.installRequest(proxy, conf),
-		logs.installRequest(proxy, conf))
-
-	return
-}
-
-func getRespHandlers(proxy *goproxy.ProxyHttpServer, conf *config.Config,
-	limiter, sessions handlerRespInterface,
-	logs logHandlerInterface) (handlers []handlerTypeResp) {
-	handlers = append(handlers, logs.installResponseInitial(proxy, conf))
-
-	if !conf.NoAutoSessions {
-		handlers = append(handlers, sessions.installResponse(proxy, conf))
-	}
-	if conf.ConcurrentConnections > 0 {
-		handlers = append(handlers, limiter.installResponse(proxy, conf))
-	}
-
-	handlers = append(handlers, logs.installResponse(proxy, conf))
-
-	return
 }
 
 // InitCertificates sets certificates for goproxy
