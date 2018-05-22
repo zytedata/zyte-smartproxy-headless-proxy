@@ -12,7 +12,6 @@ import (
 	"github.com/elazarl/goproxy"
 	uuid "github.com/hashicorp/go-uuid"
 	"github.com/juju/errors"
-	log "github.com/sirupsen/logrus"
 )
 
 // RequestState stores basic metadata of every request (who, when etc)
@@ -73,19 +72,31 @@ func (rs *RequestState) FinishCrawleraRequest() (err error) {
 	return
 }
 
-// CrawleraElapsed returns a duration which was spent accessing Crawlera.
-func (rs *RequestState) CrawleraElapsed() time.Duration {
+// CrawleraTimes returns a list of durations on accessing Crawlera.
+func (rs *RequestState) CrawleraTimes() []time.Duration {
 	var crawleraTimes []time.Time
-	var duration time.Duration
+	var duration []time.Duration
 
 	if len(crawleraTimes)%2 == 1 {
 		crawleraTimes = append([]time.Time{}, rs.crawleraTimes...)
+		crawleraTimes = append(crawleraTimes, time.Now())
 	} else {
 		crawleraTimes = rs.crawleraTimes
 	}
 
 	for i := 0; i < len(crawleraTimes); i += 2 {
-		duration += crawleraTimes[i+1].Sub(crawleraTimes[i])
+		duration = append(duration, crawleraTimes[i+1].Sub(crawleraTimes[i]))
+	}
+
+	return duration
+}
+
+// CrawleraElapsed returns a duration which was spent accessing Crawlera.
+func (rs *RequestState) CrawleraElapsed() time.Duration {
+	var duration time.Duration
+
+	for _, val := range rs.CrawleraTimes() {
+		duration += val
 	}
 
 	return duration
@@ -124,18 +135,6 @@ func newRequestState(req *http.Request) (*RequestState, error) {
 		RequestStarted:  time.Now(),
 		seenMiddlewares: map[middlewareType]struct{}{},
 	}, nil
-}
-
-// InitMiddlewares sets goproxy with middlewares. This basically
-// generates and sets correct request state.
-func InitMiddlewares(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-	state, err := newRequestState(req)
-	if err != nil {
-		log.Fatalf("Cannot create new state of request")
-	}
-	ctx.UserData = state
-
-	return req, nil
 }
 
 // GetRequestState returns a request state from goproxy context.
