@@ -2,6 +2,9 @@ package stats
 
 import (
 	"time"
+
+	mstats "github.com/montanaflynn/stats"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -30,20 +33,20 @@ type Stats struct {
 	OverallTimesChan     chan time.Duration
 }
 
-type StatsJSON struct {
+type JSON struct {
 	RequestsNumber   uint64 `json:"requests_number"`
 	CrawleraRequests uint64 `json:"crawlera_requests"`
 	SessionsCreated  uint64 `json:"sessions_created"`
 	ClientsConnected uint64 `json:"clients_connected"`
 	ClientsServing   uint64 `json:"clients_serving"`
 
-	OverallTimes  *StatsJSONTimes `json:"overall_times"`
-	CrawleraTimes *StatsJSONTimes `json:"crawlera_times"`
+	OverallTimes  *JSONTimes `json:"overall_times"`
+	CrawleraTimes *JSONTimes `json:"crawlera_times"`
 
 	Uptime uint `json:"uptime"`
 }
 
-type StatsJSONTimes struct {
+type JSONTimes struct {
 	Average float64 `json:"average"`
 	Minimal float64 `json:"minimal"`
 	Maximal float64 `json:"maxmimal"`
@@ -52,8 +55,8 @@ type StatsJSONTimes struct {
 	StdDev  float64 `json:"standard_deviation"`
 }
 
-func (s *Stats) GetStatsJSON() *StatsJSON {
-	return &StatsJSON{
+func (s *Stats) GetStatsJSON() *JSON {
+	return &JSON{
 		RequestsNumber:   s.requestsNumber,
 		CrawleraRequests: s.crawleraRequests,
 		SessionsCreated:  s.sessionsCreated,
@@ -67,12 +70,66 @@ func (s *Stats) GetStatsJSON() *StatsJSON {
 	}
 }
 
-func (s *Stats) makeJSONTimes(data *circularTimeBuffer) *StatsJSONTimes {
-	jsonData := &StatsJSONTimes{}
+func (s *Stats) makeJSONTimes(data *circularTimeBuffer) *JSONTimes {
+	jsonData := &JSONTimes{}
+	floats := data.collect()
+
+	if len(floats) == 0 {
+		return jsonData
+	}
+
+	if avg, err := mstats.Mean(floats); err == nil {
+		jsonData.Average = avg
+	} else {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Info("Cannot findout mean/average value.")
+	}
+
+	if min, err := mstats.Min(floats); err == nil {
+		jsonData.Minimal = min
+	} else {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Info("Cannot findout min value.")
+	}
+
+	if max, err := mstats.Max(floats); err == nil {
+		jsonData.Maximal = max
+	} else {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Info("Cannot findout max value.")
+	}
+
+	if median, err := mstats.Median(floats); err == nil {
+		jsonData.Median = median
+	} else {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Info("Cannot findout median value.")
+	}
+
+	if perc, err := mstats.Percentile(floats, 90.0); err == nil {
+		jsonData.Perc90 = perc
+	} else {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Info("Cannot findout 90 percentile value.")
+	}
+
+	if dev, err := mstats.StandardDeviation(floats); err == nil {
+		jsonData.StdDev = dev
+	} else {
+		log.WithFields(log.Fields{
+			"err": err,
+		}).Info("Cannot findout standard deviation value.")
+	}
+
 	return jsonData
 }
 
-func (s *Stats) Collect() {
+func (s *Stats) Collect() { // nolint: gocyclo
 	for {
 		select {
 		case <-s.RequestsNumberChan:

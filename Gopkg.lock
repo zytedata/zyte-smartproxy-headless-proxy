@@ -62,6 +62,12 @@
   version = "v2.0.2"
 
 [[projects]]
+  name = "github.com/montanaflynn/stats"
+  packages = ["."]
+  revision = "eeaced052adbcfeea372c749c281099ed7fdaa38"
+  version = "0.2.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/pmezard/adblock"
   packages = ["adblock"]
@@ -109,6 +115,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bc26ec480104e72ab3ddd3036269f5fceaaa84a4609d1ba8b333b9a695077132"
+  inputs-digest = "5ee220dd962a4c427e9fcb31839eeb5755afc8e5e3dfd386948a77ad2acc83e2"
   solver-name = "gps-cdcl"
   solver-version = 1

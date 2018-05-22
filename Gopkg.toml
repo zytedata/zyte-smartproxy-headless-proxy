@@ -41,3 +41,7 @@
 [[constraint]]
   name = "github.com/go-chi/chi"
   version = "3.3.2"
+
+[[constraint]]
+  name = "github.com/montanaflynn/stats"
+  version = "0.2.0"

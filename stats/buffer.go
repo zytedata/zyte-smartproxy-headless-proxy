@@ -15,7 +15,7 @@ func (cb *circularTimeBuffer) add(item time.Duration) {
 	cb.lock.Lock()
 	defer cb.lock.Unlock()
 
-	cb.data.Value = float64(item)
+	cb.data.Value = item.Seconds()
 	cb.data = cb.data.Next()
 }
 
