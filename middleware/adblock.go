@@ -94,7 +94,7 @@ func (ab *adblockMiddleware) consumeItems(channel <-chan *adblockParsedResult) {
 
 	for idx, value := range ab.rules {
 		if err := ab.matcher.AddRule(value, idx); err != nil {
-			log.Infof("Cannot add rule '%s': %s", value.Raw, err.Error())
+			log.Warnf("Cannot add rule '%s': %s", value.Raw, err.Error())
 		}
 	}
 
@@ -124,7 +124,15 @@ func (ab *adblockMiddleware) fetchList(channel chan<- *adblockParsedResult, item
 	if rules, err := adblock.ParseRules(reader); err != nil {
 		result.err = errors.Annotatef(err, "Cannot parse rules of item %s", item)
 	} else {
-		result.rules = rules
+		for _, rule := range rules {
+			if !rule.HasUnsupportedOpts() {
+				result.rules = append(result.rules, rule)
+			} else {
+				log.WithFields(log.Fields{
+					"rule": rule.Raw,
+				}).Debug("Skip unsupported adblock rule")
+			}
+		}
 	}
 
 	channel <- result
