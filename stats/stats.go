@@ -35,8 +35,8 @@ type Stats struct {
 	clientsConnected uint64
 	clientsServing   uint64
 
-	overallTimes  *circularTimeBuffer
-	crawleraTimes *circularTimeBuffer
+	overallTimes  *durationTimeSeries
+	crawleraTimes *durationTimeSeries
 
 	startedAt time.Time
 
@@ -86,7 +86,7 @@ func (s *Stats) GetStatsJSON() *JSON {
 	}
 }
 
-func (s *Stats) makeJSONTimes(data *circularTimeBuffer) *JSONTimes {
+func (s *Stats) makeJSONTimes(data timeSeriesInterface) *JSONTimes {
 	floats := data.collect()
 	jsonData := &JSONTimes{
 		Percentiles: s.calculatePercentiles(floats),
@@ -187,8 +187,8 @@ func (s *Stats) calculatePercentiles(data []float64) map[int8]float64 {
 
 func NewStats() *Stats {
 	return &Stats{
-		overallTimes:  newCircularTimeBuffer(statsRingLength),
-		crawleraTimes: newCircularTimeBuffer(statsRingLength),
+		overallTimes:  newDurationTimeSeries(statsRingLength),
+		crawleraTimes: newDurationTimeSeries(statsRingLength),
 		startedAt:     time.Now(),
 
 		RequestsNumberChan:   make(chan struct{}, statsChanBufferLength),
