@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"io"
 	"net/http"
 	"time"
 
@@ -17,6 +18,29 @@ type stateMiddleware struct {
 	clientsConnectedChan chan<- bool
 	overallTimesChan     chan<- time.Duration
 	crawleraTimesChan    chan<- time.Duration
+	trafficChan          chan<- uint64
+}
+
+// TrafficCounterBody is a data structure which is wrapper for
+// http.Response.Body. Its intent is to collect statistics on body size
+// and send to collector.
+type TrafficCounterBody struct {
+	original    io.ReadCloser
+	counter     uint64
+	trafficChan chan<- uint64
+}
+
+// Read supports io.ReadCloser interface.
+func (tcb *TrafficCounterBody) Read(p []byte) (n int, err error) {
+	n, err = tcb.original.Read(p)
+	tcb.counter += uint64(n)
+	return
+}
+
+// Close supports io.ReadCloser interface.
+func (tcb *TrafficCounterBody) Close() error {
+	tcb.trafficChan <- tcb.counter
+	return tcb.original.Close()
 }
 
 func (s *stateMiddleware) OnRequest() ReqType {
@@ -39,6 +63,12 @@ func (s *stateMiddleware) OnResponse() RespType {
 			s.crawleraTimesChan <- value
 		}
 
+		// This is to calculate statistics on traffic. Unfortunately, we
+		// cannot trust Content-Length because of chunked encoding.
+		if resp != nil {
+			resp.Body = newTrafficCounterBody(resp.Body, s.trafficChan)
+		}
+
 		return resp
 	})
 }
@@ -53,6 +83,14 @@ func NewStateMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer, sta
 	ware.clientsConnectedChan = statsContainer.ClientsConnectedChan
 	ware.overallTimesChan = statsContainer.OverallTimesChan
 	ware.crawleraTimesChan = statsContainer.CrawleraTimesChan
+	ware.trafficChan = statsContainer.TrafficChan
 
 	return ware
+}
+
+func newTrafficCounterBody(body io.ReadCloser, trafficChan chan<- uint64) *TrafficCounterBody {
+	return &TrafficCounterBody{
+		original:    body,
+		trafficChan: trafficChan,
+	}
 }

@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	statsRingLength       = 2000
+	statsRingLength       = 3000
 	statsChanBufferLength = 100
 )
 
-var statsPercentilesToCalculate = [13]int8{ // int8 to prevent marshalling to string
+var statsPercentilesToCalculate = [13]uint8{
 	10,
 	20,
 	30,
@@ -28,15 +28,19 @@ var statsPercentilesToCalculate = [13]int8{ // int8 to prevent marshalling to st
 	99,
 }
 
+// Stats is a collector of statistics. Its idea is to listen to all provided
+// channels and generate reports (JSON data structures).
 type Stats struct {
 	requestsNumber   uint64
 	crawleraRequests uint64
 	sessionsCreated  uint64
 	clientsConnected uint64
 	clientsServing   uint64
+	traffic          uint64
 
 	overallTimes  *durationTimeSeries
 	crawleraTimes *durationTimeSeries
+	trafficTimes  *uint64TimeSeries
 
 	startedAt time.Time
 
@@ -47,30 +51,37 @@ type Stats struct {
 	ClientsServingChan   chan bool
 	CrawleraTimesChan    chan time.Duration
 	OverallTimesChan     chan time.Duration
+	TrafficChan          chan uint64
 }
 
+// JSON is intended to be serialized to JSON by proxy API.
 type JSON struct {
 	RequestsNumber   uint64 `json:"requests_number"`
 	CrawleraRequests uint64 `json:"crawlera_requests"`
 	SessionsCreated  uint64 `json:"sessions_created"`
 	ClientsConnected uint64 `json:"clients_connected"`
 	ClientsServing   uint64 `json:"clients_serving"`
+	Traffic          uint64 `json:"traffic"`
 
 	OverallTimes  *JSONTimes `json:"overall_times"`
 	CrawleraTimes *JSONTimes `json:"crawlera_times"`
+	TrafficTimes  *JSONTimes `json:"traffic_times"`
 
 	Uptime uint `json:"uptime"`
 }
 
+// JSONTimes contains statistics on time series.
 type JSONTimes struct {
-	Average     float64          `json:"average"`
-	Minimal     float64          `json:"minimal"`
-	Maximal     float64          `json:"maxmimal"`
-	Median      float64          `json:"median"`
-	StdDev      float64          `json:"standard_deviation"`
-	Percentiles map[int8]float64 `json:"percentiles"`
+	Average     float64           `json:"average"`
+	Minimal     float64           `json:"minimal"`
+	Maximal     float64           `json:"maxmimal"`
+	Median      float64           `json:"median"`
+	StdDev      float64           `json:"standard_deviation"`
+	Percentiles map[uint8]float64 `json:"percentiles"`
 }
 
+// GetStatsJSON generates JSON structure from Stats. This is to be
+// serialized in proxy API.
 func (s *Stats) GetStatsJSON() *JSON {
 	return &JSON{
 		RequestsNumber:   s.requestsNumber,
@@ -78,23 +89,26 @@ func (s *Stats) GetStatsJSON() *JSON {
 		SessionsCreated:  s.sessionsCreated,
 		ClientsConnected: s.clientsConnected,
 		ClientsServing:   s.clientsServing,
+		Traffic:          s.traffic,
 
 		OverallTimes:  s.makeJSONTimes(s.overallTimes),
 		CrawleraTimes: s.makeJSONTimes(s.crawleraTimes),
+		TrafficTimes:  s.makeJSONTimes(s.trafficTimes),
 
 		Uptime: uint(time.Since(s.startedAt).Seconds()),
 	}
 }
 
 func (s *Stats) makeJSONTimes(data timeSeriesInterface) *JSONTimes {
-	floats := data.collect()
 	jsonData := &JSONTimes{
-		Percentiles: s.calculatePercentiles(floats),
+		Percentiles: map[uint8]float64{},
 	}
+	floats := data.collect()
 
 	if len(floats) == 0 {
 		return jsonData
 	}
+	jsonData.Percentiles = s.calculatePercentiles(floats)
 
 	if avg, err := mstats.Mean(floats); err == nil {
 		jsonData.Average = avg
@@ -139,6 +153,8 @@ func (s *Stats) makeJSONTimes(data timeSeriesInterface) *JSONTimes {
 	return jsonData
 }
 
+// Collect is a loop which is intended to be run in goroutine. This
+// forces collector to listen on all channels and accumulate stats.
 func (s *Stats) Collect() { // nolint: gocyclo
 	for {
 		select {
@@ -148,14 +164,14 @@ func (s *Stats) Collect() { // nolint: gocyclo
 			s.crawleraRequests++
 		case <-s.SessionsCreatedChan:
 			s.sessionsCreated++
-		case clientState := <-s.ClientsConnectedChan:
-			if clientState {
+		case clientConnected := <-s.ClientsConnectedChan:
+			if clientConnected {
 				s.clientsConnected++
 			} else {
 				s.clientsConnected--
 			}
-		case clientState := <-s.ClientsServingChan:
-			if clientState {
+		case clientServing := <-s.ClientsServingChan:
+			if clientServing {
 				s.clientsServing++
 			} else {
 				s.clientsServing--
@@ -164,12 +180,15 @@ func (s *Stats) Collect() { // nolint: gocyclo
 			s.crawleraTimes.add(duration)
 		case duration := <-s.OverallTimesChan:
 			s.overallTimes.add(duration)
+		case traffic := <-s.TrafficChan:
+			s.trafficTimes.add(traffic)
+			s.traffic += traffic
 		}
 	}
 }
 
-func (s *Stats) calculatePercentiles(data []float64) map[int8]float64 {
-	percentiles := map[int8]float64{}
+func (s *Stats) calculatePercentiles(data []float64) map[uint8]float64 {
+	percentiles := map[uint8]float64{}
 
 	for _, perc := range statsPercentilesToCalculate {
 		if calculated, err := mstats.Percentile(data, float64(perc)); err == nil {
@@ -185,10 +204,12 @@ func (s *Stats) calculatePercentiles(data []float64) map[int8]float64 {
 	return percentiles
 }
 
+// NewStats creates new initialized Stats instance.
 func NewStats() *Stats {
 	return &Stats{
 		overallTimes:  newDurationTimeSeries(statsRingLength),
 		crawleraTimes: newDurationTimeSeries(statsRingLength),
+		trafficTimes:  newUint64TimeSeries(statsRingLength),
 		startedAt:     time.Now(),
 
 		RequestsNumberChan:   make(chan struct{}, statsChanBufferLength),
@@ -198,5 +219,6 @@ func NewStats() *Stats {
 		ClientsServingChan:   make(chan bool, statsChanBufferLength),
 		CrawleraTimesChan:    make(chan time.Duration, statsChanBufferLength),
 		OverallTimesChan:     make(chan time.Duration, statsChanBufferLength),
+		TrafficChan:          make(chan uint64, statsChanBufferLength),
 	}
 }

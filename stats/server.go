@@ -19,6 +19,7 @@ const (
 	statsConcurrentRequests = 10
 )
 
+// RunStats runs statistics collector and API service.
 func RunStats(statsContainer *Stats, conf *config.Config) {
 	router := chi.NewRouter()
 
