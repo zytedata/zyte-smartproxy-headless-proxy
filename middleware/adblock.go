@@ -43,9 +43,11 @@ func (ab *adblockMiddleware) OnRequest() ReqType {
 			host = req.Host
 		}
 		adblockRequest := &adblock.Request{
-			URL:     req.URL.String(),
-			Domain:  host,
-			Timeout: adblockTimeout,
+			URL:          req.URL.String(),
+			Domain:       host,
+			Timeout:      adblockTimeout,
+			ContentType:  req.Header.Get("Content-Type"),
+			OriginDomain: req.Referer(),
 		}
 
 		if !ab.loaded {
