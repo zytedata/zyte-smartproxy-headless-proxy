@@ -150,7 +150,6 @@ func main() {
 	go stats.RunStats(statsContainer, conf)
 
 	if crawleraProxy, err := proxy.NewProxy(conf, statsContainer); err == nil {
-		log.Info("Start to serve")
 		log.Fatal(http.ListenAndServe(listen, crawleraProxy))
 	} else {
 		log.Fatal(err)

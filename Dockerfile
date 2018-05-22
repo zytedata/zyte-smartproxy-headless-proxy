@@ -36,8 +36,9 @@ FROM scratch
 ENTRYPOINT ["/usr/local/bin/crawlera-headless-proxy"]
 ENV CRAWLERA_HEADLESS_BINDIP=0.0.0.0 \
     CRAWLERA_HEADLESS_BINDPORT=3128 \
+    CRAWLERA_HEADLESS_PROXYAPIPORT=3130 \
     CRAWLERA_HEADLESS_CONFIG=/config.toml
-EXPOSE 3128
+EXPOSE 3128 3130
 
 COPY --from=build-env \
   /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
