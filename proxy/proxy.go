@@ -38,25 +38,23 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*goproxy.ProxyH
 	proxy.OnRequest(goproxy.ReqHostMatches(regexp.MustCompile("^.*$"))).
 		HandleConnect(goproxy.AlwaysMitm)
 
-	proxy.OnRequest().DoFunc(middleware.InitMiddlewares)
+	proxy.OnRequest().DoFunc(middleware.InitMiddlewares(statsContainer))
 	middlewares := []middleware.Middleware{
-		middleware.NewIncomingLogMiddleware(conf, proxy),
-		middleware.NewStateMiddleware(conf, proxy),
+		middleware.NewIncomingLogMiddleware(conf, proxy, statsContainer),
+		middleware.NewStateMiddleware(conf, proxy, statsContainer),
 	}
 	if len(conf.AdblockLists) > 0 {
-		middlewares = append(middlewares, middleware.NewAdblockMiddleware(conf, proxy))
-	}
-	if conf.ConcurrentConnections > 0 {
-		middlewares = append(middlewares, middleware.NewRateLimiterMiddleware(conf, proxy))
+		middlewares = append(middlewares, middleware.NewAdblockMiddleware(conf, proxy, statsContainer))
 	}
 	middlewares = append(middlewares,
-		middleware.NewHeadersMiddleware(conf, proxy),
-		middleware.NewRefererMiddleware(conf, proxy),
+		middleware.NewRateLimiterMiddleware(conf, proxy, statsContainer),
+		middleware.NewHeadersMiddleware(conf, proxy, statsContainer),
+		middleware.NewRefererMiddleware(conf, proxy, statsContainer),
 	)
 	if !conf.NoAutoSessions {
-		middlewares = append(middlewares, middleware.NewSessionsMiddleware(conf, proxy))
+		middlewares = append(middlewares, middleware.NewSessionsMiddleware(conf, proxy, statsContainer))
 	}
-	middlewares = append(middlewares, middleware.NewProxyRequestMiddleware(conf, proxy))
+	middlewares = append(middlewares, middleware.NewProxyRequestMiddleware(conf, proxy, statsContainer))
 
 	for i := 0; i < len(middlewares); i++ {
 		proxy.OnRequest().DoFunc(middlewares[i].OnRequest())

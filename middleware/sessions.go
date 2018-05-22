@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/9seconds/crawlera-headless-proxy/config"
+	"github.com/9seconds/crawlera-headless-proxy/stats"
 )
 
 const sessionClientTimeout = 30 * time.Second
@@ -16,8 +17,9 @@ const sessionClientTimeout = 30 * time.Second
 type sessionsMiddleware struct {
 	UniqBase
 
-	httpClient *http.Client
-	clients    *sync.Map
+	httpClient          *http.Client
+	clients             *sync.Map
+	sessionsCreatedChan chan<- struct{}
 }
 
 type sessionState struct {
@@ -130,6 +132,7 @@ func (s *sessionsMiddleware) sessionRespOK(resp *http.Response, rstate *RequestS
 
 		sess.creator = ""
 		sess.id = resp.Header.Get("X-Crawlera-Session")
+		s.sessionsCreatedChan <- struct{}{}
 
 		log.WithFields(log.Fields{
 			"request-id": rstate.ID,
@@ -184,6 +187,7 @@ func (s *sessionsMiddleware) sessionRespError(rstate *RequestState, sess *sessio
 
 	if newResp, err := rstate.DoCrawleraRequest(s.httpClient, req); err == nil && newResp.Header.Get("X-Crawlera-Error") == "" {
 		sess.id = newResp.Header.Get("X-Crawlera-Session")
+		s.sessionsCreatedChan <- struct{}{}
 
 		log.WithFields(log.Fields{
 			"request-id": rstate.ID,
@@ -220,7 +224,7 @@ func newSessionState() *sessionState {
 
 // NewSessionsMiddleware returns middleware which is responsible for
 // automatic session management.
-func NewSessionsMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) Middleware {
+func NewSessionsMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer, statsContainer *stats.Stats) Middleware {
 	ware := &sessionsMiddleware{}
 	ware.mtype = middlewareTypeSessions
 
@@ -229,6 +233,7 @@ func NewSessionsMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) 
 		Transport: proxy.Tr,
 	}
 	ware.clients = &sync.Map{}
+	ware.sessionsCreatedChan = statsContainer.SessionsCreatedChan
 
 	return ware
 }

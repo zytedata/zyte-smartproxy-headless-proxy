@@ -16,6 +16,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/9seconds/crawlera-headless-proxy/config"
+	"github.com/9seconds/crawlera-headless-proxy/stats"
 )
 
 const adblockTimeout = 2 * time.Second
@@ -174,7 +175,7 @@ func (ab *adblockMiddleware) readFileSystem(path string) (io.ReadCloser, error) 
 // NewAdblockMiddleware returns a middleware which uses adblock lists to
 // filter out some requests which should not be performed BEFORE they
 // will go to Crawlera.
-func NewAdblockMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) Middleware {
+func NewAdblockMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer, statsContainer *stats.Stats) Middleware {
 	ware := &adblockMiddleware{}
 	ware.mtype = middlewareTypeAdblock
 

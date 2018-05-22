@@ -12,6 +12,8 @@ import (
 	"github.com/elazarl/goproxy"
 	uuid "github.com/hashicorp/go-uuid"
 	"github.com/juju/errors"
+
+	"github.com/9seconds/crawlera-headless-proxy/stats"
 )
 
 // RequestState stores basic metadata of every request (who, when etc)
@@ -25,6 +27,9 @@ type RequestState struct {
 	seenMiddlewares map[middlewareType]struct{}
 	requestFinished *time.Time
 	crawleraTimes   []time.Time
+
+	crawleraRequestsChan chan<- struct{}
+	crawleraTimesChan    chan<- time.Duration
 }
 
 // Finish sets request as finished.
@@ -56,6 +61,7 @@ func (rs *RequestState) StartCrawleraRequest() (err error) {
 		err = errors.New("Crawlera request already started")
 	}
 	rs.CrawleraRequests++
+	rs.crawleraRequestsChan <- struct{}{}
 
 	return
 }
@@ -68,6 +74,9 @@ func (rs *RequestState) FinishCrawleraRequest() (err error) {
 	} else {
 		err = errors.New("Crawlera request already finished")
 	}
+
+	l := len(rs.crawleraTimes) - 1
+	rs.crawleraTimesChan <- rs.crawleraTimes[l].Sub(rs.crawleraTimes[l-1])
 
 	return
 }
@@ -113,7 +122,7 @@ func (rs *RequestState) DoCrawleraRequest(client *http.Client, req *http.Request
 	return client.Do(req)
 }
 
-func newRequestState(req *http.Request) (*RequestState, error) {
+func newRequestState(req *http.Request, statsContainer *stats.Stats) (*RequestState, error) {
 	newID, err := uuid.GenerateUUID()
 	if err != nil {
 		return nil, errors.Annotate(err, "Cannot generate unique id")
@@ -134,6 +143,9 @@ func newRequestState(req *http.Request) (*RequestState, error) {
 		ClientID:        fmt.Sprintf("%x", hash.Sum(nil)),
 		RequestStarted:  time.Now(),
 		seenMiddlewares: map[middlewareType]struct{}{},
+
+		crawleraRequestsChan: statsContainer.CrawleraRequestsChan,
+		crawleraTimesChan:    statsContainer.CrawleraTimesChan,
 	}, nil
 }
 

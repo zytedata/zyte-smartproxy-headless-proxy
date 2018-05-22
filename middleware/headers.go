@@ -6,6 +6,7 @@ import (
 	"github.com/elazarl/goproxy"
 
 	"github.com/9seconds/crawlera-headless-proxy/config"
+	"github.com/9seconds/crawlera-headless-proxy/stats"
 )
 
 type headersMiddleware struct {
@@ -49,7 +50,7 @@ func (h *headersMiddleware) OnResponse() RespType {
 // NewHeadersMiddleware returns a middleware which mangles request
 // headers. It injects x-headers for example and cleans up browser
 // profiles related headers.
-func NewHeadersMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) Middleware {
+func NewHeadersMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer, statsContainer *stats.Stats) Middleware {
 	ware := &headersMiddleware{}
 	ware.xheaders = conf.XHeaders
 	ware.mtype = middlewareTypeHeaders

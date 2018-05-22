@@ -11,6 +11,7 @@ import (
 	"github.com/karlseguin/ccache"
 
 	"github.com/9seconds/crawlera-headless-proxy/config"
+	"github.com/9seconds/crawlera-headless-proxy/stats"
 )
 
 const refererTTL = 5 * time.Second
@@ -91,7 +92,7 @@ func (r *refererMiddleware) prepareHost(data *url.URL) string {
 
 // NewRefererMiddleware returns middleware which manages Referer header.
 // If Referer is not set it tries to find out correct value for that.
-func NewRefererMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) Middleware {
+func NewRefererMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer, statsContainer *stats.Stats) Middleware {
 	ware := &refererMiddleware{}
 	ware.mtype = middlewareTypeReferer
 

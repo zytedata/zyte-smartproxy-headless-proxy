@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/9seconds/crawlera-headless-proxy/config"
+	"github.com/9seconds/crawlera-headless-proxy/stats"
 )
 
 type proxyRequestMiddleware struct {
@@ -47,7 +48,7 @@ func (p *proxyRequestMiddleware) OnResponse() RespType {
 
 // NewProxyRequestMiddleware returns middleware which tracks goproxy
 // requests to Crawlera.
-func NewProxyRequestMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer) Middleware {
+func NewProxyRequestMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer, statsContainer *stats.Stats) Middleware {
 	ware := &proxyRequestMiddleware{}
 	ware.mtype = middlewareTypeProxyRequest
 

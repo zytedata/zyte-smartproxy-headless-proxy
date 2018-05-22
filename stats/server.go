@@ -20,6 +20,7 @@ const (
 
 func RunStats(statsContainer *Stats, conf *config.Config) {
 	router := chi.NewRouter()
+
 	router.Use(middleware.GetHead)
 	router.Use(middleware.Throttle(statsConcurrentRequests))
 	router.Use(middleware.Timeout(time.Second * 2))
