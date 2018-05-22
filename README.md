@@ -109,10 +109,14 @@ usage: crawlera-headless-proxy [<flags>]
 Local proxy for Crawlera to be used with headless browsers.
 
 Flags:
---help                 Show context-sensitive help (also try --help-long and --help-man).
+      --help                 Show context-sensitive help (also try --help-long and --help-man).
   -d, --debug                Run in debug mode.
   -b, --bind-ip=BIND-IP      IP to bind to. Default is 127.0.0.1.
+  -m, --proxy-api-ip=PROXY-API-IP
+                             IP to bind proxy API to. Default is the bind-ip value.
   -p, --bind-port=BIND-PORT  Port to bind to. Default is 3128.
+  -w, --proxy-api-port=PROXY-API-PORT
+                             Port to bind proxy api to. Default is 3130.
   -c, --config=CONFIG        Path to configuration file.
   -l, --tls-ca-certificate=TLS-CA-CERTIFICATE
                              Path to TLS CA certificate file.
@@ -166,6 +170,8 @@ Here is the complete table of configuration options.
 | Maximal ammount of concurrent connections to process              | `CRAWLERA_HEADLESS_CONCURRENCY`       | `-n`, `--concurrent-connections`  | `concurrent_connections`          |
 | Additional Crawlera X-Headers.                                    | `CRAWLERA_HEADLESS_XHEADERS`          | `-x`, `--xheaders`                | Section `xheaders`                |
 | Adblock-compatible filter lists.                                  | `CRAWLERA_HEADLESS_ADBLOCKLISTS`      | `-k`, `--adblock-list`            | `adblock_lists`                   |
+| Which IP should proxy API listen on (default is `bind-ip` value). | `CRAWLERA_HEADLESS_PROXYAPIIP`        | `-m`, `--proxy-api-ip`            | `proxy_api_ip`                    |
+| Which port proxy API should listen on.                            | `CRAWLERA_HEADLESS_PROXYAPIPORT`      | `-w`, `--proxy-api-port`          | `proxy_api_port`                  |
 
 Configuration is implemented in
 [TOML language](https://github.com/toml-lang/toml). If you haven't heard about
@@ -275,6 +281,20 @@ $ openssl req -x509 -newkey rsa:4096 -keyout private-key.pem -out ca.crt -days 3
 
 This command will generate TLS private key `private-key.pem` and
 self-signed certificate `ca.crt`.
+
+## Proxy API
+
+crawlera-headless-proxy has its own HTTP Rest API which is bind to
+another port. Right now only one endpoint is supported.
+
+### `/stats`
+
+This endpoint returns various statistics on current work of proxy.
+
+Example:
+
+```json
+```
 
 
 ## Examples
