@@ -14,10 +14,11 @@ import (
 
 	"github.com/9seconds/crawlera-headless-proxy/config"
 	"github.com/9seconds/crawlera-headless-proxy/middleware"
+	"github.com/9seconds/crawlera-headless-proxy/stats"
 )
 
 // NewProxy returns a new configured instance of goproxy.
-func NewProxy(conf *config.Config) (*goproxy.ProxyHttpServer, error) {
+func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*goproxy.ProxyHttpServer, error) {
 	proxy := goproxy.NewProxyHttpServer()
 	proxy.Verbose = conf.Debug
 

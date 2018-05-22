@@ -20,7 +20,9 @@ type Config struct {
 	ConcurrentConnections   int      `toml:"concurrent_connections"`
 	BindPort                int      `toml:"bind_port"`
 	CrawleraPort            int      `toml:"crawlera_port"`
+	ProxyAPIPort            int      `toml:"proxy_api_port"`
 	BindIP                  string   `toml:"bind_ip"`
+	ProxyAPIIP              string   `toml:"proxy_api_ip"`
 	APIKey                  string   `toml:"api_key"`
 	CrawleraHost            string   `toml:"crawlera_host"`
 	TLSCaCertificate        string   `toml:"tls_ca_certificate"`
@@ -85,6 +87,22 @@ func (c *Config) MaybeSetBindIP(value net.IP) {
 func (c *Config) MaybeSetBindPort(value int) {
 	if value > 0 {
 		c.BindPort = value
+	}
+}
+
+// MaybeSetProxyAPIPort sets a port for own API of crawlera-headless-proxy.
+// If given value is not defined (0) then changes nothing.
+func (c *Config) MaybeSetProxyAPIPort(value int) {
+	if value > 0 {
+		c.ProxyAPIPort = value
+	}
+}
+
+// MaybeSetProxyAPIIP sets an ip for own API of crawlera-headless-proxy.
+// If given value is not defined ("") then changes nothing.
+func (c *Config) MaybeSetProxyAPIIP(value net.IP) {
+	if value != nil {
+		c.ProxyAPIIP = value.String()
 	}
 }
 
@@ -182,6 +200,7 @@ func NewConfig() *Config {
 		AdblockLists: []string{},
 		BindIP:       "127.0.0.1",
 		BindPort:     3128,
+		ProxyAPIPort: 3129,
 		CrawleraHost: "proxy.crawlera.com",
 		CrawleraPort: 8010,
 		XHeaders:     map[string]string{},

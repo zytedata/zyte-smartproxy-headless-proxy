@@ -16,6 +16,7 @@ import (
 
 	"github.com/9seconds/crawlera-headless-proxy/config"
 	"github.com/9seconds/crawlera-headless-proxy/proxy"
+	"github.com/9seconds/crawlera-headless-proxy/stats"
 )
 
 var (
@@ -32,10 +33,20 @@ var (
 		Short('b').
 		Envar("CRAWLERA_HEADLESS_BINDIP").
 		IP()
+	proxyAPIIP = app.Flag("proxy-api-ip",
+		"IP to bind proxy API to. Default is the bind-ip value.").
+		Short('m').
+		Envar("CRAWLERA_HEADLESS_PROXYAPIIP").
+		IP()
 	bindPort = app.Flag("bind-port",
 		"Port to bind to. Default is 3128.").
 		Short('p').
 		Envar("CRAWLERA_HEADLESS_BINDPORT").
+		Int()
+	proxyAPIPort = app.Flag("proxy-api-port",
+		"Port to bind proxy api to. Default is 3130.").
+		Short('w').
+		Envar("CRAWLERA_HEADLESS_PROXYAPIPORT").
 		Int()
 	configFileName = app.Flag("config",
 		"Path to configuration file.").
@@ -126,6 +137,8 @@ func main() {
 		"apikey":                    conf.APIKey,
 		"bindip":                    conf.BindIP,
 		"bindport":                  conf.BindPort,
+		"proxy-api-ip":              conf.ProxyAPIIP,
+		"proxy-api-port":            conf.ProxyAPIPort,
 		"crawlera-host":             conf.CrawleraHost,
 		"crawlera-port":             conf.CrawleraPort,
 		"dont-verify-crawlera-cert": conf.DoNotVerifyCrawleraCert,
@@ -133,7 +146,10 @@ func main() {
 		"xheaders":                  conf.XHeaders,
 	}).Debugf("Listen on %s", listen)
 
-	if crawleraProxy, err := proxy.NewProxy(conf); err == nil {
+	statsContainer := stats.NewStats()
+	go stats.RunStats(statsContainer, conf)
+
+	if crawleraProxy, err := proxy.NewProxy(conf, statsContainer); err == nil {
 		log.Info("Start to serve")
 		log.Fatal(http.ListenAndServe(listen, crawleraProxy))
 	} else {
@@ -163,8 +179,14 @@ func getConfig() (*config.Config, error) {
 	conf.MaybeSetNoAutoSessions(*noAutoSessions)
 	conf.MaybeSetTLSCaCertificate(*tlsCaCertificate)
 	conf.MaybeSetTLSPrivateKey(*tlsPrivateKey)
+	conf.MaybeSetProxyAPIIP(*proxyAPIIP)
+	conf.MaybeSetProxyAPIPort(*proxyAPIPort)
 	for k, v := range *xheaders {
 		conf.SetXHeader(k, v)
+	}
+
+	if conf.ProxyAPIIP == "" {
+		conf.ProxyAPIIP = conf.BindIP
 	}
 
 	return conf, nil
