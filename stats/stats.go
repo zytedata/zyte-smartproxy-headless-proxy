@@ -12,6 +12,22 @@ const (
 	statsChanBufferLength = 100
 )
 
+var statsPercentilesToCalculate = [13]int8{ // int8 to prevent marshalling to string
+	10,
+	20,
+	30,
+	40,
+	50,
+	60,
+	70,
+	75,
+	80,
+	85,
+	90,
+	95,
+	99,
+}
+
 type Stats struct {
 	requestsNumber   uint64
 	crawleraRequests uint64
@@ -47,12 +63,12 @@ type JSON struct {
 }
 
 type JSONTimes struct {
-	Average float64 `json:"average"`
-	Minimal float64 `json:"minimal"`
-	Maximal float64 `json:"maxmimal"`
-	Median  float64 `json:"median"`
-	Perc90  float64 `json:"percentile_90"`
-	StdDev  float64 `json:"standard_deviation"`
+	Average     float64          `json:"average"`
+	Minimal     float64          `json:"minimal"`
+	Maximal     float64          `json:"maxmimal"`
+	Median      float64          `json:"median"`
+	StdDev      float64          `json:"standard_deviation"`
+	Percentiles map[int8]float64 `json:"percentiles"`
 }
 
 func (s *Stats) GetStatsJSON() *JSON {
@@ -71,8 +87,10 @@ func (s *Stats) GetStatsJSON() *JSON {
 }
 
 func (s *Stats) makeJSONTimes(data *circularTimeBuffer) *JSONTimes {
-	jsonData := &JSONTimes{}
 	floats := data.collect()
+	jsonData := &JSONTimes{
+		Percentiles: s.calculatePercentiles(floats),
+	}
 
 	if len(floats) == 0 {
 		return jsonData
@@ -108,14 +126,6 @@ func (s *Stats) makeJSONTimes(data *circularTimeBuffer) *JSONTimes {
 		log.WithFields(log.Fields{
 			"err": err,
 		}).Info("Cannot findout median value.")
-	}
-
-	if perc, err := mstats.Percentile(floats, 90.0); err == nil {
-		jsonData.Perc90 = perc
-	} else {
-		log.WithFields(log.Fields{
-			"err": err,
-		}).Info("Cannot findout 90 percentile value.")
 	}
 
 	if dev, err := mstats.StandardDeviation(floats); err == nil {
@@ -156,6 +166,23 @@ func (s *Stats) Collect() { // nolint: gocyclo
 			s.overallTimes.add(duration)
 		}
 	}
+}
+
+func (s *Stats) calculatePercentiles(data []float64) map[int8]float64 {
+	percentiles := map[int8]float64{}
+
+	for _, perc := range statsPercentilesToCalculate {
+		if calculated, err := mstats.Percentile(data, float64(perc)); err == nil {
+			percentiles[perc] = calculated
+		} else {
+			log.WithFields(log.Fields{
+				"err":        err,
+				"percentile": perc,
+			}).Info("Cannot findout percentile.")
+		}
+	}
+
+	return percentiles
 }
 
 func NewStats() *Stats {
