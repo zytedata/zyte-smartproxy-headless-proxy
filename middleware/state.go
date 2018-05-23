@@ -21,26 +21,26 @@ type stateMiddleware struct {
 	trafficChan          chan<- uint64
 }
 
-// TrafficCounterBody is a data structure which is wrapper for
+// trafficCounter is a data structure which is wrapper for
 // http.Response.Body. Its intent is to collect statistics on body size
 // and send to collector.
-type TrafficCounterBody struct {
-	original    io.ReadCloser
+type trafficCounter struct {
+	body        io.ReadCloser
 	counter     uint64
 	trafficChan chan<- uint64
 }
 
 // Read supports io.ReadCloser interface.
-func (tcb *TrafficCounterBody) Read(p []byte) (n int, err error) {
-	n, err = tcb.original.Read(p)
+func (tcb *trafficCounter) Read(p []byte) (n int, err error) {
+	n, err = tcb.body.Read(p)
 	tcb.counter += uint64(n)
 	return
 }
 
 // Close supports io.ReadCloser interface.
-func (tcb *TrafficCounterBody) Close() error {
+func (tcb *trafficCounter) Close() error {
 	tcb.trafficChan <- tcb.counter
-	return tcb.original.Close()
+	return tcb.body.Close()
 }
 
 func (s *stateMiddleware) OnRequest() ReqType {
@@ -66,7 +66,7 @@ func (s *stateMiddleware) OnResponse() RespType {
 		// This is to calculate statistics on traffic. Unfortunately, we
 		// cannot trust Content-Length because of chunked encoding.
 		if resp != nil {
-			resp.Body = newTrafficCounterBody(resp.Body, s.trafficChan)
+			resp.Body = newTrafficCounter(resp, s.trafficChan)
 		}
 
 		return resp
@@ -88,9 +88,18 @@ func NewStateMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer, sta
 	return ware
 }
 
-func newTrafficCounterBody(body io.ReadCloser, trafficChan chan<- uint64) *TrafficCounterBody {
-	return &TrafficCounterBody{
-		original:    body,
+func newTrafficCounter(resp *http.Response, trafficChan chan<- uint64) *trafficCounter {
+	var trafficHeader int
+	for k, vs := range resp.Header {
+		trafficHeader += len(k)
+		for _, v := range vs {
+			trafficHeader += len(v)
+		}
+	}
+
+	return &trafficCounter{
+		body:        resp.Body,
 		trafficChan: trafficChan,
+		counter:     uint64(trafficHeader),
 	}
 }

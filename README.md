@@ -385,7 +385,7 @@ Here is the description of these stats:
 * `clients_serving` - how many clients (requests) are doing requests to
   Crawlera now.
 * `traffic` - an amount of traffic sent to clients in bytes. This metric
-  does not includes size of headers now, only response bodies.
+  does includes headers and body sizes.
 
 `*_times` describes different time series (overall response time, time
 spent in crawlera) etc and provide average(mean), min and max values,
