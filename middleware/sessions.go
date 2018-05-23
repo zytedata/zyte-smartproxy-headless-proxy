@@ -38,7 +38,7 @@ func (s *sessionsMiddleware) OnRequest() ReqType {
 			go mgr.Start()
 		}
 
-		sessionID := mgr.getSessionID()
+		sessionID := mgr.getSessionID(false)
 		switch sessionID.(type) {
 		case string:
 			s.onRequestWithSession(req, sessionID.(string))
@@ -125,7 +125,7 @@ func (s *sessionsMiddleware) sessionRespError(rstate *RequestState, ctx *goproxy
 	brokenSessionID := ctx.Req.Header.Get("X-Crawlera-Session")
 	mgr.getBrokenSessionChan() <- brokenSessionID
 
-	sessionID := mgr.getSessionID()
+	sessionID := mgr.getSessionID(true)
 	switch sessionID.(type) {
 	case chan<- string:
 		return s.sessionRespErrorWithoutSession(ctx.Req, rstate, mgr, sessionID.(chan<- string))

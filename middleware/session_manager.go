@@ -2,19 +2,30 @@ package middleware
 
 import "time"
 
-const sessionClientTimeout = 180 * time.Second
+const (
+	sessionClientTimeout      = 180 * time.Second
+	sessionClientTimeoutRetry = 30 * time.Second
+)
 
 type sessionManager struct {
 	id                string
-	requestIDChan     chan chan<- interface{} // this can return either string or chan<- string
+	requestIDChan     chan *sessionIDRequest
 	brokenSessionChan chan string
 }
 
-func (s *sessionManager) getSessionID() interface{} {
+type sessionIDRequest struct {
+	channel chan<- interface{}
+	retry   bool
+}
+
+func (s *sessionManager) getSessionID(retry bool) interface{} {
 	respChan := make(chan interface{})
 	defer close(respChan)
 
-	s.requestIDChan <- respChan
+	s.requestIDChan <- &sessionIDRequest{
+		channel: respChan,
+		retry:   retry,
+	}
 
 	return <-respChan
 }
@@ -30,7 +41,7 @@ func (s *sessionManager) Start() {
 			if s.id == "" {
 				s.requestNewSession(feedback)
 			} else {
-				feedback <- s.id
+				feedback.channel <- s.id
 			}
 		case brokenSession := <-s.brokenSessionChan:
 			if s.id == brokenSession {
@@ -40,11 +51,17 @@ func (s *sessionManager) Start() {
 	}
 }
 
-func (s *sessionManager) requestNewSession(feedback chan<- interface{}) {
+func (s *sessionManager) requestNewSession(feedback *sessionIDRequest) {
 	newSessionChan := make(chan string, 1)
-	feedback <- chan<- string(newSessionChan)
+	feedback.channel <- chan<- string(newSessionChan)
 
-	timeAfter := time.After(sessionClientTimeout)
+	var timeAfter <-chan time.Time
+	if feedback.retry {
+		timeAfter = time.After(sessionClientTimeoutRetry)
+	} else {
+		timeAfter = time.After(sessionClientTimeout)
+	}
+
 	for {
 		select {
 		case brokenSession := <-s.brokenSessionChan:
@@ -64,7 +81,7 @@ func (s *sessionManager) requestNewSession(feedback chan<- interface{}) {
 
 func newSessionManager() *sessionManager {
 	return &sessionManager{
-		requestIDChan:     make(chan chan<- interface{}),
+		requestIDChan:     make(chan *sessionIDRequest),
 		brokenSessionChan: make(chan string),
 	}
 }
