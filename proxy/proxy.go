@@ -20,7 +20,7 @@ import (
 // NewProxy returns a new configured instance of goproxy.
 func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*goproxy.ProxyHttpServer, error) {
 	proxy := goproxy.NewProxyHttpServer()
-	proxy.Verbose = conf.Debug
+	proxy.Verbose = false
 
 	crawleraURL := conf.CrawleraURL()
 	crawleraURLParsed, err := url.Parse(crawleraURL)
