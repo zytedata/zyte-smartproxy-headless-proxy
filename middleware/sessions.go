@@ -3,98 +3,70 @@ package middleware
 import (
 	"net/http"
 	"sync"
-	"time"
 
 	"github.com/elazarl/goproxy"
+	"github.com/karlseguin/ccache"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/9seconds/crawlera-headless-proxy/config"
 	"github.com/9seconds/crawlera-headless-proxy/stats"
 )
 
-const sessionClientTimeout = 30 * time.Second
+const (
+	sessionsChansMaxSize      = 100
+	sessionsChansItemsToPrune = sessionsChansMaxSize / 2
+	sessionsChansTTL          = sessionClientTimeout * 2
+)
 
 type sessionsMiddleware struct {
 	UniqBase
 
-	httpClient          *http.Client
-	clients             *sync.Map
-	sessionsCreatedChan chan<- struct{}
-}
+	httpClient   *http.Client
+	clients      *sync.Map
+	sessionChans *ccache.Cache
 
-type sessionState struct {
-	id      string
-	creator string
-	cond    *sync.Cond
+	sessionsCreatedChan chan<- struct{}
 }
 
 func (s *sessionsMiddleware) OnRequest() ReqType {
 	return s.BaseOnRequest(func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-		sess := s.getSession(ctx)
 		rstate := GetRequestState(ctx)
 
-		// Empty session id and absent creator means that no session is
-		// created. This is our chance to create new one.
-		//
-		// For example, if session ID is != "", it means that we can use it
-		// but not empty creator means that session create process is in
-		// progress and since we want to use as less sessions as possible, it
-		// is better to wait for it.
-		if sess.id == "" && sess.creator == "" {
-			sess.cond.L.Lock()
-			// Classic: https://en.wikipedia.org/wiki/Double-checked_locking
-			if sess.id == "" && sess.creator == "" {
-				sess.id = ""
-				sess.creator = rstate.ID
-				sess.cond.L.Unlock()
-				req.Header.Set("X-Crawlera-Session", "create")
-
-				log.WithFields(log.Fields{
-					"request-id": rstate.ID,
-					"client-id":  rstate.ClientID,
-				}).Debug("Initialize fresh session without retries.")
-
-				return req, nil
-			}
-			sess.cond.L.Unlock()
+		mgrRaw, loaded := s.clients.LoadOrStore(rstate.ClientID, newSessionManager())
+		mgr := mgrRaw.(*sessionManager)
+		if !loaded {
+			go mgr.Start()
 		}
 
-		// If we pass to this point, we either have non-empty session id or
-		// non-empty creator. As it was told before, if we have non-empty
-		// creator, it means that session is creating now and we have to wait
-		// for notification that it can be used.
-		//
-		// Here is the contract: creator HAVE to be consistent. Gorouitne
-		// which holds 'creator' has to set it to empty at the end of its
-		// work.
-		sess.cond.L.Lock()
-		defer sess.cond.L.Unlock()
-		for sess.id == "" {
-			sess.cond.Wait()
-		}
-
-		// If session is empty (it can be that we exit from condition above)
-		// and before pass to this instruction something is changed. This
-		// means we have to create new session.
-		if sess.id == "" {
-			sess.creator = rstate.ID
-			req.Header.Set("X-Crawlera-Session", "create")
-
-			log.WithFields(log.Fields{
-				"request-id": rstate.ID,
-				"client-id":  rstate.ClientID,
-			}).Debug("Reinitialize session without retries.")
-		} else {
-			req.Header.Set("X-Crawlera-Session", sess.id)
+		sessionID := mgr.getSessionID()
+		switch sessionID.(type) {
+		case string:
+			s.onRequestWithSession(req, sessionID.(string))
+		case chan<- string:
+			s.onRequestWithoutSession(req, rstate, sessionID.(chan<- string))
 		}
 
 		return req, nil
 	})
 }
 
+func (s *sessionsMiddleware) onRequestWithSession(req *http.Request, sessionID string) {
+	req.Header.Set("X-Crawlera-Session", sessionID)
+}
+
+func (s *sessionsMiddleware) onRequestWithoutSession(req *http.Request,
+	rstate *RequestState, sessionIDChan chan<- string) {
+	req.Header.Set("X-Crawlera-Session", "create")
+	s.sessionChans.Set(rstate.ID, sessionIDChan, sessionsChansTTL)
+
+	log.WithFields(log.Fields{
+		"request-id": rstate.ID,
+		"client-id":  rstate.ClientID,
+	}).Debug("Initialize fresh session without retries.")
+}
+
 func (s *sessionsMiddleware) OnResponse() RespType {
 	return s.BaseOnResponse(func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
-		sess := s.getSession(ctx)
 		rstate := GetRequestState(ctx)
 
 		// This is specific of goproxy. If request was cancelled for some
@@ -105,7 +77,7 @@ func (s *sessionsMiddleware) OnResponse() RespType {
 		if resp != nil {
 			err = resp.Header.Get("X-Crawlera-Error")
 			if err == "" {
-				return s.sessionRespOK(resp, rstate, sess)
+				return s.sessionRespOK(resp, rstate)
 			}
 		}
 
@@ -117,109 +89,103 @@ func (s *sessionsMiddleware) OnResponse() RespType {
 			"ctx-error":  ctx.Error,
 		}).Debug("Reason of failed response.")
 
-		return s.sessionRespError(rstate, sess, ctx)
+		return s.sessionRespError(rstate, ctx)
 	})
 }
 
-func (s *sessionsMiddleware) sessionRespOK(resp *http.Response, rstate *RequestState, sess *sessionState) *http.Response {
-	// it is perfectly fine that session 'dies' during some requests are
-	// performing and they can be finished fine. Anyway, we have to
-	// send OK response back to client but we do not need to update the
-	// session.
-	if sess.creator == rstate.ID {
-		sess.cond.L.Lock()
-		defer sess.cond.L.Unlock()
-
-		sess.creator = ""
-		sess.id = resp.Header.Get("X-Crawlera-Session")
-		s.sessionsCreatedChan <- struct{}{}
+func (s *sessionsMiddleware) sessionRespOK(resp *http.Response, rstate *RequestState) *http.Response {
+	if item := s.sessionChans.Get(rstate.ID); item != nil && !item.Expired() {
+		sessionIDChan := item.Value().(chan<- string)
+		sessionID := resp.Header.Get("X-Crawlera-Session")
+		sessionIDChan <- sessionID
+		close(sessionIDChan)
 
 		log.WithFields(log.Fields{
 			"request-id": rstate.ID,
 			"client-id":  rstate.ClientID,
-			"sessionid":  sess.id,
+			"sessionid":  sessionID,
 		}).Debug("Initialized new session.")
 
-		sess.cond.Broadcast()
+		s.sessionsCreatedChan <- struct{}{}
 	}
+
 	return resp
 }
 
-func (s *sessionsMiddleware) sessionRespError(rstate *RequestState, sess *sessionState, ctx *goproxy.ProxyCtx) *http.Response {
-	sess.cond.L.Lock()
-	defer sess.cond.L.Unlock()
-
-	// Response was bad and we have to create new session. First, let's
-	// flush its ID.
-	if ctx.Req.Header.Get("X-Crawlera-Session") == sess.id {
-		sess.id = ""
+func (s *sessionsMiddleware) sessionRespError(rstate *RequestState, ctx *goproxy.ProxyCtx) *http.Response {
+	mgrRaw, ok := s.clients.Load(rstate.ClientID)
+	if !ok {
+		log.WithFields(log.Fields{
+			"client-id": rstate.ClientID,
+		}).Warn("Client bypass OnRequest handler")
+		return nil
 	}
+	mgr := mgrRaw.(*sessionManager)
 
-	// Now it can be that session is recreating now. Or we are creator.
-	// Or someone in parallel has recreated the session. Let's wait
-	// for any condition and proceed next to figure out what to do.
-	for !(sess.creator == "" || sess.creator == rstate.ID || sess.id != "") {
-		sess.cond.Wait()
+	brokenSessionID := ctx.Req.Header.Get("X-Crawlera-Session")
+	mgr.getBrokenSessionChan() <- brokenSessionID
+
+	sessionID := mgr.getSessionID()
+	switch sessionID.(type) {
+	case chan<- string:
+		return s.sessionRespErrorWithoutSession(ctx.Req, rstate, mgr, sessionID.(chan<- string))
+	default:
+		return s.sessionRespErrorWithSession(ctx.Req, rstate, mgr, sessionID.(string))
 	}
+}
 
-	var resp *http.Response
-	req := ctx.Req
-	// New session ID appears. Great, let's retry with it. But if it fail,
-	// we'll return failed response because we cannot block here forever.
-	if sess.id != "" {
-		req.Header.Set("X-Crawlera-Session", sess.id)
-		if newResp, err := rstate.DoCrawleraRequest(s.httpClient, req); err == nil {
-			resp = newResp
-		}
+func (s *sessionsMiddleware) sessionRespErrorWithSession(req *http.Request,
+	rstate *RequestState, mgr *sessionManager, sessionID string) *http.Response {
+	req.Header.Set("X-Crawlera-Session", sessionID)
+
+	resp, err := rstate.DoCrawleraRequest(s.httpClient, req)
+	if err != nil || resp.Header.Get("X-Crawlera-Error") != "" {
+		mgr.getBrokenSessionChan() <- sessionID
+
+		log.WithFields(log.Fields{
+			"request-id": rstate.ID,
+			"client-id":  rstate.ClientID,
+			"session-id": sessionID,
+		}).Info("Request failed even with new session ID after retry")
+
 		return resp
 	}
 
-	// If session ID is empty, we have only 1 situation when we can get here:
-	// if we have to create new session. Let's do that.
-	sess.creator = rstate.ID
-	defer func() { sess.creator = "" }()
-	req.Header.Set("X-Crawlera-Session", "create")
-
 	log.WithFields(log.Fields{
 		"request-id": rstate.ID,
 		"client-id":  rstate.ClientID,
-	}).Info("Retry without new session, fetching new one.")
-
-	if newResp, err := rstate.DoCrawleraRequest(s.httpClient, req); err == nil && newResp.Header.Get("X-Crawlera-Error") == "" {
-		sess.id = newResp.Header.Get("X-Crawlera-Session")
-		s.sessionsCreatedChan <- struct{}{}
-
-		log.WithFields(log.Fields{
-			"request-id": rstate.ID,
-			"client-id":  rstate.ClientID,
-			"sessionid":  sess.id,
-		}).Info("Got new session after retry.")
-
-		sess.cond.Broadcast()
-
-		return newResp
-	}
-
-	log.WithFields(log.Fields{
-		"request-id": rstate.ID,
-		"client-id":  rstate.ClientID,
-	}).Info("Failed to get new session.")
-
-	sess.cond.Signal()
+		"session-id": sessionID,
+	}).Info("Request succeed with new session ID after retry")
 
 	return resp
 }
 
-func (s *sessionsMiddleware) getSession(ctx *goproxy.ProxyCtx) *sessionState {
-	clientID := GetRequestState(ctx).ClientID
-	sessionStateRaw, _ := s.clients.LoadOrStore(clientID, newSessionState())
-	return sessionStateRaw.(*sessionState)
-}
+func (s *sessionsMiddleware) sessionRespErrorWithoutSession(req *http.Request,
+	rstate *RequestState, mgr *sessionManager, sessionIDChan chan<- string) *http.Response {
+	defer close(sessionIDChan)
 
-func newSessionState() *sessionState {
-	return &sessionState{
-		cond: sync.NewCond(&sync.Mutex{}),
+	req.Header.Set("X-Crawlera-Session", "create")
+	resp, err := rstate.DoCrawleraRequest(s.httpClient, req)
+
+	if err == nil && resp.Header.Get("X-Crawlera-Error") == "" {
+		sessionID := resp.Header.Get("X-Crawlera-Session")
+		sessionIDChan <- sessionID
+
+		log.WithFields(log.Fields{
+			"request-id": rstate.ID,
+			"client-id":  rstate.ClientID,
+			"session-id": sessionID,
+		}).Info("Got fresh session after retry")
+
+		return resp
 	}
+
+	log.WithFields(log.Fields{
+		"request-id": rstate.ID,
+		"client-id":  rstate.ClientID,
+	}).Info("Could not obtain new session even after retry")
+
+	return resp
 }
 
 // NewSessionsMiddleware returns middleware which is responsible for
@@ -233,6 +199,7 @@ func NewSessionsMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer, 
 		Transport: proxy.Tr,
 	}
 	ware.clients = &sync.Map{}
+	ware.sessionChans = ccache.New(ccache.Configure().MaxSize(sessionsChansMaxSize).ItemsToPrune(sessionsChansItemsToPrune))
 	ware.sessionsCreatedChan = statsContainer.SessionsCreatedChan
 
 	return ware
