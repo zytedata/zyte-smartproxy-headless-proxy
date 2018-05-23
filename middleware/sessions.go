@@ -125,6 +125,11 @@ func (s *sessionsMiddleware) sessionRespError(rstate *RequestState, ctx *goproxy
 	brokenSessionID := ctx.Req.Header.Get("X-Crawlera-Session")
 	mgr.getBrokenSessionChan() <- brokenSessionID
 
+	if item := s.sessionChans.Get(rstate.ID); item != nil && !item.Expired() {
+		sessionIDChan := item.Value().(chan<- string)
+		close(sessionIDChan)
+	}
+
 	sessionID := mgr.getSessionID(true)
 	switch sessionID.(type) {
 	case chan<- string:
