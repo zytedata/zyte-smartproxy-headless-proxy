@@ -1,6 +1,7 @@
 package stats
 
 import (
+	"sync"
 	"time"
 
 	mstats "github.com/montanaflynn/stats"
@@ -38,6 +39,7 @@ type Stats struct {
 	clientsServing   uint64
 	traffic          uint64
 
+	statsLock     *sync.Mutex
 	overallTimes  *durationTimeSeries
 	crawleraTimes *durationTimeSeries
 	trafficTimes  *uint64TimeSeries
@@ -83,6 +85,9 @@ type JSONTimes struct {
 // GetStatsJSON generates JSON structure from Stats. This is to be
 // serialized in proxy API.
 func (s *Stats) GetStatsJSON() *JSON {
+	s.statsLock.Lock()
+	defer s.statsLock.Unlock()
+
 	return &JSON{
 		RequestsNumber:   s.requestsNumber,
 		CrawleraRequests: s.crawleraRequests,
@@ -159,30 +164,53 @@ func (s *Stats) Collect() { // nolint: gocyclo
 	for {
 		select {
 		case <-s.RequestsNumberChan:
+			s.statsLock.Lock()
 			s.requestsNumber++
+			s.statsLock.Unlock()
+
 		case <-s.CrawleraRequestsChan:
+			s.statsLock.Lock()
 			s.crawleraRequests++
+			s.statsLock.Unlock()
+
 		case <-s.SessionsCreatedChan:
+			s.statsLock.Lock()
 			s.sessionsCreated++
+			s.statsLock.Unlock()
+
 		case clientConnected := <-s.ClientsConnectedChan:
+			s.statsLock.Lock()
 			if clientConnected {
 				s.clientsConnected++
 			} else {
 				s.clientsConnected--
 			}
+			s.statsLock.Unlock()
+
 		case clientServing := <-s.ClientsServingChan:
+			s.statsLock.Lock()
 			if clientServing {
 				s.clientsServing++
 			} else {
 				s.clientsServing--
 			}
+			s.statsLock.Unlock()
+
 		case duration := <-s.CrawleraTimesChan:
+			s.statsLock.Lock()
 			s.crawleraTimes.add(duration)
+			s.statsLock.Unlock()
+
 		case duration := <-s.OverallTimesChan:
+			s.statsLock.Lock()
 			s.overallTimes.add(duration)
+			s.statsLock.Unlock()
+
 		case traffic := <-s.TrafficChan:
+			s.statsLock.Lock()
 			s.trafficTimes.add(traffic)
 			s.traffic += traffic
+			s.statsLock.Unlock()
 		}
 	}
 }
@@ -211,6 +239,7 @@ func NewStats() *Stats {
 		crawleraTimes: newDurationTimeSeries(statsRingLength),
 		trafficTimes:  newUint64TimeSeries(statsRingLength),
 		startedAt:     time.Now(),
+		statsLock:     &sync.Mutex{},
 
 		RequestsNumberChan:   make(chan struct{}, statsChanBufferLength),
 		CrawleraRequestsChan: make(chan struct{}, statsChanBufferLength),
