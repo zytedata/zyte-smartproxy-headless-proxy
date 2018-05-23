@@ -2,6 +2,7 @@ package stats
 
 import (
 	"sync"
+	"sync/atomic"
 	"time"
 
 	mstats "github.com/montanaflynn/stats"
@@ -11,6 +12,8 @@ import (
 const (
 	statsRingLength       = 3000
 	statsChanBufferLength = 100
+
+	atomicDecrement = ^uint64(0)
 )
 
 var statsPercentilesToCalculate = [13]uint8{
@@ -39,7 +42,9 @@ type Stats struct {
 	clientsServing   uint64
 	traffic          uint64
 
-	statsLock     *sync.Mutex
+	// The owls are not what they seem
+	// do not believe RWMutex. We use it as shared/exclusive lock.
+	statsLock     *sync.RWMutex
 	overallTimes  *durationTimeSeries
 	crawleraTimes *durationTimeSeries
 	trafficTimes  *uint64TimeSeries
@@ -158,60 +163,105 @@ func (s *Stats) makeJSONTimes(data timeSeriesInterface) *JSONTimes {
 	return jsonData
 }
 
-// Collect is a loop which is intended to be run in goroutine. This
-// forces collector to listen on all channels and accumulate stats.
-func (s *Stats) Collect() { // nolint: gocyclo
+// RunCollect starts a series of collector goroutines. Each goroutine
+// manages its own metric indiependently.
+func (s *Stats) RunCollect() {
+	go s.collectRequestNumbers()
+	go s.collectCrawleraRequests()
+	go s.collectSessionsCreated()
+	go s.collectClientConnected()
+	go s.collectClientsServing()
+	go s.collectCrawleraTimes()
+	go s.collectOverallTimes()
+	go s.collectTraffic()
+}
+
+func (s *Stats) collectRequestNumbers() {
 	for {
-		select {
-		case <-s.RequestsNumberChan:
-			s.statsLock.Lock()
-			s.requestsNumber++
-			s.statsLock.Unlock()
+		<-s.RequestsNumberChan
 
-		case <-s.CrawleraRequestsChan:
-			s.statsLock.Lock()
-			s.crawleraRequests++
-			s.statsLock.Unlock()
+		s.statsLock.RLock()
+		atomic.AddUint64(&s.requestsNumber, 1)
+		s.statsLock.RUnlock()
+	}
+}
 
-		case <-s.SessionsCreatedChan:
-			s.statsLock.Lock()
-			s.sessionsCreated++
-			s.statsLock.Unlock()
+func (s *Stats) collectCrawleraRequests() {
+	for {
+		<-s.CrawleraRequestsChan
 
-		case clientConnected := <-s.ClientsConnectedChan:
-			s.statsLock.Lock()
-			if clientConnected {
-				s.clientsConnected++
-			} else {
-				s.clientsConnected--
-			}
-			s.statsLock.Unlock()
+		s.statsLock.RLock()
+		atomic.AddUint64(&s.crawleraRequests, 1)
+		s.statsLock.RUnlock()
+	}
+}
 
-		case clientServing := <-s.ClientsServingChan:
-			s.statsLock.Lock()
-			if clientServing {
-				s.clientsServing++
-			} else {
-				s.clientsServing--
-			}
-			s.statsLock.Unlock()
+func (s *Stats) collectSessionsCreated() {
+	for {
+		<-s.SessionsCreatedChan
 
-		case duration := <-s.CrawleraTimesChan:
-			s.statsLock.Lock()
-			s.crawleraTimes.add(duration)
-			s.statsLock.Unlock()
+		s.statsLock.RLock()
+		atomic.AddUint64(&s.sessionsCreated, 1)
+		s.statsLock.RUnlock()
+	}
+}
 
-		case duration := <-s.OverallTimesChan:
-			s.statsLock.Lock()
-			s.overallTimes.add(duration)
-			s.statsLock.Unlock()
+func (s *Stats) collectClientConnected() {
+	for {
+		clientConnected := <-s.ClientsConnectedChan
 
-		case traffic := <-s.TrafficChan:
-			s.statsLock.Lock()
-			s.trafficTimes.add(traffic)
-			s.traffic += traffic
-			s.statsLock.Unlock()
+		s.statsLock.RLock()
+		if clientConnected {
+			atomic.AddUint64(&s.clientsConnected, 1)
+		} else {
+			atomic.AddUint64(&s.clientsConnected, atomicDecrement)
 		}
+		s.statsLock.RUnlock()
+	}
+}
+
+func (s *Stats) collectClientsServing() {
+	for {
+		clientServing := <-s.ClientsServingChan
+
+		s.statsLock.RLock()
+		if clientServing {
+			atomic.AddUint64(&s.clientsServing, 1)
+		} else {
+			atomic.AddUint64(&s.clientsServing, atomicDecrement)
+		}
+		s.statsLock.RUnlock()
+	}
+}
+
+func (s *Stats) collectCrawleraTimes() {
+	for {
+		duration := <-s.CrawleraTimesChan
+
+		s.statsLock.RLock()
+		s.crawleraTimes.add(duration)
+		s.statsLock.RUnlock()
+	}
+}
+
+func (s *Stats) collectOverallTimes() {
+	for {
+		duration := <-s.OverallTimesChan
+
+		s.statsLock.RLock()
+		s.overallTimes.add(duration)
+		s.statsLock.RUnlock()
+	}
+}
+
+func (s *Stats) collectTraffic() {
+	for {
+		traffic := <-s.TrafficChan
+
+		s.statsLock.RLock()
+		atomic.AddUint64(&s.traffic, traffic)
+		s.trafficTimes.add(traffic)
+		s.statsLock.RUnlock()
 	}
 }
 
@@ -239,7 +289,7 @@ func NewStats() *Stats {
 		crawleraTimes: newDurationTimeSeries(statsRingLength),
 		trafficTimes:  newUint64TimeSeries(statsRingLength),
 		startedAt:     time.Now(),
-		statsLock:     &sync.Mutex{},
+		statsLock:     &sync.RWMutex{},
 
 		RequestsNumberChan:   make(chan struct{}, statsChanBufferLength),
 		CrawleraRequestsChan: make(chan struct{}, statsChanBufferLength),

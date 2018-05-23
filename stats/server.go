@@ -43,6 +43,6 @@ func RunStats(statsContainer *Stats, conf *config.Config) {
 		Handler: router,
 	}
 
-	go statsContainer.Collect()
+	statsContainer.RunCollect()
 	go log.Fatal(srv.ListenAndServe())
 }
