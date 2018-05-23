@@ -287,14 +287,119 @@ self-signed certificate `ca.crt`.
 crawlera-headless-proxy has its own HTTP Rest API which is bind to
 another port. Right now only one endpoint is supported.
 
-### `/stats`
+### `GET /stats`
 
 This endpoint returns various statistics on current work of proxy.
 
 Example:
 
 ```json
+{
+  "requests_number": 342,
+  "crawlera_requests": 343,
+  "sessions_created": 2,
+  "clients_connected": 1,
+  "clients_serving": 1,
+  "traffic": 5144097,
+  "overall_times": {
+    "average": 1.1697893100117303,
+    "minimal": 0.019068425,
+    "maxmimal": 13.083649925,
+    "median": 0.399386525,
+    "standard_deviation": 2.7668849085566722,
+    "percentiles": {
+      "10": 0.197817644,
+      "20": 0.232745909,
+      "30": 0.276867836,
+      "40": 0.329860919,
+      "50": 0.399386525,
+      "60": 0.467046535,
+      "70": 0.576318183,
+      "75": 0.603624489,
+      "80": 0.633094287,
+      "85": 0.699524249,
+      "90": 0.839260954,
+      "95": 10.736666247,
+      "99": 11.715572608
+    }
+  },
+  "crawlera_times": {
+    "average": 1.1055083281666656,
+    "minimal": 0.000111273,
+    "maxmimal": 11.7612128,
+    "median": 0.36406424049999997,
+    "standard_deviation": 2.691387695152139,
+    "percentiles": {
+      "10": 0.186066392,
+      "20": 0.219907051,
+      "30": 0.258462571,
+      "40": 0.301227936,
+      "50": 0.36406424049999997,
+      "60": 0.423234904,
+      "70": 0.527960255,
+      "75": 0.559111637,
+      "80": 0.601874697,
+      "85": 0.658456279,
+      "90": 0.770335886,
+      "95": 10.723328013,
+      "99": 11.627872067
+    }
+  },
+  "traffic_times": {
+    "average": 15129.697058823529,
+    "minimal": 8,
+    "maxmimal": 515722,
+    "median": 9700.5,
+    "standard_deviation": 34750.735056119,
+    "percentiles": {
+      "10": 6588,
+      "20": 7822,
+      "30": 8593,
+      "40": 9271.5,
+      "50": 9700.5,
+      "60": 10589,
+      "70": 11186,
+      "75": 11562,
+      "80": 11830,
+      "85": 12415.5,
+      "90": 14410,
+      "95": 46591,
+      "99": 92629
+    }
+  },
+  "uptime": 297
+}
 ```
+
+Here is the description of these stats:
+
+* `requests_number` - a number of requests managed by headless
+  proxy. This includes all possible requests, not only those which were
+  send to Crawlera.
+* `crawlera_requests` - a number of requests which were send to
+  Crawlera. This also includes retries on session restoration etc.
+* `sessions_created` - how many sessions were created by headless
+  proxy so far.
+* `clients_connected` - how many clients (requests) are connected to
+  headless proxy at this moment.
+* `clients_serving` - how many clients (requests) are doing requests to
+  Crawlera now.
+* `traffic` - an amount of traffic sent to clients in bytes. This metric
+  does not includes size of headers now, only response bodies.
+
+`*_times` describes different time series (overall response time, time
+spent in crawlera) etc and provide average(mean), min and max values,
+stddev and histogram of percentiles. Time series are done in window
+mode, tracking only latest 3000 values.
+
+Please pay attention that usually `requests_number` and
+`crawlera_requests` are different. This is because headless proxy
+filters adblock requests and also retries to recreate sessions which
+implies additional Crawlera requests. So, depending on the netloc
+proportion of these numbers can differ.
+
+Also, `clients_serving <= clients_connected` because of rate limiting.
+You may consider `client_serving` as requests which pass rate limiter.
 
 
 ## Examples
