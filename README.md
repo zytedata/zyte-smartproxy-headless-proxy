@@ -295,79 +295,82 @@ Example:
 
 ```json
 {
-  "requests_number": 342,
-  "crawlera_requests": 343,
-  "sessions_created": 2,
+  "requests_number": 423,
+  "crawlera_requests": 426,
+  "crawlera_errors": 0,
+  "all_errors": 6,
+  "adblocked_requests": 0,
+  "sessions_created": 4,
   "clients_connected": 1,
   "clients_serving": 1,
-  "traffic": 5144097,
+  "traffic": 6326557,
   "overall_times": {
-    "average": 1.1697893100117303,
-    "minimal": 0.019068425,
-    "maxmimal": 13.083649925,
-    "median": 0.399386525,
-    "standard_deviation": 2.7668849085566722,
+    "average": 0.37859728122037895,
+    "minimal": 0.016320158,
+    "maxmimal": 6.96558913,
+    "median": 0.1117137805,
+    "standard_deviation": 1.001460285777158,
     "percentiles": {
-      "10": 0.197817644,
-      "20": 0.232745909,
-      "30": 0.276867836,
-      "40": 0.329860919,
-      "50": 0.399386525,
-      "60": 0.467046535,
-      "70": 0.576318183,
-      "75": 0.603624489,
-      "80": 0.633094287,
-      "85": 0.699524249,
-      "90": 0.839260954,
-      "95": 10.736666247,
-      "99": 11.715572608
+      "10": 0.05237131,
+      "20": 0.071472272,
+      "30": 0.088965026,
+      "40": 0.101607119,
+      "50": 0.1117137805,
+      "60": 0.125672599,
+      "70": 0.137716451,
+      "75": 0.146478028,
+      "80": 0.154273865,
+      "85": 0.162262952,
+      "90": 0.180582867,
+      "95": 3.514414853,
+      "99": 3.729193071
     }
   },
   "crawlera_times": {
-    "average": 1.1055083281666656,
-    "minimal": 0.000111273,
-    "maxmimal": 11.7612128,
-    "median": 0.36406424049999997,
-    "standard_deviation": 2.691387695152139,
+    "average": 0.30196985308000035,
+    "minimal": 3.1394e-05,
+    "maxmimal": 3.750836014,
+    "median": 0.080731409,
+    "standard_deviation": 0.8410949224993787,
     "percentiles": {
-      "10": 0.186066392,
-      "20": 0.219907051,
-      "30": 0.258462571,
-      "40": 0.301227936,
-      "50": 0.36406424049999997,
-      "60": 0.423234904,
-      "70": 0.527960255,
-      "75": 0.559111637,
-      "80": 0.601874697,
-      "85": 0.658456279,
-      "90": 0.770335886,
-      "95": 10.723328013,
-      "99": 11.627872067
+      "10": 0.036049358,
+      "20": 0.049492537,
+      "30": 0.062905696,
+      "40": 0.072465399,
+      "50": 0.080731409,
+      "60": 0.0885455695,
+      "70": 0.09895164,
+      "75": 0.103160955,
+      "80": 0.110743335,
+      "85": 0.118884673,
+      "90": 0.129430856,
+      "95": 3.494953838,
+      "99": 3.694614379
     }
   },
   "traffic_times": {
-    "average": 15129.697058823529,
-    "minimal": 8,
-    "maxmimal": 515722,
-    "median": 9700.5,
-    "standard_deviation": 34750.735056119,
+    "average": 15099.18138424821,
+    "minimal": 336,
+    "maxmimal": 516239,
+    "median": 10383,
+    "standard_deviation": 31541.145341694657,
     "percentiles": {
-      "10": 6588,
-      "20": 7822,
-      "30": 8593,
-      "40": 9271.5,
-      "50": 9700.5,
-      "60": 10589,
-      "70": 11186,
-      "75": 11562,
-      "80": 11830,
-      "85": 12415.5,
-      "90": 14410,
-      "95": 46591,
-      "99": 92629
+      "10": 7511,
+      "20": 8441,
+      "30": 9230,
+      "40": 9833,
+      "50": 10383,
+      "60": 10889,
+      "70": 11398,
+      "75": 11853,
+      "80": 12327,
+      "85": 13121,
+      "90": 15153,
+      "95": 44791,
+      "99": 73846
     }
   },
-  "uptime": 297
+  "uptime": 123
 }
 ```
 
@@ -386,6 +389,12 @@ Here is the description of these stats:
   Crawlera now.
 * `traffic` - an amount of traffic sent to clients in bytes. This metric
   does includes headers and body sizes.
+* `crawlera_errors` - an amount of responses where `X-Crawlera-Error`
+  header is set.
+* `all_errors` - an amount of responses with errors (cancelled, timeouts
+  and `crawlera_errors`).
+* `adblocked_requests` - a number of requests which were blocked by Adblock
+  lists.
 
 `*_times` describes different time series (overall response time, time
 spent in crawlera) etc and provide average(mean), min and max values,

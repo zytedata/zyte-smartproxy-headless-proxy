@@ -28,6 +28,8 @@ type adblockMiddleware struct {
 	rules   []*adblock.Rule
 	matcher *adblock.RuleMatcher
 	cond    *sync.Cond
+
+	adblockedRequestsChan chan<- struct{}
 }
 
 type adblockParsedResult struct {
@@ -72,6 +74,7 @@ func (ab *adblockMiddleware) OnRequest() ReqType {
 				http.StatusForbidden,
 				fmt.Sprintf("Adblocked by rule '%s'", ab.rules[id].Raw),
 			)
+			ab.adblockedRequestsChan <- struct{}{}
 		}
 
 		return req, newResponse
@@ -181,6 +184,7 @@ func NewAdblockMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer, s
 
 	ware.matcher = adblock.NewMatcher()
 	ware.cond = sync.NewCond(&sync.Mutex{})
+	ware.adblockedRequestsChan = statsContainer.AdblockedRequestsChan
 
 	go func() {
 		channel := make(chan *adblockParsedResult, len(conf.AdblockLists))

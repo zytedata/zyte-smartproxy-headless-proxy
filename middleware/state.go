@@ -19,6 +19,8 @@ type stateMiddleware struct {
 	overallTimesChan     chan<- time.Duration
 	crawleraTimesChan    chan<- time.Duration
 	trafficChan          chan<- uint64
+	allErrorsChan        chan<- struct{}
+	crawleraErrorsChan   chan<- struct{}
 }
 
 // trafficCounter is a data structure which is wrapper for
@@ -69,6 +71,13 @@ func (s *stateMiddleware) OnResponse() RespType {
 			resp.Body = newTrafficCounter(resp, s.trafficChan)
 		}
 
+		if resp == nil {
+			s.allErrorsChan <- struct{}{}
+		} else if resp.Header.Get("X-Crawlera-Errors") != "" {
+			s.allErrorsChan <- struct{}{}
+			s.crawleraErrorsChan <- struct{}{}
+		}
+
 		return resp
 	})
 }
@@ -84,6 +93,8 @@ func NewStateMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer, sta
 	ware.overallTimesChan = statsContainer.OverallTimesChan
 	ware.crawleraTimesChan = statsContainer.CrawleraTimesChan
 	ware.trafficChan = statsContainer.TrafficChan
+	ware.allErrorsChan = statsContainer.AllErrorsChan
+	ware.crawleraErrorsChan = statsContainer.CrawleraErrorsChan
 
 	return ware
 }

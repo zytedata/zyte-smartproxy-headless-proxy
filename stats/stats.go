@@ -35,12 +35,15 @@ var statsPercentilesToCalculate = [13]uint8{
 // Stats is a collector of statistics. Its idea is to listen to all provided
 // channels and generate reports (JSON data structures).
 type Stats struct {
-	requestsNumber   uint64
-	crawleraRequests uint64
-	sessionsCreated  uint64
-	clientsConnected uint64
-	clientsServing   uint64
-	traffic          uint64
+	requestsNumber    uint64
+	crawleraRequests  uint64
+	sessionsCreated   uint64
+	clientsConnected  uint64
+	clientsServing    uint64
+	traffic           uint64
+	adblockedRequests uint64
+	crawleraErrors    uint64
+	allErrors         uint64
 
 	// The owls are not what they seem
 	// do not believe RWMutex. We use it as shared/exclusive lock.
@@ -51,24 +54,30 @@ type Stats struct {
 
 	startedAt time.Time
 
-	RequestsNumberChan   chan struct{}
-	CrawleraRequestsChan chan struct{}
-	SessionsCreatedChan  chan struct{}
-	ClientsConnectedChan chan bool
-	ClientsServingChan   chan bool
-	CrawleraTimesChan    chan time.Duration
-	OverallTimesChan     chan time.Duration
-	TrafficChan          chan uint64
+	RequestsNumberChan    chan struct{}
+	CrawleraRequestsChan  chan struct{}
+	SessionsCreatedChan   chan struct{}
+	AdblockedRequestsChan chan struct{}
+	CrawleraErrorsChan    chan struct{}
+	AllErrorsChan         chan struct{}
+	ClientsConnectedChan  chan bool
+	ClientsServingChan    chan bool
+	CrawleraTimesChan     chan time.Duration
+	OverallTimesChan      chan time.Duration
+	TrafficChan           chan uint64
 }
 
 // JSON is intended to be serialized to JSON by proxy API.
 type JSON struct {
-	RequestsNumber   uint64 `json:"requests_number"`
-	CrawleraRequests uint64 `json:"crawlera_requests"`
-	SessionsCreated  uint64 `json:"sessions_created"`
-	ClientsConnected uint64 `json:"clients_connected"`
-	ClientsServing   uint64 `json:"clients_serving"`
-	Traffic          uint64 `json:"traffic"`
+	RequestsNumber    uint64 `json:"requests_number"`
+	CrawleraRequests  uint64 `json:"crawlera_requests"`
+	CrawleraErrors    uint64 `json:"crawlera_errors"`
+	AllErrors         uint64 `json:"all_errors"`
+	AdblockedRequests uint64 `json:"adblocked_requests"`
+	SessionsCreated   uint64 `json:"sessions_created"`
+	ClientsConnected  uint64 `json:"clients_connected"`
+	ClientsServing    uint64 `json:"clients_serving"`
+	Traffic           uint64 `json:"traffic"`
 
 	OverallTimes  *JSONTimes `json:"overall_times"`
 	CrawleraTimes *JSONTimes `json:"crawlera_times"`
@@ -94,12 +103,15 @@ func (s *Stats) GetStatsJSON() *JSON {
 	defer s.statsLock.Unlock()
 
 	return &JSON{
-		RequestsNumber:   s.requestsNumber,
-		CrawleraRequests: s.crawleraRequests,
-		SessionsCreated:  s.sessionsCreated,
-		ClientsConnected: s.clientsConnected,
-		ClientsServing:   s.clientsServing,
-		Traffic:          s.traffic,
+		RequestsNumber:    s.requestsNumber,
+		CrawleraRequests:  s.crawleraRequests,
+		SessionsCreated:   s.sessionsCreated,
+		ClientsConnected:  s.clientsConnected,
+		ClientsServing:    s.clientsServing,
+		Traffic:           s.traffic,
+		AdblockedRequests: s.adblockedRequests,
+		CrawleraErrors:    s.crawleraErrors,
+		AllErrors:         s.allErrors,
 
 		OverallTimes:  s.makeJSONTimes(s.overallTimes),
 		CrawleraTimes: s.makeJSONTimes(s.crawleraTimes),
@@ -168,6 +180,9 @@ func (s *Stats) makeJSONTimes(data timeSeriesInterface) *JSONTimes {
 func (s *Stats) RunCollect() {
 	go s.collectRequestNumbers()
 	go s.collectCrawleraRequests()
+	go s.collectCrawleraErrors()
+	go s.collectAllErrors()
+	go s.collectAdblockedRequests()
 	go s.collectSessionsCreated()
 	go s.collectClientConnected()
 	go s.collectClientsServing()
@@ -202,6 +217,36 @@ func (s *Stats) collectSessionsCreated() {
 
 		s.statsLock.RLock()
 		atomic.AddUint64(&s.sessionsCreated, 1)
+		s.statsLock.RUnlock()
+	}
+}
+
+func (s *Stats) collectAdblockedRequests() {
+	for {
+		<-s.AdblockedRequestsChan
+
+		s.statsLock.RLock()
+		atomic.AddUint64(&s.adblockedRequests, 1)
+		s.statsLock.RUnlock()
+	}
+}
+
+func (s *Stats) collectCrawleraErrors() {
+	for {
+		<-s.CrawleraErrorsChan
+
+		s.statsLock.RLock()
+		atomic.AddUint64(&s.crawleraErrors, 1)
+		s.statsLock.RUnlock()
+	}
+}
+
+func (s *Stats) collectAllErrors() {
+	for {
+		<-s.AllErrorsChan
+
+		s.statsLock.RLock()
+		atomic.AddUint64(&s.allErrors, 1)
 		s.statsLock.RUnlock()
 	}
 }
@@ -291,13 +336,16 @@ func NewStats() *Stats {
 		startedAt:     time.Now(),
 		statsLock:     &sync.RWMutex{},
 
-		RequestsNumberChan:   make(chan struct{}, statsChanBufferLength),
-		CrawleraRequestsChan: make(chan struct{}, statsChanBufferLength),
-		SessionsCreatedChan:  make(chan struct{}, statsChanBufferLength),
-		ClientsConnectedChan: make(chan bool, statsChanBufferLength),
-		ClientsServingChan:   make(chan bool, statsChanBufferLength),
-		CrawleraTimesChan:    make(chan time.Duration, statsChanBufferLength),
-		OverallTimesChan:     make(chan time.Duration, statsChanBufferLength),
-		TrafficChan:          make(chan uint64, statsChanBufferLength),
+		RequestsNumberChan:    make(chan struct{}, statsChanBufferLength),
+		CrawleraRequestsChan:  make(chan struct{}, statsChanBufferLength),
+		CrawleraErrorsChan:    make(chan struct{}, statsChanBufferLength),
+		AllErrorsChan:         make(chan struct{}, statsChanBufferLength),
+		AdblockedRequestsChan: make(chan struct{}, statsChanBufferLength),
+		SessionsCreatedChan:   make(chan struct{}, statsChanBufferLength),
+		ClientsConnectedChan:  make(chan bool, statsChanBufferLength),
+		ClientsServingChan:    make(chan bool, statsChanBufferLength),
+		CrawleraTimesChan:     make(chan time.Duration, statsChanBufferLength),
+		OverallTimesChan:      make(chan time.Duration, statsChanBufferLength),
+		TrafficChan:           make(chan uint64, statsChanBufferLength),
 	}
 }

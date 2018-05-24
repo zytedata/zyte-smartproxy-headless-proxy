@@ -26,6 +26,8 @@ type sessionsMiddleware struct {
 	sessionChans *ccache.Cache
 
 	sessionsCreatedChan chan<- struct{}
+	allErrorsChan       chan<- struct{}
+	crawleraErrorsChan  chan<- struct{}
 }
 
 func (s *sessionsMiddleware) OnRequest() ReqType {
@@ -79,7 +81,9 @@ func (s *sessionsMiddleware) OnResponse() RespType {
 			if err == "" {
 				return s.sessionRespOK(resp, rstate)
 			}
+			s.crawleraErrorsChan <- struct{}{}
 		}
+		s.allErrorsChan <- struct{}{}
 
 		log.WithFields(log.Fields{
 			"request-id": rstate.ID,
@@ -107,7 +111,6 @@ func (s *sessionsMiddleware) sessionRespOK(resp *http.Response, rstate *RequestS
 				"sessionid":  sessionID,
 			}).Debug("Initialized new session.")
 		}
-
 		s.sessionsCreatedChan <- struct{}{}
 	}
 
@@ -207,6 +210,8 @@ func NewSessionsMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer, 
 	ware.clients = &sync.Map{}
 	ware.sessionChans = ccache.New(ccache.Configure().MaxSize(sessionsChansMaxSize).ItemsToPrune(sessionsChansItemsToPrune))
 	ware.sessionsCreatedChan = statsContainer.SessionsCreatedChan
+	ware.allErrorsChan = statsContainer.AllErrorsChan
+	ware.crawleraErrorsChan = statsContainer.CrawleraErrorsChan
 
 	return ware
 }
