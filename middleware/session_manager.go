@@ -1,6 +1,10 @@
 package middleware
 
-import "time"
+import (
+	"time"
+
+	log "github.com/sirupsen/logrus"
+)
 
 const (
 	sessionClientTimeout      = 180 * time.Second
@@ -46,6 +50,11 @@ func (s *sessionManager) Start() {
 		case brokenSession := <-s.brokenSessionChan:
 			if s.id == brokenSession {
 				s.id = ""
+			} else {
+				log.WithFields(log.Fields{
+					"current-id": s.id,
+					"broken-id":  brokenSession,
+				}).Debug("Unknown broken session has been reported.")
 			}
 		}
 	}
@@ -53,20 +62,19 @@ func (s *sessionManager) Start() {
 
 func (s *sessionManager) requestNewSession(feedback *sessionIDRequest) {
 	newSessionChan := make(chan string, 1)
-	feedback.channel <- chan<- string(newSessionChan)
+	feedback.channel <- (chan<- string(newSessionChan))
 
-	var timeAfter <-chan time.Time
-	if feedback.retry {
-		timeAfter = time.After(sessionClientTimeoutRetry)
-	} else {
-		timeAfter = time.After(sessionClientTimeout)
-	}
-
+	timeAfter := s.getTimeoutChannel(feedback.retry)
 	for {
 		select {
 		case brokenSession := <-s.brokenSessionChan:
 			if s.id == brokenSession {
 				s.id = ""
+			} else {
+				log.WithFields(log.Fields{
+					"current-id": s.id,
+					"broken-id":  brokenSession,
+				}).Debug("Unknown broken session has been reported.")
 			}
 		case newSession, notClosed := <-newSessionChan:
 			if notClosed {
@@ -74,9 +82,17 @@ func (s *sessionManager) requestNewSession(feedback *sessionIDRequest) {
 			}
 			return
 		case <-timeAfter:
+			log.Debug("Timeout in waiting for the new session.")
 			return
 		}
 	}
+}
+
+func (s *sessionManager) getTimeoutChannel(retry bool) <-chan time.Time {
+	if retry {
+		return time.After(sessionClientTimeoutRetry)
+	}
+	return time.After(sessionClientTimeout)
 }
 
 func newSessionManager() *sessionManager {

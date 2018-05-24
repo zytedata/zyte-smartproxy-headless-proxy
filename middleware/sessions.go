@@ -94,17 +94,19 @@ func (s *sessionsMiddleware) OnResponse() RespType {
 }
 
 func (s *sessionsMiddleware) sessionRespOK(resp *http.Response, rstate *RequestState) *http.Response {
-	if item := s.sessionChans.Get(rstate.ID); item != nil && !item.Expired() {
+	if item := s.sessionChans.Get(rstate.ID); item != nil {
 		sessionIDChan := item.Value().(chan<- string)
-		sessionID := resp.Header.Get("X-Crawlera-Session")
-		sessionIDChan <- sessionID
-		close(sessionIDChan)
+		defer close(sessionIDChan)
 
-		log.WithFields(log.Fields{
-			"request-id": rstate.ID,
-			"client-id":  rstate.ClientID,
-			"sessionid":  sessionID,
-		}).Debug("Initialized new session.")
+		sessionID := resp.Header.Get("X-Crawlera-Session")
+		if !item.Expired() {
+			sessionIDChan <- sessionID
+			log.WithFields(log.Fields{
+				"request-id": rstate.ID,
+				"client-id":  rstate.ClientID,
+				"sessionid":  sessionID,
+			}).Debug("Initialized new session.")
+		}
 
 		s.sessionsCreatedChan <- struct{}{}
 	}
@@ -125,9 +127,8 @@ func (s *sessionsMiddleware) sessionRespError(rstate *RequestState, ctx *goproxy
 	brokenSessionID := ctx.Req.Header.Get("X-Crawlera-Session")
 	mgr.getBrokenSessionChan() <- brokenSessionID
 
-	if item := s.sessionChans.Get(rstate.ID); item != nil && !item.Expired() {
-		sessionIDChan := item.Value().(chan<- string)
-		close(sessionIDChan)
+	if item := s.sessionChans.Get(rstate.ID); item != nil {
+		close(item.Value().(chan<- string))
 	}
 
 	sessionID := mgr.getSessionID(true)
