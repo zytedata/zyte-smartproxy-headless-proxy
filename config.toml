@@ -48,6 +48,17 @@ bind_port = 3128
 # to listen on every interface.
 bind_ip = "127.0.0.1"
 
+# Which IP should crawlera-headless-proxy proxy API listen on. Please
+# remember that this is not HTTP Proxy interface you should set in your
+# browser, this is internal thing for getting stats etc.
+#
+# Default (empty value) will set this IP to the same value as bind_ip.
+proxy_api_ip = ""
+
+# Which port crawlera-headless-proxy proxy API should listen on. Please
+# remember that his is not HTTP proxy interface port.
+proxy_api_port = 3130
+
 # Which port is Crawlera listen on. In 99.999% of cases it is 8010 and you
 # do not need to change that.
 crawlera_port = 8010
