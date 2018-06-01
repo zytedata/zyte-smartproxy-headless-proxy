@@ -16,7 +16,7 @@ func TestInitMiddlewares(t *testing.T) {
 	assert.Nil(t, resp)
 	assert.NotNil(t, cr.ctx.UserData)
 
-	state := cr.ctx.UserData.(*RequestState)
+	state := GetRequestState(cr.ctx)
 	assert.NotZero(t, state.ID)
 	assert.NotZero(t, state.ClientID)
 	assert.NotEqual(t, state.ID, state.ClientID)

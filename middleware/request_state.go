@@ -25,7 +25,7 @@ type RequestState struct {
 	RequestStarted   time.Time
 
 	seenMiddlewares map[middlewareType]struct{}
-	requestFinished *time.Time
+	requestFinished time.Time
 	crawleraTimes   []time.Time
 
 	crawleraRequestsChan chan<- struct{}
@@ -34,19 +34,18 @@ type RequestState struct {
 
 // Finish sets request as finished.
 func (rs *RequestState) Finish() {
-	if rs.requestFinished != nil {
-		timeNow := time.Now()
-		rs.requestFinished = &timeNow
+	if rs.requestFinished.IsZero() {
+		rs.requestFinished = time.Now()
 	}
 }
 
 // Elapsed returns duration of the request (overall).
 func (rs *RequestState) Elapsed() time.Duration {
 	var finishedAt time.Time
-	if rs.requestFinished != nil {
-		finishedAt = *rs.requestFinished
-	} else {
+	if rs.requestFinished.IsZero() {
 		finishedAt = time.Now()
+	} else {
+		finishedAt = rs.requestFinished
 	}
 
 	return finishedAt.Sub(rs.RequestStarted)
@@ -54,31 +53,31 @@ func (rs *RequestState) Elapsed() time.Duration {
 
 // StartCrawleraRequest adds a fact that request to Crawlera is
 // performing.
-func (rs *RequestState) StartCrawleraRequest() (err error) {
+func (rs *RequestState) StartCrawleraRequest() error {
 	if len(rs.crawleraTimes)%2 == 0 {
 		rs.crawleraTimes = append(rs.crawleraTimes, time.Now())
 	} else {
-		err = errors.New("Crawlera request already started")
+		return errors.New("Crawlera request already started")
 	}
 	rs.CrawleraRequests++
 	rs.crawleraRequestsChan <- struct{}{}
 
-	return
+	return nil
 }
 
 // FinishCrawleraRequest adds a fact that request to Crawlera was
 // performed
-func (rs *RequestState) FinishCrawleraRequest() (err error) {
+func (rs *RequestState) FinishCrawleraRequest() error {
 	if len(rs.crawleraTimes)%2 == 1 {
 		rs.crawleraTimes = append(rs.crawleraTimes, time.Now())
 	} else {
-		err = errors.New("Crawlera request already finished")
+		return errors.New("Crawlera request already finished")
 	}
 
 	l := len(rs.crawleraTimes) - 1
 	rs.crawleraTimesChan <- rs.crawleraTimes[l].Sub(rs.crawleraTimes[l-1])
 
-	return
+	return nil
 }
 
 // CrawleraTimes returns a list of durations on accessing Crawlera.
@@ -86,8 +85,8 @@ func (rs *RequestState) CrawleraTimes() []time.Duration {
 	var crawleraTimes []time.Time
 	var duration []time.Duration
 
-	if len(crawleraTimes)%2 == 1 {
-		crawleraTimes = append([]time.Time{}, rs.crawleraTimes...)
+	if len(rs.crawleraTimes)%2 == 1 {
+		crawleraTimes = append(crawleraTimes, rs.crawleraTimes...)
 		crawleraTimes = append(crawleraTimes, time.Now())
 	} else {
 		crawleraTimes = rs.crawleraTimes
