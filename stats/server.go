@@ -31,7 +31,14 @@ func RunStats(statsContainer *Stats, conf *config.Config) {
 	router.Use(middleware.Compress(6))
 
 	router.Get("/stats", func(w http.ResponseWriter, r *http.Request) {
-		if err := json.NewEncoder(w).Encode(statsContainer.GetStatsJSON()); err != nil {
+		encoder := json.NewEncoder(w)
+		encoder.SetEscapeHTML(false)
+		encoder.SetIndent("", "  ")
+
+		statsContainer.StatsLock.Lock()
+		defer statsContainer.StatsLock.Unlock()
+
+		if err := encoder.Encode(statsContainer); err != nil {
 			log.WithFields(log.Fields{
 				"error": err,
 			}).Warn("Cannot return JSON to client")
