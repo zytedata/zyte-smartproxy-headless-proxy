@@ -4,10 +4,22 @@ import (
 	"net/http"
 	"net/http/httptest"
 
+	"github.com/elazarl/goproxy"
+	"github.com/stretchr/testify/suite"
+
 	"github.com/9seconds/crawlera-headless-proxy/config"
 	"github.com/9seconds/crawlera-headless-proxy/stats"
-	"github.com/elazarl/goproxy"
 )
+
+type MiddlewareTestSuite struct {
+	suite.Suite
+
+	cr *testProxyContainer
+}
+
+func (t *MiddlewareTestSuite) SetupTest() {
+	t.cr = testInitNewProxyContainer()
+}
 
 type testProxyContainer struct {
 	req  *http.Request

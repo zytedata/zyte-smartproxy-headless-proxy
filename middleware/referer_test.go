@@ -9,14 +9,13 @@ import (
 )
 
 type RefererTestSuite struct {
-	suite.Suite
+	MiddlewareTestSuite
 
-	cr      *testProxyContainer
 	handler ReqType
 }
 
 func (t *RefererTestSuite) SetupTest() {
-	t.cr = testInitNewProxyContainer()
+	t.MiddlewareTestSuite.SetupTest()
 
 	ware := NewRefererMiddleware(t.cr.conf, nil, t.cr.s).(*refererMiddleware)
 	t.handler = ware.OnRequest()
