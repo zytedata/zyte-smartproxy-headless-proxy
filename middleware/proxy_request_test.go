@@ -3,24 +3,30 @@ package middleware
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestProxyRequestWrapper(t *testing.T) {
-	cr := testInitNewProxyContainer()
-	ware := NewProxyRequestMiddleware(cr.conf, nil, cr.s)
+type ProxyRequestSuite struct {
+	MiddlewareTestSuite
+}
+
+func (t *ProxyRequestSuite) TestWrapper() {
+	ware := NewProxyRequestMiddleware(t.cr.conf, nil, t.cr.s)
 
 	reqHandler := ware.OnRequest()
 	respHandler := ware.OnResponse()
 
-	req, resp := reqHandler(cr.req, cr.ctx)
-	assert.NotNil(t, req)
-	assert.Nil(t, resp)
+	req, resp := reqHandler(t.cr.req, t.cr.ctx)
+	t.NotNil(req)
+	t.Nil(resp)
+	t.Len(GetRequestState(t.cr.ctx).crawleraTimes, 1)
+	t.Equal(GetRequestState(t.cr.ctx).CrawleraRequests, uint8(1))
 
-	assert.Len(t, GetRequestState(cr.ctx).crawleraTimes, 1)
-	assert.Equal(t, GetRequestState(cr.ctx).CrawleraRequests, uint8(1))
+	respHandler(nil, t.cr.ctx)
+	t.Len(GetRequestState(t.cr.ctx).crawleraTimes, 2)
+	t.Equal(GetRequestState(t.cr.ctx).CrawleraRequests, uint8(1))
+}
 
-	respHandler(nil, cr.ctx)
-	assert.Len(t, GetRequestState(cr.ctx).crawleraTimes, 2)
-	assert.Equal(t, GetRequestState(cr.ctx).CrawleraRequests, uint8(1))
+func TestProxyRequest(t *testing.T) {
+	suite.Run(t, &ProxyRequestSuite{})
 }
