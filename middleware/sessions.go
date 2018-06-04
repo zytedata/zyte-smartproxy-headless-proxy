@@ -21,6 +21,10 @@ const (
 type sessionsMiddleware struct {
 	UniqBase
 
+	apiKey       string
+	crawleraHost string
+	crawleraPort int
+
 	httpClient   *http.Client
 	clients      *sync.Map
 	sessionChans *ccache.Cache
@@ -34,7 +38,8 @@ func (s *sessionsMiddleware) OnRequest() ReqType {
 	return s.BaseOnRequest(func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 		rstate := GetRequestState(ctx)
 
-		mgrRaw, loaded := s.clients.LoadOrStore(rstate.ClientID, newSessionManager())
+		mgrRaw, loaded := s.clients.LoadOrStore(rstate.ClientID,
+			newSessionManager(s.apiKey, s.crawleraHost, s.crawleraPort))
 		mgr := mgrRaw.(*sessionManager)
 		if !loaded {
 			go mgr.Start()
@@ -212,6 +217,9 @@ func NewSessionsMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer, 
 	ware.sessionsCreatedChan = statsContainer.SessionsCreatedChan
 	ware.allErrorsChan = statsContainer.AllErrorsChan
 	ware.crawleraErrorsChan = statsContainer.CrawleraErrorsChan
+	ware.apiKey = conf.APIKey
+	ware.crawleraHost = conf.CrawleraHost
+	ware.crawleraPort = conf.CrawleraPort
 
 	return ware
 }

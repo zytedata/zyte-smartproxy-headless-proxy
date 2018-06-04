@@ -1,20 +1,36 @@
 package middleware
 
 import (
+	"io"
+	"io/ioutil"
+	"net"
+	"net/http"
+	"net/url"
+	"path"
+	"strconv"
 	"time"
 
+	"github.com/juju/errors"
 	log "github.com/sirupsen/logrus"
 )
 
 const (
 	sessionClientTimeout      = 180 * time.Second
 	sessionClientTimeoutRetry = 30 * time.Second
+	sessionAPITimeout         = 10 * time.Second
+
+	sessionToDeleteQueueSize = 5000
+	sessionUserAgent         = "crawlera-headless-proxy"
 )
 
 type sessionManager struct {
-	id                string
+	id           string
+	apiKey       string
+	crawleraHost string
+
 	requestIDChan     chan *sessionIDRequest
 	brokenSessionChan chan string
+	sessionsToDelete  chan string
 }
 
 type sessionIDRequest struct {
@@ -39,6 +55,8 @@ func (s *sessionManager) getBrokenSessionChan() chan<- string {
 }
 
 func (s *sessionManager) Start() {
+	go s.startCrawleraAPISessionDeleter()
+
 	for {
 		select {
 		case feedback := <-s.requestIDChan:
@@ -58,6 +76,51 @@ func (s *sessionManager) Start() {
 			}
 		}
 	}
+}
+
+func (s *sessionManager) startCrawleraAPISessionDeleter() {
+	for sessionID := range s.sessionsToDelete {
+		if sessionID == "" {
+			continue
+		}
+
+		if err := s.deleteCrawleraSession(sessionID); err != nil {
+			log.WithFields(log.Fields{
+				"session-id": sessionID,
+				"error":      err,
+			}).Warn("Cannot delete session from Crawlera")
+		} else {
+			log.WithFields(log.Fields{
+				"session-id": sessionID,
+			}).Warn("Session was deleted from Crawlera")
+		}
+	}
+}
+
+func (s *sessionManager) deleteCrawleraSession(sessionID string) error {
+	apiURL := url.URL{
+		Scheme: "https",
+		Host:   s.crawleraHost,
+		Path:   path.Join("sessions", sessionID),
+	}
+	req, _ := http.NewRequest("DELETE", apiURL.String(), http.NoBody)
+	req.SetBasicAuth(s.apiKey, "")
+	req.Header.Set("User-Agent", sessionUserAgent)
+
+	client := &http.Client{Timeout: sessionAPITimeout}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()            // nolint: errcheck
+	io.Copy(ioutil.Discard, resp.Body) //nolint: errcheck
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return errors.Errorf("Response status code is %d", resp.StatusCode)
+	}
+
+	return nil
+
 }
 
 func (s *sessionManager) requestNewSession(feedback *sessionIDRequest) {
@@ -95,9 +158,12 @@ func (s *sessionManager) getTimeoutChannel(retry bool) <-chan time.Time {
 	return time.After(sessionClientTimeout)
 }
 
-func newSessionManager() *sessionManager {
+func newSessionManager(apiKey, crawleraHost string, crawleraPort int) *sessionManager {
 	return &sessionManager{
+		apiKey:            apiKey,
+		crawleraHost:      net.JoinHostPort(crawleraHost, strconv.Itoa(crawleraPort)),
 		requestIDChan:     make(chan *sessionIDRequest),
 		brokenSessionChan: make(chan string),
+		sessionsToDelete:  make(chan string, sessionToDeleteQueueSize),
 	}
 }
