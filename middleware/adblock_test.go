@@ -34,7 +34,7 @@ func (t *AdblockTestSuite) TestWork() {
 	t.NotNil(nreq)
 
 	req = httptest.NewRequest("GET", "https://scrapinghub.com/testlist.txt?id=1&ad_code=12", http.NoBody)
-	nreq, nresp = handler(req, t.cr.Ctx())
+	_, nresp = handler(req, t.cr.Ctx())
 	t.True(nresp.StatusCode >= http.StatusBadRequest)
 }
 

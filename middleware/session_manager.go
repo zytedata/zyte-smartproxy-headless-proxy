@@ -113,7 +113,7 @@ func (s *sessionManager) deleteCrawleraSession(sessionID string) error {
 		return err
 	}
 	defer resp.Body.Close()            // nolint: errcheck
-	io.Copy(ioutil.Discard, resp.Body) //nolint: errcheck
+	io.Copy(ioutil.Discard, resp.Body) // nolint: errcheck
 
 	if resp.StatusCode >= http.StatusBadRequest {
 		return errors.Errorf("Response status code is %d", resp.StatusCode)

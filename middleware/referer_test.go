@@ -28,20 +28,20 @@ func (t *RefererTestSuite) TestEmpty() {
 }
 
 func (t *RefererTestSuite) TestDuplicate() {
-	req, resp := t.handler(t.cr.req, t.cr.Ctx())
+	req, _ := t.handler(t.cr.req, t.cr.Ctx())
 	req.URL = &url.URL{
 		Scheme: "https",
 		Host:   "scrapinghub.com",
 		Path:   "path",
 	}
 
-	req, resp = t.handler(req, t.cr.Ctx())
+	req, resp := t.handler(req, t.cr.Ctx())
 	t.Nil(resp)
 	t.Equal(req.Header.Get("Referer"), "https://scrapinghub.com")
 }
 
 func (t *RefererTestSuite) TestRespectOwnReferer() {
-	req, resp := t.handler(t.cr.req, t.cr.Ctx())
+	req, _ := t.handler(t.cr.req, t.cr.Ctx())
 	req.URL = &url.URL{
 		Scheme: "https",
 		Host:   "scrapinghub.com",
@@ -49,7 +49,7 @@ func (t *RefererTestSuite) TestRespectOwnReferer() {
 	}
 	req.Header.Set("Referer", "https://www.google.com")
 
-	req, resp = t.handler(req, t.cr.Ctx())
+	req, resp := t.handler(req, t.cr.Ctx())
 	t.Nil(resp)
 	t.Equal(req.Header.Get("Referer"), "https://www.google.com")
 
@@ -60,14 +60,14 @@ func (t *RefererTestSuite) TestRespectOwnReferer() {
 }
 
 func (t *RefererTestSuite) TestExpireReferer() {
-	req, resp := t.handler(t.cr.req, t.cr.Ctx())
+	req, _ := t.handler(t.cr.req, t.cr.Ctx())
 	req.Header.Set("Referer", "https://www.google.com")
 
 	t.handler(req, t.cr.Ctx())
 	time.Sleep(refererTTL + 500*time.Millisecond)
 	req.Header.Del("Referer")
 
-	req, resp = t.handler(req, t.cr.Ctx())
+	req, resp := t.handler(req, t.cr.Ctx())
 	t.Nil(resp)
 	t.Equal(req.Header.Get("Referer"), "https://scrapinghub.com")
 }
