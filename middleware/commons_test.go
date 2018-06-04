@@ -17,6 +17,13 @@ type testProxyContainer struct {
 	conf *config.Config
 }
 
+func (t *testProxyContainer) Ctx() *goproxy.ProxyCtx {
+	callback := InitMiddlewares(t.s)
+	ctx := &goproxy.ProxyCtx{Req: t.req, Resp: t.resp}
+	callback(t.req, ctx)
+	return ctx
+}
+
 func testNewProxyContainer() *testProxyContainer {
 	req := httptest.NewRequest("GET", "https://scrapinghub.com", http.NoBody)
 	resp := &http.Response{}
