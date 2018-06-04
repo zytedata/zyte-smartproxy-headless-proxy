@@ -6,31 +6,38 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 	gock "gopkg.in/h2non/gock.v1"
 )
 
-func TestAdblock(t *testing.T) {
+type AdblockTestSuite struct {
+	MiddlewareTestSuite
+}
+
+func (t *AdblockTestSuite) TestWork() {
 	defer gock.Off()
 	gock.New("https://scrapinghub.com/testlist.txt").
 		Get("/").
 		Reply(200).
 		BodyString("&ad_code=")
 
-	cr := testInitNewProxyContainer()
-	cr.conf.AdblockLists = []string{"https://scrapinghub.com/testlist.txt"}
+	t.cr.conf.AdblockLists = []string{"https://scrapinghub.com/testlist.txt"}
 
-	ware := NewAdblockMiddleware(cr.conf, nil, cr.s).(*adblockMiddleware)
+	ware := NewAdblockMiddleware(t.cr.conf, nil, t.cr.s).(*adblockMiddleware)
 	time.Sleep(10 * time.Millisecond)
-	assert.True(t, ware.loaded)
+	t.True(ware.loaded)
 
 	handler := ware.OnRequest()
 	req := httptest.NewRequest("GET", "https://scrapinghub.com/testlist.txt", http.NoBody)
-	nreq, nresp := handler(req, cr.Ctx())
-	assert.Nil(t, nresp)
-	assert.NotNil(t, nreq)
+	nreq, nresp := handler(req, t.cr.Ctx())
+	t.Nil(nresp)
+	t.NotNil(nreq)
 
 	req = httptest.NewRequest("GET", "https://scrapinghub.com/testlist.txt?id=1&ad_code=12", http.NoBody)
-	nreq, nresp = handler(req, cr.Ctx())
-	assert.True(t, nresp.StatusCode >= http.StatusBadRequest)
+	nreq, nresp = handler(req, t.cr.Ctx())
+	t.True(nresp.StatusCode >= http.StatusBadRequest)
+}
+
+func TestAdblock(t *testing.T) {
+	suite.Run(t, &AdblockTestSuite{})
 }
