@@ -16,6 +16,17 @@ type RespType func(*http.Response, *goproxy.ProxyCtx) *http.Response
 // middlewareType is an unique identifier of the middleware
 type middlewareType uint8
 
+const (
+	middlewareTypeState middlewareType = iota
+	middlewareTypeIncomingLog
+	middlewareTypeAdblock
+	middlewareTypeRateLimiter
+	middlewareTypeHeaders
+	middlewareTypeReferer
+	middlewareTypeSessions
+	middlewareTypeProxyRequest
+)
+
 // Middleware is an interface with 2 methods for goproxy callback
 // initialization Please be noticed that response callbacks should be
 // added in reverse order
