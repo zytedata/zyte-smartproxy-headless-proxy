@@ -67,6 +67,7 @@ func (s *sessionManager) Start() {
 			}
 		case brokenSession := <-s.brokenSessionChan:
 			if s.id == brokenSession {
+				s.sessionsToDelete <- brokenSession
 				s.id = ""
 			} else {
 				log.WithFields(log.Fields{
@@ -132,6 +133,7 @@ func (s *sessionManager) requestNewSession(feedback *sessionIDRequest) {
 		select {
 		case brokenSession := <-s.brokenSessionChan:
 			if s.id == brokenSession {
+				s.sessionsToDelete <- brokenSession
 				s.id = ""
 			} else {
 				log.WithFields(log.Fields{
