@@ -100,7 +100,7 @@ func (s *sessionManager) startCrawleraAPISessionDeleter() {
 
 func (s *sessionManager) deleteCrawleraSession(sessionID string) error {
 	apiURL := url.URL{
-		Scheme: "https",
+		Scheme: "http",
 		Host:   s.crawleraHost,
 		Path:   path.Join("sessions", sessionID),
 	}
