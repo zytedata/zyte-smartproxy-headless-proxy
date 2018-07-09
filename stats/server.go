@@ -11,7 +11,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/9seconds/crawlera-headless-proxy/config"
+	"bitbucket.org/scrapinghub/crawlera-headless-proxy/config"
 )
 
 const (

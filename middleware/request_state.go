@@ -13,7 +13,7 @@ import (
 	uuid "github.com/hashicorp/go-uuid"
 	"github.com/juju/errors"
 
-	"github.com/9seconds/crawlera-headless-proxy/stats"
+	"bitbucket.org/scrapinghub/crawlera-headless-proxy/stats"
 )
 
 // RequestState stores basic metadata of every request (who, when etc)

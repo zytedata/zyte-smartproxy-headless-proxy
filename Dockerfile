@@ -18,10 +18,10 @@ RUN set -x \
       exit 1; \
   fi; done
 
-ADD . /go/src/github.com/9seconds/crawlera-headless-proxy
+ADD . /go/src/bitbucket.org/scrapinghub/crawlera-headless-proxy
 
 RUN set -x \
-  && cd /go/src/github.com/9seconds/crawlera-headless-proxy \
+  && cd /go/src/bitbucket.org/scrapinghub/crawlera-headless-proxy \
   && make clean \
   && make -j 4 static \
   && cp ca.crt /usr/local/share/ca-certificates/own-cert.crt \
@@ -44,6 +44,6 @@ EXPOSE 3128 3130
 COPY --from=build-env \
   /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=build-env \
-  /go/src/github.com/9seconds/crawlera-headless-proxy/crawlera-headless-proxy /usr/local/bin/crawlera-headless-proxy
+  /go/src/bitbucket.org/scrapinghub/crawlera-headless-proxy/crawlera-headless-proxy /usr/local/bin/crawlera-headless-proxy
 COPY --from=build-env \
-  /go/src/github.com/9seconds/crawlera-headless-proxy/config.toml /
+  /go/src/bitbucket.org/scrapinghub/crawlera-headless-proxy/config.toml /

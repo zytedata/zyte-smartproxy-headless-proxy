@@ -26,7 +26,7 @@ func (s statsUptime) MarshalJSON() ([]byte, error) {
 type Stats struct {
 	RequestsNumber    uint64 `json:"requests_number"`
 	CrawleraRequests  uint64 `json:"crawlera_requests"`
-	SessionsCreated   uint64 `json:"crawlera_errors"`
+	SessionsCreated   uint64 `json:"sessions_created"`
 	ClientsConnected  uint64 `json:"clients_connected"`
 	ClientsServing    uint64 `json:"clients_serving"`
 	Traffic           uint64 `json:"traffic"`

@@ -14,9 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
-	"github.com/9seconds/crawlera-headless-proxy/config"
-	"github.com/9seconds/crawlera-headless-proxy/proxy"
-	"github.com/9seconds/crawlera-headless-proxy/stats"
+	"bitbucket.org/scrapinghub/crawlera-headless-proxy/config"
+	"bitbucket.org/scrapinghub/crawlera-headless-proxy/proxy"
+	"bitbucket.org/scrapinghub/crawlera-headless-proxy/stats"
 )
 
 var (
