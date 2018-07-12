@@ -66,9 +66,11 @@ func (ts *timeSeries) MarshalJSON() ([]byte, error) {
 func (ts *timeSeries) calculatePercentiles(floats []float64) map[uint8]float64 {
 	percentiles := map[uint8]float64{}
 
-	for _, perc := range statsPercentilesToCalculate {
-		calculated, _ := mstats.Percentile(floats, float64(perc))
-		percentiles[perc] = calculated
+	if len(floats) >= 100 {
+		for _, perc := range statsPercentilesToCalculate {
+			calculated, _ := mstats.Percentile(floats, float64(perc))
+			percentiles[perc] = calculated
+		}
 	}
 
 	return percentiles
