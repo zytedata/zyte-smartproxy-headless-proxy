@@ -73,6 +73,11 @@ func (s *stateMiddleware) OnResponse() RespType {
 
 		if resp == nil {
 			s.allErrorsChan <- struct{}{}
+			resp = goproxy.NewResponse(ctx.Req,
+				goproxy.ContentTypeText,
+				http.StatusServiceUnavailable,
+				"Website crawl ban",
+			)
 		} else if resp.Header.Get("X-Crawlera-Errors") != "" {
 			s.allErrorsChan <- struct{}{}
 			s.crawleraErrorsChan <- struct{}{}
