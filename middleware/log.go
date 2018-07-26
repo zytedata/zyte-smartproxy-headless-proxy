@@ -61,7 +61,8 @@ func (i *incomingLogMiddleware) OnResponse() RespType {
 }
 
 // NewIncomingLogMiddleware returns a middleware which logs response/requests.
-func NewIncomingLogMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer, statsContainer *stats.Stats) Middleware {
+func NewIncomingLogMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer,
+	statsContainer *stats.Stats) Middleware {
 	ware := &incomingLogMiddleware{}
 	ware.mtype = middlewareTypeIncomingLog
 

@@ -32,7 +32,7 @@ func (h *headersMiddleware) OnRequest() ReqType {
 
 		profile := req.Header.Get("X-Crawlera-Profile")
 		if profile == "desktop" || profile == "mobile" {
-			for _, v := range headersProfileToRemove {
+			for _, v := range &headersProfileToRemove {
 				req.Header.Del(v)
 			}
 		}

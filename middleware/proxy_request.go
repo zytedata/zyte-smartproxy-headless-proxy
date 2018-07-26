@@ -48,7 +48,8 @@ func (p *proxyRequestMiddleware) OnResponse() RespType {
 
 // NewProxyRequestMiddleware returns middleware which tracks goproxy
 // requests to Crawlera.
-func NewProxyRequestMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer, statsContainer *stats.Stats) Middleware {
+func NewProxyRequestMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer,
+	statsContainer *stats.Stats) Middleware {
 	ware := &proxyRequestMiddleware{}
 	ware.mtype = middlewareTypeProxyRequest
 

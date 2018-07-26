@@ -1,13 +1,13 @@
-ROOT_DIR     := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-IMAGE_NAME   := crawlera-headless-proxy
-APP_NAME     := $(IMAGE_NAME)
-GOMETALINTER := gometalinter
+ROOT_DIR   := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+IMAGE_NAME := crawlera-headless-proxy
+APP_NAME   := $(IMAGE_NAME)
 
 VENDOR_FILES := $(shell find "$(ROOT_DIR)/vendor" 2>/dev/null || echo -n "vendor")
 CC_BINARIES  := $(shell bash -c "echo -n $(APP_NAME)-{linux,windows,darwin,freebsd,openbsd}-{386,amd64} $(APP_NAME)-linux-{arm,arm64}")
 APP_DEPS     := version.go proxy/certs.go $(VENDOR_FILES)
 
-COMMON_BUILD_FLAGS := -ldflags="-s -w"
+COMMON_BUILD_FLAGS    := -ldflags="-s -w"
+GOLANGCI_LINT_VERSION := v1.9.1
 
 # -----------------------------------------------------------------------------
 
@@ -34,7 +34,7 @@ version.go:
 proxy/certs.go:
 	@go generate proxy/proxy.go
 
-vendor: Gopkg.lock Gopkg.toml install-cli
+vendor: Gopkg.lock Gopkg.toml install-dep
 	@dep ensure
 
 # -----------------------------------------------------------------------------
@@ -53,12 +53,16 @@ crosscompile-dir:
 	@rm -rf "$(CC_DIR)" && mkdir -p "$(CC_DIR)"
 
 .PHONY: test
-test: vendor install-cli
+test: vendor
 	@go test -v ./...
 
 .PHONY: lint
-lint: vendor install-cli
-	@$(GOMETALINTER) --deadline=2m ./...
+lint: version.go
+	@golangci-lint run
+
+.PHONY: critic
+critic: version.go
+	@gocritic check-project ./
 
 .PHONY: clean
 clean:
@@ -70,14 +74,18 @@ clean:
 docker:
 	@docker build --pull -t "$(IMAGE_NAME)" "$(ROOT_DIR)"
 
-.PHONY: install-cli
-install-cli: install-dep install-lint
+.PHONY: prepare
+prepare: install-dep install-lint install-critic
 
 .PHONY: install-dep
 install-dep:
-	@go get github.com/golang/dep/cmd/dep
+	@go get -u github.com/golang/dep/cmd/dep
 
 .PHONY: install-lint
 install-lint:
-	@go get github.com/alecthomas/gometalinter && \
-		$(GOMETALINTER) --install >/dev/null
+	@curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh \
+		| bash -s -- -b $(GOPATH)/bin $(GOLANGCI_LINT_VERSION)
+
+.PHONY: install-critic
+install-critic:
+	@go get -u github.com/go-critic/go-critic/...

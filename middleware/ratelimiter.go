@@ -40,7 +40,8 @@ func (rl *rateLimiterMiddleware) OnResponse() RespType {
 
 // NewRateLimiterMiddleware returns middleware which limits an amount of
 // concurrent requests to Crawlera.
-func NewRateLimiterMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer, statsContainer *stats.Stats) Middleware {
+func NewRateLimiterMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer,
+	statsContainer *stats.Stats) Middleware {
 	ware := &rateLimiterMiddleware{}
 	ware.mtype = middlewareTypeRateLimiter
 

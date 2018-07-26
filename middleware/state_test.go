@@ -31,7 +31,7 @@ func (t *TrafficCounterSuite) TestWork() {
 
 	channel := make(chan uint64, 1)
 	tc := newTrafficCounter(resp, channel)
-	io.Copy(ioutil.Discard, tc)
+	io.Copy(ioutil.Discard, tc) // nolint: errcheck
 
 	t.Nil(tc.Close())
 	data := <-channel

@@ -46,11 +46,11 @@ func (s *sessionsMiddleware) OnRequest() ReqType {
 		}
 
 		sessionID := mgr.getSessionID(false)
-		switch sessionID.(type) {
+		switch value := sessionID.(type) {
 		case string:
-			s.onRequestWithSession(req, sessionID.(string))
+			s.onRequestWithSession(req, value)
 		case chan<- string:
-			s.onRequestWithoutSession(req, rstate, sessionID.(chan<- string))
+			s.onRequestWithoutSession(req, rstate, value)
 		}
 
 		return req, nil
@@ -140,9 +140,9 @@ func (s *sessionsMiddleware) sessionRespError(rstate *RequestState, ctx *goproxy
 	}
 
 	sessionID := mgr.getSessionID(true)
-	switch sessionID.(type) {
+	switch value := sessionID.(type) {
 	case chan<- string:
-		return s.sessionRespErrorWithoutSession(ctx.Req, rstate, mgr, sessionID.(chan<- string))
+		return s.sessionRespErrorWithoutSession(ctx.Req, rstate, value)
 	default:
 		return s.sessionRespErrorWithSession(ctx.Req, rstate, mgr, sessionID.(string))
 	}
@@ -175,7 +175,7 @@ func (s *sessionsMiddleware) sessionRespErrorWithSession(req *http.Request,
 }
 
 func (s *sessionsMiddleware) sessionRespErrorWithoutSession(req *http.Request,
-	rstate *RequestState, mgr *sessionManager, sessionIDChan chan<- string) *http.Response {
+	rstate *RequestState, sessionIDChan chan<- string) *http.Response {
 	defer close(sessionIDChan)
 
 	req.Header.Set("X-Crawlera-Session", "create")
@@ -204,7 +204,8 @@ func (s *sessionsMiddleware) sessionRespErrorWithoutSession(req *http.Request,
 
 // NewSessionsMiddleware returns middleware which is responsible for
 // automatic session management.
-func NewSessionsMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer, statsContainer *stats.Stats) Middleware {
+func NewSessionsMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer,
+	statsContainer *stats.Stats) Middleware {
 	ware := &sessionsMiddleware{}
 	ware.mtype = middlewareTypeSessions
 
@@ -213,7 +214,8 @@ func NewSessionsMiddleware(conf *config.Config, proxy *goproxy.ProxyHttpServer, 
 		Transport: proxy.Tr,
 	}
 	ware.clients = &sync.Map{}
-	ware.sessionChans = ccache.New(ccache.Configure().MaxSize(sessionsChansMaxSize).ItemsToPrune(sessionsChansItemsToPrune))
+	ware.sessionChans = ccache.New(ccache.Configure().
+		MaxSize(sessionsChansMaxSize).ItemsToPrune(sessionsChansItemsToPrune))
 	ware.sessionsCreatedChan = statsContainer.SessionsCreatedChan
 	ware.allErrorsChan = statsContainer.AllErrorsChan
 	ware.crawleraErrorsChan = statsContainer.CrawleraErrorsChan

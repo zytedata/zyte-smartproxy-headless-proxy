@@ -2,129 +2,180 @@
 
 
 [[projects]]
+  digest = "1:b16fbfbcc20645cb419f78325bb2e85ec729b338e996a228124d68931a6f2a37"
   name = "github.com/BurntSushi/toml"
   packages = ["."]
+  pruneopts = "UT"
   revision = "b26d9c308763d68093482582cea63d69be07a0f0"
   version = "v0.3.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:315c5f2f60c76d89b871c73f9bd5fe689cad96597afd50fb9992228ef80bdd34"
   name = "github.com/alecthomas/template"
   packages = [
     ".",
-    "parse"
+    "parse",
   ]
+  pruneopts = "UT"
   revision = "a0175ee3bccc567396460bf5acd36800cb10c49c"
 
 [[projects]]
   branch = "master"
+  digest = "1:c198fdc381e898e8fb62b8eb62758195091c313ad18e52a3067366e1dda2fb3c"
   name = "github.com/alecthomas/units"
   packages = ["."]
+  pruneopts = "UT"
   revision = "2efee857e7cfd4f3d0138cc3cbb1b4966962b93a"
 
 [[projects]]
+  digest = "1:a2c1d0e43bd3baaa071d1b9ed72c27d78169b2b269f71c105ac4ba34b1be4a39"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
+  pruneopts = "UT"
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
   version = "v1.1.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:2b7b174ae68705866555b73fd848de0749b93b1f99e3295e27f89bebe8702203"
   name = "github.com/elazarl/goproxy"
   packages = ["."]
+  pruneopts = "UT"
   revision = "a0c95418cf1a30836390c1e49d7a19339b2c23ce"
 
 [[projects]]
+  digest = "1:4eda9f7bf70f5145b3b9ed3f18ac93e9b1a0e38906eb69e526380c34861e2b07"
   name = "github.com/go-chi/chi"
   packages = [
     ".",
-    "middleware"
+    "middleware",
   ]
+  pruneopts = "UT"
   revision = "e83ac2304db3c50cf03d96a2fcd39009d458bc35"
   version = "v3.3.2"
 
 [[projects]]
   branch = "master"
+  digest = "1:354978aad16c56c27f57e5b152224806d87902e4935da3b03e18263d82ae77aa"
   name = "github.com/hashicorp/go-uuid"
   packages = ["."]
+  pruneopts = "UT"
   revision = "27454136f0364f2d44b1276c552d69105cf8c498"
 
 [[projects]]
   branch = "master"
+  digest = "1:70107cf7ee5eb9e3c3dabe65bcb220bff22ee42e32d9b7fca988e16b8727cacc"
   name = "github.com/juju/errors"
   packages = ["."]
+  pruneopts = "UT"
   revision = "c7d06af17c68cd34c835053720b21f6549d9b0ee"
 
 [[projects]]
+  digest = "1:0a4e87d658551ece5cc450a2f4a7c60f1f7656f128189e302c743ebf471797a6"
   name = "github.com/karlseguin/ccache"
   packages = ["."]
+  pruneopts = "UT"
   revision = "a2d62155777b39595c825ed3824279e642a5db3c"
   version = "v2.0.2"
 
 [[projects]]
+  digest = "1:371cb9b6ec561022b69e0c3547eb7babd8bf0f556c49ac46f56c07d8ab42c0df"
   name = "github.com/montanaflynn/stats"
   packages = ["."]
+  pruneopts = "UT"
   revision = "eeaced052adbcfeea372c749c281099ed7fdaa38"
   version = "0.2.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:0c8c777abf111a0cc92174ad2a259f3adc904997acbaf7f0eb13286eb539fdfd"
   name = "github.com/pmezard/adblock"
   packages = ["adblock"]
+  pruneopts = "UT"
   revision = "edfb97ad89cd57ae8675175539a55aceaf2a05d3"
 
 [[projects]]
+  digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
+  pruneopts = "UT"
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:9e9193aa51197513b3abcb108970d831fbcf40ef96aa845c4f03276e1fa316d2"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
+  pruneopts = "UT"
   revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
   version = "v1.0.5"
 
 [[projects]]
+  digest = "1:5110e3d4f130772fd39e6ce8208ad1955b242ccfcc8ad9d158857250579c82f4"
   name = "github.com/stretchr/testify"
   packages = [
     "assert",
     "require",
-    "suite"
+    "suite",
   ]
+  pruneopts = "UT"
   revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
   version = "v1.2.2"
 
 [[projects]]
   branch = "master"
+  digest = "1:3f3a05ae0b95893d90b9b3b5afdb79a9b3d96e4e36e099d841ae602e4aca0da8"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
+  pruneopts = "UT"
   revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
 
 [[projects]]
   branch = "master"
+  digest = "1:3364d01296ce7eeca363e3d530ae63a2092d6f8efb85fb3d101e8f6d7de83452"
   name = "golang.org/x/sys"
   packages = [
     "unix",
-    "windows"
+    "windows",
   ]
+  pruneopts = "UT"
   revision = "ac767d655b305d4e9612f5f6e33120b9176c4ad4"
 
 [[projects]]
+  digest = "1:c06d9e11d955af78ac3bbb26bd02e01d2f61f689e1a3bce2ef6fb683ef8a7f2d"
   name = "gopkg.in/alecthomas/kingpin.v2"
   packages = ["."]
+  pruneopts = "UT"
   revision = "947dcec5ba9c011838740e680966fd7087a71d0d"
   version = "v2.2.6"
 
 [[projects]]
+  digest = "1:bae937801c8147c4c64bd2e1b7d73292c89a55c904cb9fcded11e09f8c30a474"
   name = "gopkg.in/h2non/gock.v1"
   packages = ["."]
+  pruneopts = "UT"
   revision = "4692cba4394f79372bfe85996501ad43db9d82e0"
   version = "v1.0.9"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "51882902433f60235fd758ab25c1d428e1f8110bb3817622627403a12da7441c"
+  input-imports = [
+    "github.com/BurntSushi/toml",
+    "github.com/elazarl/goproxy",
+    "github.com/go-chi/chi",
+    "github.com/go-chi/chi/middleware",
+    "github.com/hashicorp/go-uuid",
+    "github.com/juju/errors",
+    "github.com/karlseguin/ccache",
+    "github.com/montanaflynn/stats",
+    "github.com/pmezard/adblock/adblock",
+    "github.com/sirupsen/logrus",
+    "github.com/stretchr/testify/assert",
+    "github.com/stretchr/testify/suite",
+    "gopkg.in/alecthomas/kingpin.v2",
+    "gopkg.in/h2non/gock.v1",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
