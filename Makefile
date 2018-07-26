@@ -34,7 +34,7 @@ version.go:
 proxy/certs.go:
 	@go generate proxy/proxy.go
 
-vendor: Gopkg.lock Gopkg.toml install-dep
+vendor: Gopkg.lock Gopkg.toml
 	@dep ensure
 
 # -----------------------------------------------------------------------------

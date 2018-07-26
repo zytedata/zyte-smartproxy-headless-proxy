@@ -42,7 +42,7 @@
   name = "github.com/elazarl/goproxy"
   packages = ["."]
   pruneopts = "UT"
-  revision = "a0c95418cf1a30836390c1e49d7a19339b2c23ce"
+  revision = "947c36da3153ff334e74d9d980de341d25f358ba"
 
 [[projects]]
   digest = "1:4eda9f7bf70f5145b3b9ed3f18ac93e9b1a0e38906eb69e526380c34861e2b07"
@@ -65,11 +65,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:70107cf7ee5eb9e3c3dabe65bcb220bff22ee42e32d9b7fca988e16b8727cacc"
+  digest = "1:53bd4347b151fcbedcdda527f7ebf4924f0e21d672131812f857175d8c7a1051"
   name = "github.com/juju/errors"
   packages = ["."]
   pruneopts = "UT"
-  revision = "c7d06af17c68cd34c835053720b21f6549d9b0ee"
+  revision = "812b06ada1776ad4dd95d575e18ffffe3a9ac34a"
 
 [[projects]]
   digest = "1:0a4e87d658551ece5cc450a2f4a7c60f1f7656f128189e302c743ebf471797a6"
@@ -104,12 +104,12 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:9e9193aa51197513b3abcb108970d831fbcf40ef96aa845c4f03276e1fa316d2"
+  digest = "1:d867dfa6751c8d7a435821ad3b736310c2ed68945d05b50fb9d23aee0540c8cc"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   pruneopts = "UT"
-  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
-  version = "v1.0.5"
+  revision = "3e01752db0189b9157070a0e1668a620f9a85da2"
+  version = "v1.0.6"
 
 [[projects]]
   digest = "1:5110e3d4f130772fd39e6ce8208ad1955b242ccfcc8ad9d158857250579c82f4"
@@ -129,18 +129,18 @@
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
   pruneopts = "UT"
-  revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
+  revision = "c126467f60eb25f8f27e5a981f32a87e3965053f"
 
 [[projects]]
   branch = "master"
-  digest = "1:3364d01296ce7eeca363e3d530ae63a2092d6f8efb85fb3d101e8f6d7de83452"
+  digest = "1:be95d758fc4d9216e5d41ff5b98b46938fba85ca5bc2ddc45a1b03e2bb10fe7c"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "ac767d655b305d4e9612f5f6e33120b9176c4ad4"
+  revision = "e072cadbbdc8dd3d3ffa82b8b4b9304c261d9311"
 
 [[projects]]
   digest = "1:c06d9e11d955af78ac3bbb26bd02e01d2f61f689e1a3bce2ef6fb683ef8a7f2d"

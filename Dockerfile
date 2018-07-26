@@ -23,6 +23,7 @@ ADD . /go/src/bitbucket.org/scrapinghub/crawlera-headless-proxy
 RUN set -x \
   && cd /go/src/bitbucket.org/scrapinghub/crawlera-headless-proxy \
   && make clean \
+  && make install-dep \
   && make -j 4 static \
   && cp ca.crt /usr/local/share/ca-certificates/own-cert.crt \
   && update-ca-certificates
