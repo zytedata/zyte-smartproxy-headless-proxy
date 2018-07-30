@@ -7,7 +7,7 @@ CC_BINARIES  := $(shell bash -c "echo -n $(APP_NAME)-{linux,windows,darwin,freeb
 APP_DEPS     := version.go proxy/certs.go $(VENDOR_FILES)
 
 COMMON_BUILD_FLAGS    := -ldflags="-s -w"
-GOLANGCI_LINT_VERSION := v1.9.1
+GOLANGCI_LINT_VERSION := v1.9.2
 
 # -----------------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ proxy/certs.go:
 	@go generate proxy/proxy.go
 
 vendor: Gopkg.lock Gopkg.toml
-	@dep ensure
+	@dep ensure --vendor-only
 
 # -----------------------------------------------------------------------------
 

@@ -2,4 +2,5 @@ proxy/certs.go
 version.go
 
 tags
+.dockerignore
 vendor/

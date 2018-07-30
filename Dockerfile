@@ -10,6 +10,7 @@ RUN set -x \
     curl \
     git \
     make \
+  && mkdir -p /go/src/bitbucket.org/scrapinghub/crawlera-headless-proxy \
   && curl -fsL -o /usr/local/share/ca-certificates/crawlera-ca.crt https://doc.scrapinghub.com/_downloads/crawlera-ca.crt \
   && sha1sum /usr/local/share/ca-certificates/crawlera-ca.crt | cut -f1 -d' ' | \
   while read -r sum _; do \
@@ -18,15 +19,23 @@ RUN set -x \
       exit 1; \
   fi; done
 
-ADD . /go/src/bitbucket.org/scrapinghub/crawlera-headless-proxy
+WORKDIR /go/src/bitbucket.org/scrapinghub/crawlera-headless-proxy
+
+COPY Makefile Gopkg.toml Gopkg.lock ./
 
 RUN set -x \
-  && cd /go/src/bitbucket.org/scrapinghub/crawlera-headless-proxy \
-  && make clean \
   && make install-dep \
-  && make -j 4 static \
-  && cp ca.crt /usr/local/share/ca-certificates/own-cert.crt \
-  && update-ca-certificates
+  && make vendor
+
+COPY ca.crt /usr/local/share/ca-certificates/own-cert.crt
+
+RUN set -x && \
+  update-ca-certificates
+
+COPY . .
+
+RUN set -x \
+  && make -j 4 static
 
 
 ###############################################################################
