@@ -15,8 +15,8 @@ import (
 	"github.com/pmezard/adblock/adblock"
 	log "github.com/sirupsen/logrus"
 
-	"bitbucket.org/scrapinghub/crawlera-headless-proxy/config"
-	"bitbucket.org/scrapinghub/crawlera-headless-proxy/stats"
+	"github.com/scrapinghub/crawlera-headless-proxy/config"
+	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
 const adblockTimeout = 2 * time.Second
@@ -162,7 +162,7 @@ func (ab *adblockMiddleware) fetchURL(url string) (io.ReadCloser, error) {
 
 func (ab *adblockMiddleware) readFileSystem(path string) (io.ReadCloser, error) {
 	log.WithFields(log.Fields{"path": path}).Debug("Open filesystem adblock list")
-	fp, err := os.Open(path)
+	fp, err := os.Open(path) // nolint: gosec
 	log.WithFields(log.Fields{
 		"path": path,
 		"err":  err,

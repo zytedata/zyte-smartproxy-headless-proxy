@@ -44,19 +44,19 @@ func (ts *timeSeries) MarshalJSON() ([]byte, error) {
 	if len(floats) > 0 {
 		marshalled["percentiles"] = ts.calculatePercentiles(floats)
 
-		mean, _ := mstats.Mean(floats)
+		mean, _ := mstats.Mean(floats) // nolint: gosec
 		marshalled["average"] = mean
 
-		min, _ := mstats.Min(floats)
+		min, _ := mstats.Min(floats) // nolint: gosec
 		marshalled["minimal"] = min
 
-		max, _ := mstats.Max(floats)
+		max, _ := mstats.Max(floats) // nolint: gosec
 		marshalled["maximal"] = max
 
-		median, _ := mstats.Median(floats)
+		median, _ := mstats.Median(floats) // nolint: gosec
 		marshalled["median"] = median
 
-		dev, _ := mstats.StandardDeviation(floats)
+		dev, _ := mstats.StandardDeviation(floats) // nolint: gosec
 		marshalled["standard_deviation"] = dev
 	}
 
@@ -68,7 +68,7 @@ func (ts *timeSeries) calculatePercentiles(floats []float64) map[uint8]float64 {
 
 	if len(floats) >= 100 {
 		for _, perc := range statsPercentilesToCalculate {
-			calculated, _ := mstats.Percentile(floats, float64(perc))
+			calculated, _ := mstats.Percentile(floats, float64(perc)) // nolint: gosec
 			percentiles[perc] = calculated
 		}
 	}

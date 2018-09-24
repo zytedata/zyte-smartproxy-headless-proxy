@@ -7,8 +7,8 @@ import (
 	"github.com/elazarl/goproxy"
 	"github.com/stretchr/testify/suite"
 
-	"bitbucket.org/scrapinghub/crawlera-headless-proxy/config"
-	"bitbucket.org/scrapinghub/crawlera-headless-proxy/stats"
+	"github.com/scrapinghub/crawlera-headless-proxy/config"
+	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
 type MiddlewareTestSuite struct {

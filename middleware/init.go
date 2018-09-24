@@ -6,7 +6,7 @@ import (
 	"github.com/elazarl/goproxy"
 	log "github.com/sirupsen/logrus"
 
-	"bitbucket.org/scrapinghub/crawlera-headless-proxy/stats"
+	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
 // InitMiddlewares sets goproxy with middlewares. This basically

@@ -104,7 +104,7 @@ func (s *sessionManager) deleteCrawleraSession(sessionID string) error {
 		Host:   s.crawleraHost,
 		Path:   path.Join("sessions", sessionID),
 	}
-	req, _ := http.NewRequest("DELETE", apiURL.String(), http.NoBody)
+	req, _ := http.NewRequest("DELETE", apiURL.String(), http.NoBody) // nolint: gosec
 	req.SetBasicAuth(s.apiKey, "")
 	req.Header.Set("User-Agent", sessionUserAgent)
 
@@ -114,7 +114,7 @@ func (s *sessionManager) deleteCrawleraSession(sessionID string) error {
 		return err
 	}
 	defer resp.Body.Close()            // nolint: errcheck
-	io.Copy(ioutil.Discard, resp.Body) // nolint: errcheck
+	io.Copy(ioutil.Discard, resp.Body) // nolint: errcheck, gosec
 
 	if resp.StatusCode >= http.StatusBadRequest {
 		return errors.Errorf("Response status code is %d", resp.StatusCode)

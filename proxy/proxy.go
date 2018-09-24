@@ -12,9 +12,9 @@ import (
 	"github.com/elazarl/goproxy"
 	"github.com/juju/errors"
 
-	"bitbucket.org/scrapinghub/crawlera-headless-proxy/config"
-	"bitbucket.org/scrapinghub/crawlera-headless-proxy/middleware"
-	"bitbucket.org/scrapinghub/crawlera-headless-proxy/stats"
+	"github.com/scrapinghub/crawlera-headless-proxy/config"
+	"github.com/scrapinghub/crawlera-headless-proxy/middleware"
+	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
 // NewProxy returns a new configured instance of goproxy.

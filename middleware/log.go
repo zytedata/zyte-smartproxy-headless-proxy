@@ -6,8 +6,8 @@ import (
 	"github.com/elazarl/goproxy"
 	log "github.com/sirupsen/logrus"
 
-	"bitbucket.org/scrapinghub/crawlera-headless-proxy/config"
-	"bitbucket.org/scrapinghub/crawlera-headless-proxy/stats"
+	"github.com/scrapinghub/crawlera-headless-proxy/config"
+	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
 type incomingLogMiddleware struct {

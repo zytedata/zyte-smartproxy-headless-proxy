@@ -18,7 +18,7 @@ type RequestStateSuite struct {
 
 func (t *RequestStateSuite) SetupTest() {
 	t.cr = testNewProxyContainer()
-	state, _ := newRequestState(t.cr.req, t.cr.s)
+	state, _ := newRequestState(t.cr.req, t.cr.s) // nolint: gosec
 	t.state = state
 }
 
@@ -59,7 +59,7 @@ func (t *RequestStateSuite) TestFinishCrawleraRequest() {
 	t.Len(t.state.crawleraTimesChan, 0)
 	t.Equal(t.state.CrawleraRequests, uint8(0))
 
-	t.state.StartCrawleraRequest() // nolint: errcheck
+	t.state.StartCrawleraRequest() // nolint: errcheck, gosec
 	t.Nil(t.state.FinishCrawleraRequest())
 	t.Len(t.state.crawleraRequestsChan, 1)
 	t.Len(t.state.crawleraTimesChan, 1)
@@ -76,11 +76,11 @@ func (t *RequestStateSuite) TestFinishCrawleraRequest() {
 
 func (t *RequestStateSuite) TestCrawleraElapsed() {
 	t.Zero(t.state.CrawleraElapsed())
-	t.state.StartCrawleraRequest() // nolint: errcheck
+	t.state.StartCrawleraRequest() // nolint: errcheck, gosec
 	t.NotZero(t.state.CrawleraElapsed())
 	time.Sleep(500 * time.Millisecond)
 
-	t.state.FinishCrawleraRequest() // nolint: errcheck
+	t.state.FinishCrawleraRequest() // nolint: errcheck, gosec
 	t.InEpsilon(t.state.CrawleraElapsed(), 500*time.Millisecond, float64(time.Millisecond))
 }
 
@@ -94,7 +94,7 @@ func (t *RequestStateSuite) TestDoCrawleraRequest() {
 		Reply(200).
 		BodyString("")
 
-	t.state.DoCrawleraRequest(newClient, t.cr.req) // nolint: errcheck
+	t.state.DoCrawleraRequest(newClient, t.cr.req) // nolint: errcheck, gosec
 	t.Len(t.state.crawleraRequestsChan, 1)
 	t.Len(t.state.crawleraTimesChan, 1)
 	t.Equal(t.state.CrawleraRequests, uint8(1))

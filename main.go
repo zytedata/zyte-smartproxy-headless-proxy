@@ -4,7 +4,7 @@ package main
 
 import (
 	"bytes"
-	"crypto/sha1"
+	"crypto/sha1" // nolint: gosec
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -14,9 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
-	"bitbucket.org/scrapinghub/crawlera-headless-proxy/config"
-	"bitbucket.org/scrapinghub/crawlera-headless-proxy/proxy"
-	"bitbucket.org/scrapinghub/crawlera-headless-proxy/stats"
+	"github.com/scrapinghub/crawlera-headless-proxy/config"
+	"github.com/scrapinghub/crawlera-headless-proxy/proxy"
+	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
 var (
@@ -212,8 +212,8 @@ func initCertificates(conf *config.Config) (err error) {
 	privateKey = bytes.TrimSpace(privateKey)
 
 	log.WithFields(log.Fields{
-		"ca-cert":  fmt.Sprintf("%x", sha1.Sum(caCertificate)),
-		"priv-key": fmt.Sprintf("%x", sha1.Sum(privateKey)),
+		"ca-cert":  fmt.Sprintf("%x", sha1.Sum(caCertificate)), // nolint: gosec
+		"priv-key": fmt.Sprintf("%x", sha1.Sum(privateKey)),    // nolint: gosec
 	}).Debug("TLS checksums.")
 
 	return proxy.InitCertificates(caCertificate, privateKey)

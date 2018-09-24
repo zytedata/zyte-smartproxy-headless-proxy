@@ -10,8 +10,8 @@ import (
 	"github.com/elazarl/goproxy"
 	"github.com/karlseguin/ccache"
 
-	"bitbucket.org/scrapinghub/crawlera-headless-proxy/config"
-	"bitbucket.org/scrapinghub/crawlera-headless-proxy/stats"
+	"github.com/scrapinghub/crawlera-headless-proxy/config"
+	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
 const refererTTL = 5 * time.Second

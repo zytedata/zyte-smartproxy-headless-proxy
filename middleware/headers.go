@@ -5,8 +5,8 @@ import (
 
 	"github.com/elazarl/goproxy"
 
-	"bitbucket.org/scrapinghub/crawlera-headless-proxy/config"
-	"bitbucket.org/scrapinghub/crawlera-headless-proxy/stats"
+	"github.com/scrapinghub/crawlera-headless-proxy/config"
+	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
 type headersMiddleware struct {

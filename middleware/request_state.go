@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"crypto/hmac"
-	"crypto/sha1"
+	"crypto/sha1" // nolint: gosec
 	"fmt"
 	"io"
 	"net"
@@ -13,7 +13,7 @@ import (
 	uuid "github.com/hashicorp/go-uuid"
 	"github.com/juju/errors"
 
-	"bitbucket.org/scrapinghub/crawlera-headless-proxy/stats"
+	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
 // RequestState stores basic metadata of every request (who, when etc)
