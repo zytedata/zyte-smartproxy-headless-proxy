@@ -7,21 +7,13 @@ RUN set -x \
   && apk --no-cache --update add \
     bash \
     git \
-    make \
-  && mkdir -p /go/src/bitbucket.org/scrapinghub/crawlera-headless-proxy
+    make
 
-WORKDIR /go/src/bitbucket.org/scrapinghub/crawlera-headless-proxy
-
-COPY Makefile Gopkg.toml Gopkg.lock ./
+COPY . /app
 
 RUN set -x \
-  && make install-dep \
-  && make vendor
-
-COPY . .
-
-RUN set -x \
-  && make -j 4 static
+  && cd /app \
+  && make static
 
 
 ###############################################################################
@@ -30,10 +22,8 @@ RUN set -x \
 FROM alpine AS tls-env
 
 RUN set -x \
-  && apk --no-cache --update add \
-    ca-certificates \
-    curl \
-  && curl -fsL -o /usr/local/share/ca-certificates/crawlera-ca.crt https://doc.scrapinghub.com/_downloads/crawlera-ca.crt \
+  && apk --no-cache --update add ca-certificates \
+  && wget -O /usr/local/share/ca-certificates/crawlera-ca.crt https://doc.scrapinghub.com/_downloads/crawlera-ca.crt \
   && sha1sum /usr/local/share/ca-certificates/crawlera-ca.crt | cut -f1 -d' ' | \
   while read -r sum _; do \
     if [ "${sum}" != "5798e59f6f7ecad3c0e1284f42b07dcaa63fbd37" ]; then \
@@ -63,6 +53,6 @@ EXPOSE 3128 3130
 COPY --from=tls-env \
   /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=build-env \
-  /go/src/bitbucket.org/scrapinghub/crawlera-headless-proxy/crawlera-headless-proxy \
-  /go/src/bitbucket.org/scrapinghub/crawlera-headless-proxy/config.toml \
+  /app/crawlera-headless-proxy \
+  /app/config.toml \
   /
