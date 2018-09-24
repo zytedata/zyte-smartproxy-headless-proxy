@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:b16fbfbcc20645cb419f78325bb2e85ec729b338e996a228124d68931a6f2a37"
+  digest = "1:9f3b30d9f8e0d7040f729b82dcbc8f0dead820a133b3147ce355fc451f32d761"
   name = "github.com/BurntSushi/toml"
   packages = ["."]
   pruneopts = "UT"
-  revision = "b26d9c308763d68093482582cea63d69be07a0f0"
-  version = "v0.3.0"
+  revision = "3012a1dbe2e4bd1391d42b32f0577cb7bbc7f005"
+  version = "v0.3.1"
 
 [[projects]]
   branch = "master"
@@ -29,12 +29,12 @@
   revision = "2efee857e7cfd4f3d0138cc3cbb1b4966962b93a"
 
 [[projects]]
-  digest = "1:a2c1d0e43bd3baaa071d1b9ed72c27d78169b2b269f71c105ac4ba34b1be4a39"
+  digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   pruneopts = "UT"
-  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
-  version = "v1.1.0"
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
 
 [[projects]]
   branch = "master"
@@ -45,31 +45,31 @@
   revision = "947c36da3153ff334e74d9d980de341d25f358ba"
 
 [[projects]]
-  digest = "1:4eda9f7bf70f5145b3b9ed3f18ac93e9b1a0e38906eb69e526380c34861e2b07"
+  digest = "1:a9fe0f8ff72c388d0128e88ce5f3c27d37dcd0950acd7cdb8323555f12463396"
   name = "github.com/go-chi/chi"
   packages = [
     ".",
     "middleware",
   ]
   pruneopts = "UT"
-  revision = "e83ac2304db3c50cf03d96a2fcd39009d458bc35"
-  version = "v3.3.2"
+  revision = "b5294d10673813fac8558e7f47242bc9e61b4c25"
+  version = "v3.3.3"
 
 [[projects]]
   branch = "master"
-  digest = "1:354978aad16c56c27f57e5b152224806d87902e4935da3b03e18263d82ae77aa"
+  digest = "1:12ed7dcca9531e58c65cdadb8af0052724bef7fa1581380523fb9cb1215faf0d"
   name = "github.com/hashicorp/go-uuid"
   packages = ["."]
   pruneopts = "UT"
-  revision = "27454136f0364f2d44b1276c552d69105cf8c498"
+  revision = "de160f5c59f693fed329e73e291bb751fe4ea4dc"
 
 [[projects]]
   branch = "master"
-  digest = "1:53bd4347b151fcbedcdda527f7ebf4924f0e21d672131812f857175d8c7a1051"
+  digest = "1:1261ccace00babbf02bb702e71c85c8e81f65bad7bdb98c12c7a409c14de1d86"
   name = "github.com/juju/errors"
   packages = ["."]
   pruneopts = "UT"
-  revision = "812b06ada1776ad4dd95d575e18ffffe3a9ac34a"
+  revision = "22422dad46e14561a0854ad42497a75af9b61909"
 
 [[projects]]
   digest = "1:0a4e87d658551ece5cc450a2f4a7c60f1f7656f128189e302c743ebf471797a6"
@@ -129,18 +129,18 @@
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
   pruneopts = "UT"
-  revision = "c126467f60eb25f8f27e5a981f32a87e3965053f"
+  revision = "0e37d006457bf46f9e6692014ba72ef82c33022c"
 
 [[projects]]
   branch = "master"
-  digest = "1:8742e6e73627b2877c3f723bc1823d5667ec59011242480309dc90fa862512aa"
+  digest = "1:4d2869b8df54b3a687c426758d0891720e8bedfa6ff5d472671ce1d31d29bdfb"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "bd9dbc187b6e1dacfdd2722a87e83093c2d7bd6e"
+  revision = "d47a0f3392421c5624713c9a19fe781f651f8a50"
 
 [[projects]]
   digest = "1:c06d9e11d955af78ac3bbb26bd02e01d2f61f689e1a3bce2ef6fb683ef8a7f2d"
@@ -151,12 +151,12 @@
   version = "v2.2.6"
 
 [[projects]]
-  digest = "1:bae937801c8147c4c64bd2e1b7d73292c89a55c904cb9fcded11e09f8c30a474"
+  digest = "1:3575a8d7c78eb470712b298b2eb42b8ac028c79527e74c865da360f35d1fed7f"
   name = "gopkg.in/h2non/gock.v1"
   packages = ["."]
   pruneopts = "UT"
-  revision = "4692cba4394f79372bfe85996501ad43db9d82e0"
-  version = "v1.0.9"
+  revision = "db9916111f9d238f7fe98f34dfde20f11142475b"
+  version = "v1.0.10"
 
 [solve-meta]
   analyzer-name = "dep"
