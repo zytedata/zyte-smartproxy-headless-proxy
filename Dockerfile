@@ -1,7 +1,7 @@
 ###############################################################################
 # BUILD STAGE
 
-FROM golang:alpine AS build-env
+FROM golang:1-alpine AS build-env
 
 RUN set -x \
   && apk --no-cache --update add \
