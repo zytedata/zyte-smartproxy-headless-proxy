@@ -1,19 +1,27 @@
 ###############################################################################
 # BUILD STAGE
 
-FROM golang:1-alpine AS build-env
+FROM golang:1.11-alpine AS build-env
+
+WORKDIR /app
 
 RUN set -x \
   && apk --no-cache --update add \
     bash \
     git \
-    make
+    make \
+    upx
 
 COPY . /app
 
 RUN set -x \
-  && cd /app \
   && make static
+
+ARG upx=
+RUN set -x \
+  && if [ -n "$upx" ]; then \
+    upx --ultra-brute -qq ./crawlera-headless-proxy; \
+  fi
 
 
 ###############################################################################
