@@ -77,6 +77,10 @@ clean:
 docker:
 	@docker build --pull -t "$(IMAGE_NAME)" "$(ROOT_DIR)"
 
+.PHONY: docker-slim
+docker-slim:
+	@docker build --pull -t "$(IMAGE_NAME)" --build-arg upx=1 "$(ROOT_DIR)"
+
 .PHONY: prepare
 prepare: install-lint install-critic
 
