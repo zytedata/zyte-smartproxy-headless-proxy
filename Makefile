@@ -3,9 +3,13 @@ IMAGE_NAME := crawlera-headless-proxy
 APP_NAME   := $(IMAGE_NAME)
 
 CC_BINARIES  := $(shell bash -c "echo -n $(APP_NAME)-{linux,windows,darwin,freebsd,openbsd}-{386,amd64} $(APP_NAME)-linux-{arm,arm64}")
-APP_DEPS     := version.go proxy/certs.go
+APP_DEPS     := proxy/certs.go
 
-COMMON_BUILD_FLAGS    := -ldflags="-s -w"
+VERSION_GO         := $(shell go version)
+VERSION_DATE       := $(shell date -Ru)
+VERSION_TAG        := $(shell git describe --tags --always)
+COMMON_BUILD_FLAGS := -ldflags="-s -w -X 'main.version=$(VERSION_TAG) ($(VERSION_GO)) [$(VERSION_DATE)]'"
+
 GOLANGCI_LINT_VERSION := v1.10.2
 
 MOD_ON  := env GO111MODULE=on
@@ -29,9 +33,6 @@ $(APP_NAME)-%: $(APP_DEPS) ccbuilds
 
 ccbuilds:
 	@rm -rf ./ccbuilds && mkdir -p ./ccbuilds
-
-version.go:
-	@$(MOD_ON) go generate main.go
 
 proxy/certs.go:
 	@$(MOD_ON) go generate proxy/proxy.go

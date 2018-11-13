@@ -1,7 +1,5 @@
 package main
 
-//go:generate scripts/generate_version.sh
-
 import (
 	"bytes"
 	"crypto/sha1" // nolint: gosec
@@ -18,6 +16,8 @@ import (
 	"github.com/scrapinghub/crawlera-headless-proxy/proxy"
 	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
+
+var version = "dev"
 
 var (
 	app = kingpin.New("crawlera-headless-proxy",
