@@ -2,10 +2,10 @@
 
 Crawlera Headless proxy is a proxy which main intent
 is to help users with headless browsers to use
-[Crawlera](https://scrapinghub.com/crawlera). These
+[Crawlera](https://scrapinghub.com/crawlera). This
 includes different implementations of headless browsers
 such as [Splash](https://scrapinghub.com/splash),
-headless [Chrome](https://google.com/chrome/) and
+headless [Chrome](https://google.com/chrome/), and
 [Firefox](https://www.mozilla.org/en-US/firefox/).
 Also, this proxy should help users of such frameworks
 as [Selenium](https://www.seleniumhq.org/) and
@@ -28,7 +28,7 @@ The biggest problem with headless browsers is their configuration:
 3. Also, it is rather hard and complex to maintain best practices of using
    these headers. For example,
    [support of Browser Profiles](https://doc.scrapinghub.com/crawlera.html#x-crawlera-profile)
-   requires to have a minimal possible set headers. For example, it is
+   requires to have a minimal possible set of headers. For example, it is
    recommended to remove `Accept` header by default. It is rather hard
    to do that using headless browsers API.
 
@@ -40,11 +40,11 @@ headers into the requests. Basically, you have to do a bare minimum:
 
 1. Get Crawlera API key
 2. Run this proxy on your local machine or any machine accessible by
-   headless browser, configuring it with configuration file, commandline
+   headless browser, configuring it with a configuration file, command line
    parameters or environment variables.
 3. Propagate TLS certificate of this proxy to your browsers or
    operating system vault.
-4. Access this proxy as local proxy, plain, without any authentication.
+4. Access this proxy as a local proxy, plain, without any authentication.
 
 
 ## Installation
@@ -56,7 +56,7 @@ required one for your operating system and CPU architecture.
 
 ### Install from sources
 
-To install from sources, please do following:
+To install from sources, please do the following:
 
 * Install Go >= 1.7
 * Download sources
@@ -72,8 +72,8 @@ $ cd crawlera-headless-proxy
 $ make
 ```
 
-This will build binary `crawlera-headless-proxy`. If you are interesed in
-compiling for other OS/CPU architecture, please crosscompile:
+This will build binary `crawlera-headless-proxy`. If you are interested
+in compiling for other OS/CPU architecture, please cross-compile:
 
 ```console
 $ make crosscompile
@@ -81,7 +81,7 @@ $ make crosscompile
 
 ### Docker container
 
-To download prebuilt container, please do following:
+To download prebuilt container, please do the following:
 
 ```console
 $ docker pull scrapinghub/crawlera-headless-proxy
@@ -93,7 +93,7 @@ If you want to build this image locally, please do it with make
 $ make docker
 ```
 
-This will build image with tag `crawlera-headless-proxy`. It can
+This will build an image with tag `crawlera-headless-proxy`. It can
 be configured by environment variables or command flags. Default
 configuration file path within a container is `/config.toml`.
 
@@ -173,11 +173,12 @@ Here is the complete table of configuration options.
 | Which IP should proxy API listen on (default is `bind-ip` value). | `CRAWLERA_HEADLESS_PROXYAPIIP`        | `-m`, `--proxy-api-ip`            | `proxy_api_ip`                    |
 | Which port proxy API should listen on.                            | `CRAWLERA_HEADLESS_PROXYAPIPORT`      | `-w`, `--proxy-api-port`          | `proxy_api_port`                  |
 
-Configuration is implemented in
-[TOML language](https://github.com/toml-lang/toml). If you haven't heard about
-TOML, please consider it as a hardened INI configuration files. Every
-configuration goes to top level section (unnamed). X-Headers go to its
-own section. Let's express following commandline in configuration file:
+Configuration is implemented in [TOML
+language](https://github.com/toml-lang/toml). If you haven't heard about
+TOML, please consider it as a hardened INI configuration file. Every
+configuration goes to top-level section (unnamed). X-Headers go to its
+own section. Let's express following command line in the configuration
+file:
 
 ```console
 $ crawlera-headless-proxy -b 0.0.0.0 -p 3129 -u proxy.crawlera.com -o 8010 -x profile=desktop -x cookies=disable
@@ -196,7 +197,7 @@ profile = "desktop"
 cookies = "disable"
 ```
 
-You can use both command line flags, environment variables and
+You can use both command line flags, environment variables, and
 configuration files. This tool will resolve these options according to
 this order (1 has max priority, 4 - minimal):
 
@@ -207,58 +208,61 @@ this order (1 has max priority, 4 - minimal):
 
 ## Concurrency
 
-There is a limiter on maxmial amount of concurrent connections
+There is a limiter on maximal amount of concurrent connections
 `--concurrent-connections`. This is required because default Crawlera
-limits amount of concurrent connections based on billing plan of the
-user. If user exceeds this amount, Crawlera returns response with status
-code 429. This can be rather irritating so there is internal limiter
-which is more friendly to the browsers. You need to setup an amount of
-concurrent connections for your plan and crawlera-headless-proxy will
-throttle your requests _before_ they will go to Crawlera. It won't send
-429 back, it just holds excess requests.
+limits the number of concurrent connections based on the billing
+plan of the user. If the user exceeds this amount, Crawlera returns
+a response with status code 429. This can be rather irritating so
+there is internal limiter which is more friendly to the browsers. You
+need to set up a number of concurrent connections for your plan and
+crawlera-headless-proxy will throttle your requests before they will go
+to Crawlera. It won't send 429 back, it just holds excess requests.
+
 
 ## Automatic session management
 
-Crawlera allows to use sessions and sessions are natural if we are talking
-about browsers. Session binds a certain IP to some session ID so all requests
-will go through the same IP, in the same way as ordinary work with browser
-looks like. It can slow down your crawl but increase its quality for some
-websites.
+Crawlera allows using sessions and sessions are natural if we are
+talking about browsers. Session binds a certain IP to some session ID so
+all requests will go through the same IP, in the same way as ordinary
+work with browser looks like. It can slow down your crawl but increase
+its quality for some websites.
 
-Current implementation of automatic session management is done with
-assumption that only one browser is used to access this proxy. There is
-no clear and simple way how to distinguish the browsers accessing this
-proxy concurrently.
+The current implementation of automatic session management is done with
+the assumption that only one browser is used to access this proxy. There
+is no clear and simple way how to distinguish the browsers accessing
+this proxy concurrently.
 
 Basic behavior is here:
 
-1. If session is not created, it would be created on the first request.
+1. If the session is not created, it would be created on the first request.
 2. Until session is known, all other requests are on hold
 3. After session id is known, other requests will start to use that session.
-4. If session became broken, all requests are set on hold until new session
-   will be created.
-5. All requests which were failed because of broken session would be
-   retried with new. If new session is not ready yet, they will wait until
-   this moment.
+4. If the session became broken, all requests are set on hold until the
+   new session will be created.
+5. All requests which were failed because of a broken session would
+   be retried with new. If a new session is not ready yet, they will
+   wait until this moment.
 
 Such retries will be done only once because they might potentially block
-browser for the long time. All retries are also done with 30 seconds
+browser for a long time. All retries are also done with 30 seconds
 timeout.
+
 
 ## Adblock list support
 
 crawlera-headless-proxy supports preventive filtering by;
 adblock-compatible filter lists like EasyList. If you start the tool
-with such a lists, they are going to be downloaded and requests to
-trackers/advertisment platforms will be filtered. This will save you a;
+with such lists, they are going to be downloaded and requests to
+trackers/advertising platforms will be filtered. This will save you a
 lot of throughput and requests passed to Crawlera.
 
 If you do not pass any list, such filtering won't
-be enabled. The list we recommend to use are
+be enabled. The list we recommend to use is
 [EasyList](https://easylist.to/easylist/easylist.txt)
 (please do not forget to add region-specific lists),
 [EasyPrivacy](https://easylist.to/easylist/easyprivacy.txt) and
 [Disconnect](https://s3.amazonaws.com/lists.disconnect.me/simple_malware.txt).
+
 
 ## TLS keys
 
@@ -273,7 +277,7 @@ Link to certificate is
 Its SHA256 checksum is `100c7dd015814e7b8df16fc9e8689129682841d50f9a1b5a8a804a1eaf36322d`.
 
 If you want to have your own certificate, please generate it. The
-simpliest way to do that is to execute following command:
+simplest way to do that is to execute the following command:
 
 ```console
 $ openssl req -x509 -newkey rsa:4096 -keyout private-key.pem -out ca.crt -days 3650 -nodes
@@ -289,7 +293,7 @@ another port. Right now only one endpoint is supported.
 
 ### `GET /stats`
 
-This endpoint returns various statistics on current work of proxy.
+This endpoint returns various statistics on the current work of proxy.
 
 Example:
 
@@ -376,39 +380,38 @@ Example:
 
 Here is the description of these stats:
 
-* `requests_number` - a number of requests managed by headless
-  proxy. This includes all possible requests, not only those which were
-  send to Crawlera.
-* `crawlera_requests` - a number of requests which were send to
-  Crawlera. This also includes retries on session restoration etc.
+* `requests_number` - a number of requests managed by headless proxy.
+     This includes all possible requests, not only those which were
+     sent to Crawlera.
+* `crawlera_requests` - a number of requests which were sent to Crawlera.
+     This also includes retries on session restoration etc.
 * `sessions_created` - how many sessions were created by headless
-  proxy so far.
+     proxy so far.
 * `clients_connected` - how many clients (requests) are connected to
-  headless proxy at this moment.
-* `clients_serving` - how many clients (requests) are doing requests to
-  Crawlera now.
-* `traffic` - an amount of traffic sent to clients in bytes. This metric
-  does includes headers and body sizes.
-* `crawlera_errors` - an amount of responses where `X-Crawlera-Error`
-  header is set.
-* `all_errors` - an amount of responses with errors (cancelled, timeouts
-  and `crawlera_errors`).
-* `adblocked_requests` - a number of requests which were blocked by Adblock
-  lists.
+     the headless proxy at this moment.
+* `clients_serving` - how many clients (requests) are doing requests
+     to Crawlera now.
+* `traffic` - an amount of traffic sent to clients in bytes.
+     This metric does include headers and body sizes.
+* `crawlera_errors` - a number of responses where `X-Crawlera-Error`
+     header is set.
+* `all_errors` - a number of responses with errors (canceled,
+     timeouts and crawlera_errors).
+* `adblocked_requests` - a number of requests which were
+     blocked by Adblock lists.
+*_`times` describes different time series (overall response time,
+     time spent in crawlera) etc and provide average(mean), min and
+     max values, standard deviation and histogram of percentiles.
+     Time series are done in window mode, tracking only latest 3000 values.
 
-`*_times` describes different time series (overall response time, time
-spent in crawlera) etc and provide average(mean), min and max values,
-stddev and histogram of percentiles. Time series are done in window
-mode, tracking only latest 3000 values.
+Please pay attention that usually requests_number and crawlera_requests
+are different. This is because headless proxy filters adblock requests
+and also retries to recreate sessions which imply additional Crawlera
+requests. So, depending on the netloc proportion of these numbers can
+differ.
 
-Please pay attention that usually `requests_number` and
-`crawlera_requests` are different. This is because headless proxy
-filters adblock requests and also retries to recreate sessions which
-implies additional Crawlera requests. So, depending on the netloc
-proportion of these numbers can differ.
-
-Also, `clients_serving <= clients_connected` because of rate limiting.
-You may consider `client_serving` as requests which pass rate limiter.
+Also, `clients_serving <= clients_connected` because of rate limiting. You
+may consider client_serving as requests which pass rate limiter.
 
 
 ## Examples
