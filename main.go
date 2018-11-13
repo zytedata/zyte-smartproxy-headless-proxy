@@ -17,9 +17,9 @@ import (
 	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
-var version = "dev"
+var version = "dev" // nolint: gochecknoglobals
 
-var (
+var ( // nolint: gochecknoglobals
 	app = kingpin.New("crawlera-headless-proxy",
 		"Local proxy for Crawlera to be used with headless browsers.")
 
@@ -105,13 +105,11 @@ var (
 		Strings()
 )
 
-func init() {
+func main() {
 	app.Version(version)
 	log.SetFormatter(&log.TextFormatter{})
 	log.SetLevel(log.WarnLevel)
-}
 
-func main() {
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 
 	conf, err := getConfig()

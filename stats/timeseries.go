@@ -9,6 +9,7 @@ import (
 	mstats "github.com/montanaflynn/stats"
 )
 
+// nolint: gochecknoglobals
 var statsPercentilesToCalculate = [13]uint8{
 	10,
 	20,

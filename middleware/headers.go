@@ -15,6 +15,7 @@ type headersMiddleware struct {
 	xheaders map[string]string
 }
 
+// nolint: gochecknoglobals
 var headersProfileToRemove = [6]string{
 	"accept",
 	"accept-encoding",
