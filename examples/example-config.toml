@@ -1,0 +1,15 @@
+bind_port = 3128
+bind_ip = "0.0.0.0"
+crawlera_port = 8010
+crawlera_host = "proxy.crawlera.com"
+api_key = "USER_API_KEY"
+adblock_lists = [
+  "https://fanboy.co.nz/r/fanboy-ultimate.txt",
+  "https://fanboy.co.nz/fanboy-antifonts.txt",
+  "https://fanboy.co.nz/fanboy-antifacebook.txt",
+  "https://s3.amazonaws.com/lists.disconnect.me/simple_malware.txt"
+]
+
+[xheaders]
+cookies = "disable"
+profile = "desktop"
