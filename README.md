@@ -85,6 +85,23 @@ $ brew install go make git
 ```
 
 
+#### Install from HomeBrew
+
+If you use [HomeBrew](https://brew.sh) or
+[LinuxBrew](http://linuxbrew.sh/), you can use it to install headless
+proxy:
+
+```console
+$ brew install <URL TO FORMULA>
+```
+
+or if you want to have a development version:
+
+```console
+$ brew install --HEAD <URL TO FORMULA>
+```
+
+
 #### Build binary
 
 ```console
