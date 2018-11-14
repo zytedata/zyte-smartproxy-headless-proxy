@@ -207,26 +207,30 @@ This will start local HTTP/HTTPS proxy on `localhost:3128` and will proxy all
 requests to `proxy.crawlera.com:8010` with API key `myapikey`.
 
 Also, it is possible to configure this tool using environment variables.
-Here is the complete table of configuration options.
+Here is the complete table of configuration options and corresponding
+environment variables.
 
-| *Description*                                                     | *Environment variable*                | *Comandline parameter*            | *Parameter in configuration file* |
-|-------------------------------------------------------------------|---------------------------------------|-----------------------------------|-----------------------------------|
-| Run in debug/verbose mode.                                        | `CRAWLERA_HEADLESS_DEBUG`             | `-d`, `--debug`                   | `debug`                           |
-| Which IP this tool should listen on (0.0.0.0 for all interfaces). | `CRAWLERA_HEADLESS_BINDIP`            | `-b`, `--bind-ip`                 | `bind_ip`                         |
-| Which port this tool should listen.                               | `CRAWLERA_HEADLESS_BINDPORT`          | `-p`, `--bind-port`               | `bind_port`                       |
-| Path to the configuration file.                                   | `CRAWLERA_HEADLESS_CONFIG`            | `-c`, `--config`                  | -                                 |
-| API key of Crawlera.                                              | `CRAWLERA_HEADLESS_APIKEY`            | `-a`, `--api-key`                 | `api_key`                         |
-| Hostname of Crawlera.                                             | `CRAWLERA_HEADLESS_CHOST`             | `-u`, `--crawlera-host`           | `crawlera_host`                   |
-| Port of Crawlera.                                                 | `CRAWLERA_HEADLESS_CPORT`             | `-o`, `--crawlera-port`           | `crawlera_port`                   |
-| Do not verify Crawlera own TLS certificate.                       | `CRAWLERA_HEADLESS_DONTVERIFY`        | `-k`, `dont-verify-crawlera-cert` | `dont_verify_crawlera_cert`       |
-| Path to own TLS CA certificate.                                   | `CRAWLERA_HEADLESS_TLSCACERTPATH`     | `-l`, `tls-ca-certificate`        | `tls_ca_certificate`              |
-| Path to own TLS private key.                                      | `CRAWLERA_HEADLESS_TLSPRIVATEKEYPATH` | `-r`, `tls-private-key`           | `tls_private_key`                 |
-| Disable automatic session management                              | `CRAWLERA_HEADLESS_NOAUTOSESSIONS`    | `-t`, `--no-auto-sessions`        | `no_auto_sessions`                |
-| Maximal ammount of concurrent connections to process              | `CRAWLERA_HEADLESS_CONCURRENCY`       | `-n`, `--concurrent-connections`  | `concurrent_connections`          |
-| Additional Crawlera X-Headers.                                    | `CRAWLERA_HEADLESS_XHEADERS`          | `-x`, `--xheaders`                | Section `xheaders`                |
-| Adblock-compatible filter lists.                                  | `CRAWLERA_HEADLESS_ADBLOCKLISTS`      | `-k`, `--adblock-list`            | `adblock_lists`                   |
-| Which IP should proxy API listen on (default is `bind-ip` value). | `CRAWLERA_HEADLESS_PROXYAPIIP`        | `-m`, `--proxy-api-ip`            | `proxy_api_ip`                    |
-| Which port proxy API should listen on.                            | `CRAWLERA_HEADLESS_PROXYAPIPORT`      | `-w`, `--proxy-api-port`          | `proxy_api_port`                  |
+| *Description*                                                     | *Environment variable*                | *Comandline parameter*            | *Parameter in configuration file* | *Default value*      |
+|-------------------------------------------------------------------|---------------------------------------|-----------------------------------|-----------------------------------|----------------------|
+| Run in debug/verbose mode.                                        | `CRAWLERA_HEADLESS_DEBUG`             | `-d`, `--debug`                   | `debug`                           | `false`              |
+| Which IP this tool should listen on (0.0.0.0 for all interfaces). | `CRAWLERA_HEADLESS_BINDIP`            | `-b`, `--bind-ip`                 | `bind_ip`                         | `127.0.0.1`          |
+| Which port this tool should listen.                               | `CRAWLERA_HEADLESS_BINDPORT`          | `-p`, `--bind-port`               | `bind_port`                       | 3128                 |
+| Path to the configuration file.                                   | `CRAWLERA_HEADLESS_CONFIG`            | `-c`, `--config`                  | -                                 |                      |
+| API key of Crawlera.                                              | `CRAWLERA_HEADLESS_APIKEY`            | `-a`, `--api-key`                 | `api_key`                         |                      |
+| Hostname of Crawlera.                                             | `CRAWLERA_HEADLESS_CHOST`             | `-u`, `--crawlera-host`           | `crawlera_host`                   | `proxy.crawlera.com` |
+| Port of Crawlera.                                                 | `CRAWLERA_HEADLESS_CPORT`             | `-o`, `--crawlera-port`           | `crawlera_port`                   | 8010                 |
+| Do not verify Crawlera own TLS certificate.                       | `CRAWLERA_HEADLESS_DONTVERIFY`        | `-k`, `dont-verify-crawlera-cert` | `dont_verify_crawlera_cert`       | `false`              |
+| Path to own TLS CA certificate.                                   | `CRAWLERA_HEADLESS_TLSCACERTPATH`     | `-l`, `tls-ca-certificate`        | `tls_ca_certificate`              | <embeded>            |
+| Path to own TLS private key.                                      | `CRAWLERA_HEADLESS_TLSPRIVATEKEYPATH` | `-r`, `tls-private-key`           | `tls_private_key`                 | <embeded>            |
+| Disable automatic session management                              | `CRAWLERA_HEADLESS_NOAUTOSESSIONS`    | `-t`, `--no-auto-sessions`        | `no_auto_sessions`                | `false`              |
+| Maximal ammount of concurrent connections to process              | `CRAWLERA_HEADLESS_CONCURRENCY`       | `-n`, `--concurrent-connections`  | `concurrent_connections`          | 0                    |
+| Additional Crawlera X-Headers.                                    | `CRAWLERA_HEADLESS_XHEADERS`          | `-x`, `--xheaders`                | Section `xheaders`                |                      |
+| Adblock-compatible filter lists.                                  | `CRAWLERA_HEADLESS_ADBLOCKLISTS`      | `-k`, `--adblock-list`            | `adblock_lists`                   |                      |
+| Which IP should proxy API listen on (default is `bind-ip` value). | `CRAWLERA_HEADLESS_PROXYAPIIP`        | `-m`, `--proxy-api-ip`            | `proxy_api_ip`                    | <same as `bind_ip`>  |
+| Which port proxy API should listen on.                            | `CRAWLERA_HEADLESS_PROXYAPIPORT`      | `-w`, `--proxy-api-port`          | `proxy_api_port`                  | 3130                 |
+
+0 concurrent connections means unlimited. Embedded TLS key/certificate
+means that headless proxy will use ones from the repository.
 
 Configuration is implemented in [TOML
 language](https://github.com/toml-lang/toml). If you haven't heard about
@@ -260,6 +264,7 @@ this order (1 has max priority, 4 - minimal):
 2. Commandline flags
 3. Configuration file
 4. Defaults
+
 
 ## Concurrency
 
@@ -340,6 +345,7 @@ $ openssl req -x509 -newkey rsa:4096 -keyout private-key.pem -out ca.crt -days 3
 
 This command will generate TLS private key `private-key.pem` and
 self-signed certificate `ca.crt`.
+
 
 ## Proxy API
 
@@ -469,16 +475,57 @@ Also, `clients_serving <= clients_connected` because of rate limiting. You
 may consider client_serving as requests which pass rate limiter.
 
 
-## Examples
+## Crawlera X-Headers
 
-### curl
+Crawlera is configured using the special headers, which usually are
+called x-headers (they have `X-` prefix in their name). You can find a
+[full list](https://doc.scrapinghub.com/crawlera.html#request-headers)
+of them in documentation.
+
+There are 2 different ways of providing these header to the headless proxy:
+
+1. Use the full name
+2. Use the short version
+
+For example, user wants to use desktop browser profile. Corresponding
+header is `X-Crawlera-Profile`. So, user can add following line to the
+configuration:
+
+```toml
+[xheaders]
+x-crawlera-profile = "desktop"
+```
+
+or pass it via command line:
+
+```console
+$ crawlera-headless-proxy ... -x x-crawlera-profile=desktop
+```
+
+but it makes no sense to use `X-Crawlera-` prefix all the time, please omit it.
+
+```toml
+[xheaders]
+profile = "desktop"
+```
+
+or pass it via command line:
+
+```console
+$ crawlera-headless-proxy ... -x profile=desktop
+```
+
+
+# Examples
+
+## curl
 
 ```console
 $ crawlera-headless-proxy -p 3128 -a "$MYAPIKEY" -x profile=desktop
 $ curl -x localhost:3128 -sLI https://scrapinghub.com
 ```
 
-### Selenium (Python)
+## Selenium (Python)
 
 ```python
 from selenium import webdriver
