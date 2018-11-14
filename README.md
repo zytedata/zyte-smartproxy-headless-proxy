@@ -31,6 +31,9 @@ The biggest problem with headless browsers is their configuration:
    requires to have a minimal possible set of headers. For example, it is
    recommended to remove `Accept` header by default. It is rather hard
    to do that using headless browsers API.
+4. Crawlera works best with browsers only with some preconditions which
+   users have to repeat everytime: session usage, some recommended headers
+   like `Referer` etc.
 
 Crawlera Headless Proxy intended to help users to avoid such
 problems. You should generally think about it as a proxy which should
@@ -56,17 +59,40 @@ required one for your operating system and CPU architecture.
 
 ### Install from sources
 
-To install from sources, please do the following:
+#### Install prerequisites
 
-* Install Go >= 1.7
-* Download sources
+You need to have a distributions of Go programming language, git, bash
+and make installed. We use Go >= 1.11 so please be sure that you have
+fresh enough version.
+
+To install them on Ubuntu/Debian, please execute the following command:
+
+```console
+$ sudo apt install -y bash make git golang-go
+```
+
+If you have Ubuntu older than 18.10, please install go with snap package:
+
+```console
+$ sudo snap install --classic go
+```
+
+To install them on OS X with [Homebrew](https://brew.sh/),
+please execute the following command:
+
+```console
+$ brew install go make git
+```
+
+
+#### Build binary
 
 ```console
 $ git clone https://github.com/scrapinghub/crawlera-headless-proxy
 $ cd crawlera-headless-proxy
 ```
 
-* Execute make
+The next step is to execute make
 
 ```console
 $ make
@@ -79,6 +105,10 @@ in compiling for other OS/CPU architecture, please cross-compile:
 $ make crosscompile
 ```
 
+You'll find a set of compiled biaries in `./ccbuilds` directory after
+the process is finished.
+
+
 ### Docker container
 
 To download prebuilt container, please do the following:
@@ -87,7 +117,8 @@ To download prebuilt container, please do the following:
 $ docker pull scrapinghub/crawlera-headless-proxy
 ```
 
-If you want to build this image locally, please do it with make
+If you want to build this image locally, please do it with make (also,
+be sure that [docker is installed](https://docs.docker.com/install/)).
 
 ```console
 $ make docker
@@ -96,6 +127,13 @@ $ make docker
 This will build an image with tag `crawlera-headless-proxy`. It can
 be configured by environment variables or command flags. Default
 configuration file path within a container is `/config.toml`.
+
+If you want to have a smaller image (but build time will grow a lot),
+you can build it with `docker-slim` make target.
+
+```console
+$ make docker-slim
+```
 
 
 ## Usage
