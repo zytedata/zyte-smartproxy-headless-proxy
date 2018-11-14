@@ -1,0 +1,33 @@
+---
+
+version: "2"
+services:
+  hub:
+    image: selenium/hub:3
+    depends_on:
+      - headless-proxy
+    networks:
+      default:
+        aliases:
+          - hub
+    ports:
+      - 4444:4444
+
+  chrome:
+    image: selenium/node-chrome:3
+    depends_on:
+      - hub
+    environment:
+      GRID_TIMEOUT: 180  # Default timeout is 30s might be low for Selenium
+      HUB_HOST: hub
+    volumes:
+      - /dev/shm:/dev/shm
+
+  headless-proxy:
+    image: crawlera-headless-proxy
+    networks:
+      default:
+        aliases:
+          - proxy
+    environment:
+      CRAWLERA_HEADLESS_APIKEY: USER_API_KEY
