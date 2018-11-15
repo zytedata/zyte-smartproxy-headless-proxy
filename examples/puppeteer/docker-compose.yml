@@ -1,0 +1,10 @@
+---
+
+version: "2"
+services:
+  headless-proxy:
+    image: crawlera-headless-proxy
+    ports:
+      - 3128:3128
+    environment:
+      CRAWLERA_HEADLESS_APIKEY: USER_API_KEY

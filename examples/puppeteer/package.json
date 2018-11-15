@@ -1,0 +1,23 @@
+{
+  "name": "puppeteer-example",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Example on how to work with puppeteer and crawlera-headless-proxy",
+  "homepage": "https://github.com/scrapinghub/crawlera-headless-proxy",
+  "repository": "github:scrapinghub/crawlera-headless-proxy",
+  "main": "index.js",
+  "scripts": {
+    "example": "node ./index.js"
+  },
+  "author": {
+    "name": "Crawlera Team",
+    "url": "https://scrapinghub.com"
+  },
+  "engines": {
+    "node": ">7.6.0"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^1.10.0"
+  }
+}
