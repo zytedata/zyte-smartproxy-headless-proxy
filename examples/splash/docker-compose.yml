@@ -11,11 +11,9 @@ services:
   headless-proxy:
     image: crawlera-headless-proxy
     ports:
-      - 3228:3128
+      - 3128:3128
     environment:
-      CRAWLERA_HEADLESS_APIKEY: PREDEFINED_API_KEY
-      CRAWLERA_HEADLESS_CHOST: 10.0.0.10
-      CRAWLERA_HEADLESS_CPORT: 9010
+      CRAWLERA_HEADLESS_APIKEY: USER_API_KEY
     networks:
       default:
         aliases:

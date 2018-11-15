@@ -25,3 +25,7 @@ Or as a standalone binary:
 ```console
 $ crawlera-headless-proxy -c $(pwd)/example-config.toml
 ```
+
+Examples also provide docker-compose configuration files which also have
+headless-proxy as a container. Please check them if you do not want to
+run this tool separately.
