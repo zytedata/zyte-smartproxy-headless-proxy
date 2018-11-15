@@ -1,0 +1,22 @@
+---
+
+version: "2"
+services:
+  splash:
+    image: scrapinghub/splash
+    ports:
+      - 8050:8050
+      - 5023:5023
+
+  headless-proxy:
+    image: crawlera-headless-proxy
+    ports:
+      - 3228:3128
+    environment:
+      CRAWLERA_HEADLESS_APIKEY: PREDEFINED_API_KEY
+      CRAWLERA_HEADLESS_CHOST: 10.0.0.10
+      CRAWLERA_HEADLESS_CPORT: 9010
+    networks:
+      default:
+        aliases:
+          - proxy
