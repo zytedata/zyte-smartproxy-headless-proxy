@@ -92,20 +92,20 @@ If you use [HomeBrew](https://brew.sh) or
 proxy:
 
 ```console
-$ brew install <URL TO FORMULA>
+$ brew install https://raw.githubusercontent.com/scrapinghub/crawlera-headless-proxy/master/crawlera-headless-proxy.rb
 ```
 
 or if you want to have a development version:
 
 ```console
-$ brew install --HEAD <URL TO FORMULA>
+$ brew install --HEAD https://raw.githubusercontent.com/scrapinghub/crawlera-headless-proxy/master/crawlera-headless-proxy.rb
 ```
 
 
 #### Build binary
 
 ```console
-$ git clone https://github.com/scrapinghub/crawlera-headless-proxy
+$ git clone https://github.com/scrapinghub/crawlera-headless-proxy.git
 $ cd crawlera-headless-proxy
 ```
 
