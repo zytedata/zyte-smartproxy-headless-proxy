@@ -5,10 +5,10 @@
 # Headless Proxy on your Mac. Installation is quite straghtforward:
 #
 # To install release version, please run:
-#   $ brew install <url>/crawlera-headless-proxy.rb
+#   $ brew install https://raw.githubusercontent.com/scrapinghub/crawlera-headless-proxy/master/crawlera-headless-proxy.rb
 #
 # If you wanr to install development version, please use HEAD:
-#   $ bew install --HEAD <url>/crawlera-headless-proxy.rb
+#   $ bew install --HEAD https://raw.githubusercontent.com/scrapinghub/crawlera-headless-proxy/master/crawlera-headless-proxy.rb
 #
 # Also, there is one optional parameter: --with-upx
 # With this parameter, headless-proxy will be compressed by UPX
