@@ -22,8 +22,7 @@ class CrawleraHeadlessProxy < Formula
   homepage "https://github.com/scrapinghub/crawlera-headless-proxy"
 
   revision 0
-  url "https://bitbucket.org/scrapinghub/crawlera-headless-proxy/get/23d641bbce29.zip"
-  head "https://bitbucket.org/scrapinghub/crawlera-headless-proxy.git"
+  head "https://github.com/scrapinghub/crawlera-headless-proxy.git"
 
   depends_on "go" => :build
   depends_on "make" => :build
