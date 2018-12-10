@@ -50,6 +50,7 @@ func (b *BaseLayer) OnResponse(state *httransform.LayerState, err error) {
 
 	logger.WithFields(log.Fields{
 		"response_code": state.Response.Header.StatusCode(),
+		"error":         err,
 	}).Info("Finish request")
 
 	b.calculateOverallTime(state)

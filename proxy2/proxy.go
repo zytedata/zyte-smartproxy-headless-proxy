@@ -26,12 +26,9 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 		CertCA:  []byte(conf.TLSCaCertificate),
 		CertKey: []byte(conf.TLSPrivateKey),
 	}
+
 	srv, err := httransform.NewServer(opts,
-		[]httransform.Layer{
-			&layers.BaseLayer{
-				Metrics: statsContainer,
-			},
-		},
+		makeProxyLayers(conf, statsContainer),
 		executor,
 		&Logger{},
 		statsContainer,
@@ -41,4 +38,17 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 	}
 
 	return srv, nil
+}
+
+func makeProxyLayers(conf *config.Config, statsContainer *stats.Stats) []httransform.Layer {
+	proxyLayers := []httransform.Layer{
+		&layers.BaseLayer{
+			Metrics: statsContainer,
+		},
+	}
+	if len(conf.XHeaders) > 0 {
+		proxyLayers = append(proxyLayers, &layers.XHeadersLayer{XHeaders: conf.XHeaders})
+	}
+
+	return proxyLayers
 }
