@@ -4,14 +4,11 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"fmt"
-	"io"
 	"net"
 	"time"
 
 	"github.com/9seconds/httransform"
 	log "github.com/sirupsen/logrus"
-	"github.com/valyala/fasthttp"
-	"github.com/valyala/fasthttp/fasthttputil"
 
 	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
@@ -22,25 +19,6 @@ const (
 	StartTimeLayerContextType = "start_time"
 	ClientIDLayerContextType  = "client_id"
 )
-
-type trafficReader struct {
-	reader   io.Reader
-	counter  int
-	metrics  *stats.Stats
-	response *fasthttp.Response
-}
-
-func (t *trafficReader) Read(p []byte) (int, error) {
-	n, err := t.Read(p)
-	t.counter += n
-
-	if err == io.EOF {
-		t.metrics.NewResponseTraffic(t.counter)
-		fasthttp.ReleaseResponse(t.response)
-	}
-
-	return n, err
-}
 
 type BaseLayer struct {
 	Metrics *stats.Stats
@@ -61,8 +39,6 @@ func (b *BaseLayer) OnRequest(state *httransform.LayerState) error {
 	state.Set(StartTimeLayerContextType, time.Now())
 	state.Set(ClientIDLayerContextType, clientID)
 
-	b.calculateRequestTraffic(state.Request)
-
 	logger.Info("New request")
 
 	return nil
@@ -77,11 +53,6 @@ func (b *BaseLayer) OnResponse(state *httransform.LayerState, err error) {
 	}).Info("Finish request")
 
 	b.calculateOverallTime(state)
-	b.calculateResponseTraffic(state)
-}
-
-func (b *BaseLayer) calculateRequestTraffic(req *fasthttp.Request) {
-	b.Metrics.NewRequestTraffic(len(req.Header.Header()) + len(req.Body()))
 }
 
 func (b *BaseLayer) calculateOverallTime(state *httransform.LayerState) {
@@ -89,28 +60,6 @@ func (b *BaseLayer) calculateOverallTime(state *httransform.LayerState) {
 	startTimeUntyped, _ := state.Get(StartTimeLayerContextType)
 
 	b.Metrics.NewOverallTime(finishTime.Sub(startTimeUntyped.(time.Time)))
-}
-
-func (b *BaseLayer) calculateResponseTraffic(state *httransform.LayerState) {
-	conns := fasthttputil.NewPipeConns()
-	reader := conns.Conn1()
-	writer := conns.Conn2()
-
-	go func(resp *fasthttp.Response, writer io.WriteCloser) {
-		resp.BodyWriteTo(writer)
-		writer.Close()
-	}(state.Response, writer)
-
-	tReader := &trafficReader{
-		reader:   reader,
-		counter:  len(state.Response.Header.Header()),
-		metrics:  b.Metrics,
-		response: state.Response,
-	}
-
-	resp := fasthttp.AcquireResponse()
-	resp.SetBodyStream(tReader, -1)
-	state.Response = resp
 }
 
 func (b *BaseLayer) getClientID(state *httransform.LayerState) string {

@@ -29,18 +29,14 @@ type Stats struct {
 	SessionsCreated   uint64 `json:"sessions_created"`
 	ClientsConnected  uint64 `json:"clients_connected"`
 	ClientsServing    uint64 `json:"clients_serving"`
-	RequestTraffic    uint64 `json:"request_traffic"`
-	ResponseTraffic   uint64 `json:"response_traffic"`
 	AdblockedRequests uint64 `json:"adblocked_requests"`
 	CrawleraErrors    uint64 `json:"crawlera_errors"`
 	AllErrors         uint64 `json:"all_errors"`
 
 	// The owls are not what they seem
 	// do not believe RWMutex. We use it as shared/exclusive lock.
-	OverallTimes         *durationTimeSeries `json:"overall_times"`
-	CrawleraTimes        *durationTimeSeries `json:"crawlera_times"`
-	RequestTrafficTimes  *uint64TimeSeries   `json:"request_traffic_times"`
-	ResponseTrafficTimes *uint64TimeSeries   `json:"response_traffic_times"`
+	OverallTimes  *durationTimeSeries `json:"overall_times"`
+	CrawleraTimes *durationTimeSeries `json:"crawlera_times"`
 
 	Uptime statsUptime `json:"uptime"`
 
@@ -169,28 +165,12 @@ func (s *Stats) NewOverallTime(elapsed time.Duration) {
 	s.statsLock.RUnlock()
 }
 
-func (s *Stats) NewRequestTraffic(size int) {
-	s.statsLock.RLock()
-	atomic.AddUint64(&s.RequestTraffic, uint64(size))
-	s.RequestTrafficTimes.add(uint64(size))
-	s.statsLock.RUnlock()
-}
-
-func (s *Stats) NewResponseTraffic(size int) {
-	s.statsLock.RLock()
-	atomic.AddUint64(&s.ResponseTraffic, uint64(size))
-	s.ResponseTrafficTimes.add(uint64(size))
-	s.statsLock.RUnlock()
-}
-
 // NewStats creates new initialized Stats instance.
 func NewStats() *Stats {
 	return &Stats{
-		OverallTimes:         newDurationTimeSeries(statsRingLength),
-		CrawleraTimes:        newDurationTimeSeries(statsRingLength),
-		RequestTrafficTimes:  newUint64TimeSeries(statsRingLength),
-		ResponseTrafficTimes: newUint64TimeSeries(statsRingLength),
-		Uptime:               statsUptime(time.Now()),
-		statsLock:            &sync.RWMutex{},
+		OverallTimes:  newDurationTimeSeries(statsRingLength),
+		CrawleraTimes: newDurationTimeSeries(statsRingLength),
+		Uptime:        statsUptime(time.Now()),
+		statsLock:     &sync.RWMutex{},
 	}
 }
