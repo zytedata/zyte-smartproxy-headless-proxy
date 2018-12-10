@@ -1,11 +1,13 @@
 package main
 
+//go:generate go run ./scripts/generate_certs.go ./ca.crt ./private-key.pem ./certs.go
+
 import (
 	"bytes"
 	"crypto/sha1" // nolint: gosec
 	"fmt"
 	"io/ioutil"
-	"net/http"
+	"net"
 	"os"
 
 	"github.com/juju/errors"
@@ -13,7 +15,7 @@ import (
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/scrapinghub/crawlera-headless-proxy/config"
-	"github.com/scrapinghub/crawlera-headless-proxy/proxy"
+	"github.com/scrapinghub/crawlera-headless-proxy/proxy2"
 	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
@@ -147,8 +149,12 @@ func main() {
 	statsContainer := stats.NewStats()
 	go stats.RunStats(statsContainer, conf)
 
-	if crawleraProxy, err := proxy.NewProxy(conf, statsContainer); err == nil {
-		log.Fatal(http.ListenAndServe(listen, crawleraProxy))
+	if crawleraProxy, err := proxy2.NewProxy(conf, statsContainer); err == nil {
+		if ln, err2 := net.Listen("tcp", listen); err2 != nil {
+			log.Fatal(err2)
+		} else {
+			log.Fatal(crawleraProxy.Serve(ln))
+		}
 	} else {
 		log.Fatal(err)
 	}
@@ -190,8 +196,8 @@ func getConfig() (*config.Config, error) {
 }
 
 func initCertificates(conf *config.Config) (err error) {
-	caCertificate := proxy.DefaultCertCA
-	privateKey := proxy.DefaultPrivateKey
+	caCertificate := DefaultCertCA
+	privateKey := DefaultPrivateKey
 
 	if conf.TLSCaCertificate != "" {
 		caCertificate, err = ioutil.ReadFile(conf.TLSCaCertificate)
@@ -214,5 +220,5 @@ func initCertificates(conf *config.Config) (err error) {
 		"priv-key": fmt.Sprintf("%x", sha1.Sum(privateKey)),    // nolint: gosec
 	}).Debug("TLS checksums.")
 
-	return proxy.InitCertificates(caCertificate, privateKey)
+	return nil
 }
