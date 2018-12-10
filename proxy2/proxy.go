@@ -25,6 +25,15 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 		CertCA:  []byte(conf.TLSCaCertificate),
 		CertKey: []byte(conf.TLSPrivateKey),
 	}
+	srv, err := httransform.NewServer(opts,
+		[]httransform.Layer{},
+		executor,
+		&Logger{},
+		statsContainer,
+	)
+	if err != nil {
+		return nil, errors.Annotate(err, "Cannot create an instance of proxy")
+	}
 
-	return nil, nil
+	return srv, nil
 }

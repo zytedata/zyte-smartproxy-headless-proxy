@@ -50,6 +50,5 @@ func RunStats(statsContainer *Stats, conf *config.Config) {
 		Handler: router,
 	}
 
-	statsContainer.RunCollect()
 	go log.Fatal(srv.ListenAndServe())
 }

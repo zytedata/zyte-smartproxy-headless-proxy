@@ -29,165 +29,167 @@ type Stats struct {
 	SessionsCreated   uint64 `json:"sessions_created"`
 	ClientsConnected  uint64 `json:"clients_connected"`
 	ClientsServing    uint64 `json:"clients_serving"`
-	Traffic           uint64 `json:"traffic"`
+	IngressTraffic    uint64 `json:"ingress_traffic"`
+	EgressTraffic     uint64 `json:"egress_traffic"`
 	AdblockedRequests uint64 `json:"adblocked_requests"`
 	CrawleraErrors    uint64 `json:"crawlera_errors"`
 	AllErrors         uint64 `json:"all_errors"`
 
 	// The owls are not what they seem
 	// do not believe RWMutex. We use it as shared/exclusive lock.
-	StatsLock     *sync.RWMutex       `json:"-"`
-	OverallTimes  *durationTimeSeries `json:"overall_times"`
-	CrawleraTimes *durationTimeSeries `json:"crawlera_times"`
-	TrafficTimes  *uint64TimeSeries   `json:"traffic_times"`
+	StatsLock           *sync.RWMutex       `json:"-"`
+	OverallTimes        *durationTimeSeries `json:"overall_times"`
+	CrawleraTimes       *durationTimeSeries `json:"crawlera_times"`
+	IngressTrafficTimes *uint64TimeSeries   `json:"ingress_traffic_times"`
+	EgressTrafficTimes  *uint64TimeSeries   `json:"egress_traffic_times"`
 
 	Uptime statsUptime `json:"uptime"`
-
-	RequestsNumberChan    chan struct{}      `json:"-"`
-	CrawleraRequestsChan  chan struct{}      `json:"-"`
-	SessionsCreatedChan   chan struct{}      `json:"-"`
-	AdblockedRequestsChan chan struct{}      `json:"-"`
-	CrawleraErrorsChan    chan struct{}      `json:"-"`
-	AllErrorsChan         chan struct{}      `json:"-"`
-	ClientsConnectedChan  chan bool          `json:"-"`
-	ClientsServingChan    chan bool          `json:"-"`
-	CrawleraTimesChan     chan time.Duration `json:"-"`
-	OverallTimesChan      chan time.Duration `json:"-"`
-	TrafficChan           chan uint64        `json:"-"`
 }
 
-// RunCollect starts a series of collector goroutines. Each goroutine
-// manages its own metric indiependently.
-func (s *Stats) RunCollect() {
-	go s.collectRequestNumbers()
-	go s.collectCrawleraRequests()
-	go s.collectCrawleraErrors()
-	go s.collectAllErrors()
-	go s.collectAdblockedRequests()
-	go s.collectSessionsCreated()
-	go s.collectClientConnected()
-	go s.collectClientsServing()
-	go s.collectCrawleraTimes()
-	go s.collectOverallTimes()
-	go s.collectTraffic()
+func (s *Stats) NewConnection() {
+	s.StatsLock.RLock()
+	atomic.AddUint64(&s.ClientsConnected, 1)
+	atomic.AddUint64(&s.RequestsNumber, 1)
+	s.StatsLock.RUnlock()
 }
 
-func (s *Stats) collectRequestNumbers() {
-	for range s.RequestsNumberChan {
-		s.StatsLock.RLock()
-		atomic.AddUint64(&s.RequestsNumber, 1)
-		s.StatsLock.RUnlock()
-	}
+func (s *Stats) DropConnection() {
+	s.StatsLock.RLock()
+	atomic.AddUint64(&s.ClientsConnected, atomicDecrement)
+	s.StatsLock.RUnlock()
 }
 
-func (s *Stats) collectCrawleraRequests() {
-	for range s.CrawleraRequestsChan {
-		s.StatsLock.RLock()
-		atomic.AddUint64(&s.CrawleraRequests, 1)
-		s.StatsLock.RUnlock()
-	}
+func (s *Stats) NewGet() {
 }
 
-func (s *Stats) collectSessionsCreated() {
-	for range s.SessionsCreatedChan {
-		s.StatsLock.RLock()
-		atomic.AddUint64(&s.SessionsCreated, 1)
-		s.StatsLock.RUnlock()
-	}
+func (s *Stats) NewHead() {
 }
 
-func (s *Stats) collectAdblockedRequests() {
-	for range s.AdblockedRequestsChan {
-		s.StatsLock.RLock()
-		atomic.AddUint64(&s.AdblockedRequests, 1)
-		s.StatsLock.RUnlock()
-	}
+func (s *Stats) NewPost() {
 }
 
-func (s *Stats) collectCrawleraErrors() {
-	for range s.CrawleraErrorsChan {
-		s.StatsLock.RLock()
-		atomic.AddUint64(&s.CrawleraErrors, 1)
-		s.StatsLock.RUnlock()
-	}
+func (s *Stats) NewPut() {
 }
 
-func (s *Stats) collectAllErrors() {
-	for range s.AllErrorsChan {
-		s.StatsLock.RLock()
-		atomic.AddUint64(&s.AllErrors, 1)
-		s.StatsLock.RUnlock()
-	}
+func (s *Stats) NewDelete() {
 }
 
-func (s *Stats) collectClientConnected() {
-	for clientConnected := range s.ClientsConnectedChan {
-		s.StatsLock.RLock()
-		if clientConnected {
-			atomic.AddUint64(&s.ClientsConnected, 1)
-		} else {
-			atomic.AddUint64(&s.ClientsConnected, atomicDecrement)
-		}
-		s.StatsLock.RUnlock()
-	}
+func (s *Stats) NewConnect() {
 }
 
-func (s *Stats) collectClientsServing() {
-	for clientServing := range s.ClientsServingChan {
-		s.StatsLock.RLock()
-		if clientServing {
-			atomic.AddUint64(&s.ClientsServing, 1)
-		} else {
-			atomic.AddUint64(&s.ClientsServing, atomicDecrement)
-		}
-		s.StatsLock.RUnlock()
-	}
+func (s *Stats) NewOptions() {
 }
 
-func (s *Stats) collectCrawleraTimes() {
-	for duration := range s.CrawleraTimesChan {
-		s.StatsLock.RLock()
-		s.CrawleraTimes.add(duration)
-		s.StatsLock.RUnlock()
-	}
+func (s *Stats) NewTrace() {
 }
 
-func (s *Stats) collectOverallTimes() {
-	for duration := range s.OverallTimesChan {
-		s.StatsLock.RLock()
-		s.OverallTimes.add(duration)
-		s.StatsLock.RUnlock()
-	}
+func (s *Stats) NewPatch() {
 }
 
-func (s *Stats) collectTraffic() {
-	for traffic := range s.TrafficChan {
-		s.StatsLock.RLock()
-		atomic.AddUint64(&s.Traffic, traffic)
-		s.TrafficTimes.add(traffic)
-		s.StatsLock.RUnlock()
-	}
+func (s *Stats) NewOther() {
+}
+
+func (s *Stats) DropGet() {
+}
+
+func (s *Stats) DropHead() {
+}
+
+func (s *Stats) DropPost() {
+}
+
+func (s *Stats) DropPut() {
+}
+
+func (s *Stats) DropDelete() {
+}
+
+func (s *Stats) DropConnect() {
+}
+
+func (s *Stats) DropOptions() {
+}
+
+func (s *Stats) DropTrace() {
+}
+
+func (s *Stats) DropPatch() {
+}
+
+func (s *Stats) DropOther() {
+}
+
+func (s *Stats) NewCertificate() {
+}
+
+func (s *Stats) DropCertificate() {
+}
+
+func (s *Stats) NewCrawleraRequest() {
+	s.StatsLock.RLock()
+	atomic.AddUint64(&s.CrawleraRequests, 1)
+	s.StatsLock.RUnlock()
+}
+
+func (s *Stats) NewSessionCreated() {
+	s.StatsLock.RLock()
+	atomic.AddUint64(&s.SessionsCreated, 1)
+	s.StatsLock.RUnlock()
+}
+
+func (s *Stats) NewAdblockedRequest() {
+	s.StatsLock.RLock()
+	atomic.AddUint64(&s.AdblockedRequests, 1)
+	s.StatsLock.RUnlock()
+}
+
+func (s *Stats) NewCrawleraError() {
+	s.StatsLock.RLock()
+	atomic.AddUint64(&s.CrawleraErrors, 1)
+	atomic.AddUint64(&s.AllErrors, 1)
+	s.StatsLock.RUnlock()
+}
+
+func (s *Stats) NewOtherError() {
+	s.StatsLock.RLock()
+	atomic.AddUint64(&s.AllErrors, 1)
+	s.StatsLock.RUnlock()
+}
+
+func (s *Stats) NewCrawleraTime(elapsed time.Duration) {
+	s.StatsLock.RLock()
+	s.CrawleraTimes.add(elapsed)
+	s.StatsLock.RUnlock()
+}
+
+func (s *Stats) NewOverallTime(elapsed time.Duration) {
+	s.StatsLock.RLock()
+	s.OverallTimes.add(elapsed)
+	s.StatsLock.RUnlock()
+}
+
+func (s *Stats) NewIngressTraffic(size int) {
+	s.StatsLock.RLock()
+	atomic.AddUint64(&s.IngressTraffic, uint64(size))
+	s.IngressTrafficTimes.add(uint64(size))
+	s.StatsLock.RUnlock()
+}
+
+func (s *Stats) NewEgressTraffic(size int) {
+	s.StatsLock.RLock()
+	atomic.AddUint64(&s.EgressTraffic, uint64(size))
+	s.EgressTrafficTimes.add(uint64(size))
+	s.StatsLock.RUnlock()
 }
 
 // NewStats creates new initialized Stats instance.
 func NewStats() *Stats {
 	return &Stats{
-		OverallTimes:  newDurationTimeSeries(statsRingLength),
-		CrawleraTimes: newDurationTimeSeries(statsRingLength),
-		TrafficTimes:  newUint64TimeSeries(statsRingLength),
-		Uptime:        statsUptime(time.Now()),
-		StatsLock:     &sync.RWMutex{},
-
-		RequestsNumberChan:    make(chan struct{}, statsChanBufferLength),
-		CrawleraRequestsChan:  make(chan struct{}, statsChanBufferLength),
-		CrawleraErrorsChan:    make(chan struct{}, statsChanBufferLength),
-		AllErrorsChan:         make(chan struct{}, statsChanBufferLength),
-		AdblockedRequestsChan: make(chan struct{}, statsChanBufferLength),
-		SessionsCreatedChan:   make(chan struct{}, statsChanBufferLength),
-		ClientsConnectedChan:  make(chan bool, statsChanBufferLength),
-		ClientsServingChan:    make(chan bool, statsChanBufferLength),
-		CrawleraTimesChan:     make(chan time.Duration, statsChanBufferLength),
-		OverallTimesChan:      make(chan time.Duration, statsChanBufferLength),
-		TrafficChan:           make(chan uint64, statsChanBufferLength),
+		OverallTimes:        newDurationTimeSeries(statsRingLength),
+		CrawleraTimes:       newDurationTimeSeries(statsRingLength),
+		IngressTrafficTimes: newUint64TimeSeries(statsRingLength),
+		EgressTrafficTimes:  newUint64TimeSeries(statsRingLength),
+		Uptime:              statsUptime(time.Now()),
+		StatsLock:           &sync.RWMutex{},
 	}
 }
