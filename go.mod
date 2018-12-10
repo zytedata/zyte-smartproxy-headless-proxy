@@ -1,7 +1,7 @@
 module github.com/scrapinghub/crawlera-headless-proxy
 
 require (
-	github.com/9seconds/httransform v0.0.0-20181207211519-cbf88798b966
+	github.com/9seconds/httransform v0.0.0-20181210201244-b0b941657a97
 	github.com/BurntSushi/toml v0.3.1
 	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc // indirect
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
@@ -16,8 +16,9 @@ require (
 	github.com/pmezard/adblock v0.0.0-20171028110701-edfb97ad89cd
 	github.com/sirupsen/logrus v1.2.0
 	github.com/stretchr/testify v1.2.2
-	golang.org/x/crypto v0.0.0-20181112202954-3d3f9f413869 // indirect
-	golang.org/x/sys v0.0.0-20181122145206-62eef0e2fa9b // indirect
+	github.com/valyala/fasthttp v1.0.0
+	golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9 // indirect
+	golang.org/x/sys v0.0.0-20181210030007-2a47403f2ae5 // indirect
 	golang.org/x/text v0.3.0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/h2non/gock.v1 v1.0.12

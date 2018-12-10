@@ -6,18 +6,27 @@ type Logger struct {
 }
 
 func (l *Logger) Debug(msg string, args ...interface{}) {
-	log.WithFields(l.getFields(args)).Debug(msg)
+	if log.IsLevelEnabled(log.DebugLevel) {
+		log.WithFields(l.getFields(args)).Debug(msg)
+	}
 }
 
 func (l *Logger) Info(msg string, args ...interface{}) {
-	log.WithFields(l.getFields(args)).Info(msg)
+	if log.IsLevelEnabled(log.InfoLevel) {
+		log.WithFields(l.getFields(args)).Info(msg)
+	}
 }
 
 func (l *Logger) Warn(msg string, args ...interface{}) {
-	log.WithFields(l.getFields(args)).Warn(msg)
+	if log.IsLevelEnabled(log.WarnLevel) {
+		log.WithFields(l.getFields(args)).Warn(msg)
+	}
 }
 
 func (l *Logger) Error(msg string, args ...interface{}) {
+	if log.IsLevelEnabled(log.ErrorLevel) {
+		log.WithFields(l.getFields(args)).Error(msg)
+	}
 	log.WithFields(l.getFields(args)).Error(msg)
 }
 

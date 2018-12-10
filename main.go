@@ -212,12 +212,12 @@ func initCertificates(conf *config.Config) (err error) {
 		}
 	}
 
-	caCertificate = bytes.TrimSpace(caCertificate)
-	privateKey = bytes.TrimSpace(privateKey)
+	conf.TLSCaCertificate = string(bytes.TrimSpace(caCertificate))
+	conf.TLSPrivateKey = string(bytes.TrimSpace(privateKey))
 
 	log.WithFields(log.Fields{
-		"ca-cert":  fmt.Sprintf("%x", sha1.Sum(caCertificate)), // nolint: gosec
-		"priv-key": fmt.Sprintf("%x", sha1.Sum(privateKey)),    // nolint: gosec
+		"ca-cert":  fmt.Sprintf("%x", sha1.Sum([]byte(conf.TLSCaCertificate))), // nolint: gosec
+		"priv-key": fmt.Sprintf("%x", sha1.Sum([]byte(conf.TLSPrivateKey))),    // nolint: gosec
 	}).Debug("TLS checksums.")
 
 	return nil

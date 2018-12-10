@@ -7,6 +7,7 @@ import (
 	"github.com/juju/errors"
 
 	"github.com/scrapinghub/crawlera-headless-proxy/config"
+	"github.com/scrapinghub/crawlera-headless-proxy/layers"
 	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
@@ -26,7 +27,11 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 		CertKey: []byte(conf.TLSPrivateKey),
 	}
 	srv, err := httransform.NewServer(opts,
-		[]httransform.Layer{},
+		[]httransform.Layer{
+			&layers.BaseLayer{
+				Metrics: statsContainer,
+			},
+		},
 		executor,
 		&Logger{},
 		statsContainer,
