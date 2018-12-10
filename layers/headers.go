@@ -2,9 +2,8 @@ package layers
 
 import "github.com/9seconds/httransform"
 
-var headersProfileToRemove = [6]string{
+var headersProfileToRemove = [5]string{
 	"accept",
-	"accept-encoding",
 	"accept-language",
 	"dnt",
 	"upgrade-insecure-requests",
@@ -30,7 +29,7 @@ func (h *XHeadersLayer) OnRequest(state *httransform.LayerState) error {
 	return nil
 }
 
-func (h *XHeadersLayer) OnResponse(state *httransform.LayerState, _ error) {
+func (h *XHeadersLayer) OnResponse(_ *httransform.LayerState, _ error) {
 }
 
 func NewXHeadersLayer(xheaders map[string]string) httransform.Layer {

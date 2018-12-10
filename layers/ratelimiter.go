@@ -11,7 +11,7 @@ func (r *RateLimiterLayer) OnRequest(state *httransform.LayerState) error {
 	return nil
 }
 
-func (r *RateLimiterLayer) OnResponse(state *httransform.LayerState, _ error) {
+func (r *RateLimiterLayer) OnResponse(_ *httransform.LayerState, _ error) {
 	<-r.limiter
 }
 
