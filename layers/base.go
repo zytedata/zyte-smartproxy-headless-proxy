@@ -21,7 +21,7 @@ const (
 )
 
 type BaseLayer struct {
-	Metrics *stats.Stats
+	metrics *stats.Stats
 }
 
 func (b *BaseLayer) OnRequest(state *httransform.LayerState) error {
@@ -35,7 +35,7 @@ func (b *BaseLayer) OnRequest(state *httransform.LayerState) error {
 	})
 
 	state.Set(LogLayerContextType, &logger)
-	state.Set(MetricsLayerContextType, b.Metrics)
+	state.Set(MetricsLayerContextType, b.metrics)
 	state.Set(StartTimeLayerContextType, time.Now())
 	state.Set(ClientIDLayerContextType, clientID)
 
@@ -60,7 +60,7 @@ func (b *BaseLayer) calculateOverallTime(state *httransform.LayerState) {
 	finishTime := time.Now()
 	startTimeUntyped, _ := state.Get(StartTimeLayerContextType)
 
-	b.Metrics.NewOverallTime(finishTime.Sub(startTimeUntyped.(time.Time)))
+	b.metrics.NewOverallTime(finishTime.Sub(startTimeUntyped.(time.Time)))
 }
 
 func (b *BaseLayer) getClientID(state *httransform.LayerState) string {
@@ -74,4 +74,10 @@ func (b *BaseLayer) getClientID(state *httransform.LayerState) string {
 	hsh.Write(userAgent)
 
 	return fmt.Sprintf("%x", hsh.Sum(nil))
+}
+
+func NewBaseLayer(metrics *stats.Stats) httransform.Layer {
+	return &BaseLayer{
+		metrics: metrics,
+	}
 }

@@ -42,12 +42,15 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 
 func makeProxyLayers(conf *config.Config, statsContainer *stats.Stats) []httransform.Layer {
 	proxyLayers := []httransform.Layer{
-		&layers.BaseLayer{
-			Metrics: statsContainer,
-		},
+		layers.NewBaseLayer(statsContainer),
 	}
+
+	if conf.ConcurrentConnections > 0 {
+		proxyLayers = append(proxyLayers, layers.NewRateLimiterLayer(conf.ConcurrentConnections))
+	}
+
 	if len(conf.XHeaders) > 0 {
-		proxyLayers = append(proxyLayers, &layers.XHeadersLayer{XHeaders: conf.XHeaders})
+		proxyLayers = append(proxyLayers, layers.NewXHeadersLayer(conf.XHeaders))
 	}
 
 	return proxyLayers

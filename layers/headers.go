@@ -31,5 +31,10 @@ func (h *XHeadersLayer) OnRequest(state *httransform.LayerState) error {
 }
 
 func (h *XHeadersLayer) OnResponse(state *httransform.LayerState, _ error) {
+}
 
+func NewXHeadersLayer(xheaders map[string]string) httransform.Layer {
+	return &XHeadersLayer{
+		XHeaders: xheaders,
+	}
 }
