@@ -13,13 +13,6 @@ import (
 	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
-const (
-	LogLayerContextType       = "log"
-	MetricsLayerContextType   = "metrics"
-	StartTimeLayerContextType = "start_time"
-	ClientIDLayerContextType  = "client_id"
-)
-
 type BaseLayer struct {
 	metrics *stats.Stats
 }
@@ -34,10 +27,10 @@ func (b *BaseLayer) OnRequest(state *httransform.LayerState) error {
 		"url":         string(state.Request.URI().FullURI()),
 	})
 
-	state.Set(LogLayerContextType, &logger)
-	state.Set(MetricsLayerContextType, b.metrics)
-	state.Set(StartTimeLayerContextType, time.Now())
-	state.Set(ClientIDLayerContextType, clientID)
+	state.Set(logLayerContextType, &logger)
+	state.Set(metricsLayerContextType, b.metrics)
+	state.Set(startTimeLayerContextType, time.Now())
+	state.Set(clientIDLayerContextType, clientID)
 
 	logger.Info("New request")
 
@@ -45,17 +38,15 @@ func (b *BaseLayer) OnRequest(state *httransform.LayerState) error {
 }
 
 func (b *BaseLayer) OnResponse(state *httransform.LayerState, err error) {
-	loggerUntyped, _ := state.Get(LogLayerContextType)
-	logger := loggerUntyped.(*log.Logger)
-	metricsUntyped, _ := state.Get(MetricsLayerContextType)
-	metrics := metricsUntyped.(*stats.Stats)
+	logger := getLogger(state)
+	metrics := getMetrics(state)
 
 	logger.WithFields(log.Fields{
 		"response_code": state.Response.Header.StatusCode(),
 		"error":         err,
 	}).Info("Finish request")
 
-	if IsCrawleraError(state) {
+	if isCrawleraError(state) {
 		metrics.NewCrawleraError()
 	} else if state.Response.Header.StatusCode() >= 400 {
 		metrics.NewOtherError()
@@ -66,7 +57,7 @@ func (b *BaseLayer) OnResponse(state *httransform.LayerState, err error) {
 
 func (b *BaseLayer) calculateOverallTime(state *httransform.LayerState) {
 	finishTime := time.Now()
-	startTimeUntyped, _ := state.Get(StartTimeLayerContextType)
+	startTimeUntyped, _ := state.Get(startTimeLayerContextType)
 
 	b.metrics.NewOverallTime(finishTime.Sub(startTimeUntyped.(time.Time)))
 }

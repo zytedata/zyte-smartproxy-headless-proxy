@@ -21,8 +21,7 @@ type RefererLayer struct {
 }
 
 func (r *RefererLayer) OnRequest(state *httransform.LayerState) error {
-	clientIDUntyped, _ := state.Get(ClientIDLayerContextType)
-	clientID := clientIDUntyped.(string)
+	clientID := getClientID(state)
 	host, _ := state.RequestHeaders.GetString("host")
 	referer, _ := state.RequestHeaders.GetString("referer")
 

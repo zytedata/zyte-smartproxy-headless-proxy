@@ -2,6 +2,10 @@ github.com/9seconds/httransform v0.0.0-20181207211519-cbf88798b966 h1:0KuLK1mnBY
 github.com/9seconds/httransform v0.0.0-20181207211519-cbf88798b966/go.mod h1:uIleU1BYwDbeH9mdrHPDjH7v52TDnzMs0Ql/kpgwtBo=
 github.com/9seconds/httransform v0.0.0-20181210201244-b0b941657a97 h1:jl61MwuKYLywDXueUe4F8QbIdNxb9XNNa4fRT2LtAoU=
 github.com/9seconds/httransform v0.0.0-20181210201244-b0b941657a97/go.mod h1:uIleU1BYwDbeH9mdrHPDjH7v52TDnzMs0Ql/kpgwtBo=
+github.com/9seconds/httransform v0.0.0-20181211111644-79740c524e36 h1:1Ber2wcWgSkDwKxGcfN0iOapyoCJ9hKX+dDPHRc2e0Y=
+github.com/9seconds/httransform v0.0.0-20181211111644-79740c524e36/go.mod h1:uIleU1BYwDbeH9mdrHPDjH7v52TDnzMs0Ql/kpgwtBo=
+github.com/9seconds/httransform v0.0.0-20181211112027-ff331b7f0e63 h1:pI8P3WMssxEbh5zqPwgbVwBfBbDa3Zs8FGDNXT+l5BE=
+github.com/9seconds/httransform v0.0.0-20181211112027-ff331b7f0e63/go.mod h1:uIleU1BYwDbeH9mdrHPDjH7v52TDnzMs0Ql/kpgwtBo=
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc h1:cAKDfWh5VpdgMhJosfJnn5/FoN2SRZ4p7fJNX58YPaU=

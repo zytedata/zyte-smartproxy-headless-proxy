@@ -13,8 +13,6 @@ import (
 	"github.com/juju/errors"
 	"github.com/pmezard/adblock/adblock"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
 var errAdblockedRequest = errors.New("Request was adblocked")
@@ -43,8 +41,7 @@ func (a *AdblockLayer) OnRequest(state *httransform.LayerState) error {
 		ContentType:  contentType,
 		OriginDomain: referer,
 	}
-	loggerUntyped, _ := state.Get(LogLayerContextType)
-	logger := loggerUntyped.(*log.Logger)
+	logger := getLogger(state)
 
 	if !a.loaded {
 		a.cond.L.Lock()
@@ -70,8 +67,7 @@ func (a *AdblockLayer) OnResponse(state *httransform.LayerState, err error) {
 		return
 	}
 
-	metrics, _ := state.Get(MetricsLayerContextType)
-	metrics.(*stats.Stats).NewAdblockedRequest()
+	getMetrics(state).NewAdblockedRequest()
 	httransform.MakeSimpleResponse(state.Response, "Request was adblocked", http.StatusForbidden)
 }
 
