@@ -47,11 +47,19 @@ func (b *BaseLayer) OnRequest(state *httransform.LayerState) error {
 func (b *BaseLayer) OnResponse(state *httransform.LayerState, err error) {
 	loggerUntyped, _ := state.Get(LogLayerContextType)
 	logger := loggerUntyped.(*log.Logger)
+	metricsUntyped, _ := state.Get(MetricsLayerContextType)
+	metrics := metricsUntyped.(*stats.Stats)
 
 	logger.WithFields(log.Fields{
 		"response_code": state.Response.Header.StatusCode(),
 		"error":         err,
 	}).Info("Finish request")
+
+	if IsCrawleraError(state) {
+		metrics.NewCrawleraError()
+	} else if state.Response.Header.StatusCode() >= 400 {
+		metrics.NewOtherError()
+	}
 
 	b.calculateOverallTime(state)
 }
