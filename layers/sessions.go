@@ -67,6 +67,7 @@ func (s *SessionsLayer) onResponseOK(state *httransform.LayerState) {
 		if !item.Expired() {
 			sessionID, _ := state.ResponseHeaders.GetString("x-crawlera-session")
 			channel <- sessionID
+			getMetrics(state).NewSessionCreated()
 			getLogger(state).WithFields(log.Fields{
 				"session-id": sessionID,
 			}).Info("Initialized new session")
@@ -108,6 +109,7 @@ func (s *SessionsLayer) onResponseErrorRetryCreateSession(state *httransform.Lay
 
 	sessionID := state.Response.Header.Peek("X-Crawlera-Session")
 	channel <- string(sessionID)
+	getMetrics(state).NewSessionCreated()
 
 	logger.WithFields(log.Fields{
 		"session-id": sessionID,
