@@ -13,6 +13,8 @@ import (
 	"github.com/juju/errors"
 	"github.com/pmezard/adblock/adblock"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
 var errAdblockedRequest = errors.New("Request was adblocked")
@@ -68,6 +70,8 @@ func (a *AdblockLayer) OnResponse(state *httransform.LayerState, err error) {
 		return
 	}
 
+	metrics, _ := state.Get(MetricsLayerContextType)
+	metrics.(*stats.Stats).NewAdblockedRequest()
 	httransform.MakeSimpleResponse(state.Response, "Request was adblocked", http.StatusForbidden)
 }
 
