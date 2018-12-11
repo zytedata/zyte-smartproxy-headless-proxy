@@ -45,6 +45,9 @@ func makeProxyLayers(conf *config.Config, statsContainer *stats.Stats) []httrans
 		layers.NewBaseLayer(statsContainer),
 	}
 
+	if len(conf.AdblockLists) > 0 {
+		proxyLayers = append(proxyLayers, layers.NewAdblockLayer(conf.AdblockLists))
+	}
 	if conf.ConcurrentConnections > 0 {
 		proxyLayers = append(proxyLayers, layers.NewRateLimiterLayer(conf.ConcurrentConnections))
 	}
