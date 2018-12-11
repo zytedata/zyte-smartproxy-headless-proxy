@@ -16,7 +16,7 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 	if err != nil {
 		return nil, errors.Annotate(err, "Incorrect Crawlera URL")
 	}
-	crawleraURL.Scheme = "http"
+
 	executor, err := httransform.MakeProxyChainExecutor(crawleraURL)
 	if err != nil {
 		return nil, errors.Annotate(err, "Cannot make proxy chain executor")
@@ -52,6 +52,8 @@ func makeProxyLayers(conf *config.Config, statsContainer *stats.Stats) []httrans
 	if len(conf.XHeaders) > 0 {
 		proxyLayers = append(proxyLayers, layers.NewXHeadersLayer(conf.XHeaders))
 	}
+
+	proxyLayers = append(proxyLayers, layers.NewRefererLayer())
 
 	return proxyLayers
 }
