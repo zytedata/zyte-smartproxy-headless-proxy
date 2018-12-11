@@ -59,7 +59,7 @@ func main() {
 	defer fp.Close()
 
 	tpl := template.Must(template.New("tpl").Parse(fileTemplate))
-	tpl.Execute(fp, data{
+	tpl.Execute(fp, data{ // nolint: errcheck
 		Time: time.Now().Format(time.RFC1123Z),
 		CA:   string(bytes.TrimSpace(caCert)),
 		Key:  string(bytes.TrimSpace(caKey)),

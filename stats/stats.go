@@ -8,8 +8,7 @@ import (
 )
 
 const (
-	statsRingLength       = 3000
-	statsChanBufferLength = 100
+	statsRingLength = 3000
 
 	atomicDecrement = ^uint64(0)
 )

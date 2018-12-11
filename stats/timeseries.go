@@ -108,25 +108,8 @@ func (d *durationTimeSeries) add(item time.Duration) {
 	d.timeSeries.add(item.Seconds())
 }
 
-type uint64TimeSeries struct {
-	timeSeries
-}
-
-func (u *uint64TimeSeries) add(item uint64) {
-	u.timeSeries.add(float64(item))
-}
-
 func newDurationTimeSeries(capacity int) *durationTimeSeries {
 	return &durationTimeSeries{
-		timeSeries: timeSeries{
-			data: ring.New(capacity),
-			lock: &sync.Mutex{},
-		},
-	}
-}
-
-func newUint64TimeSeries(capacity int) *uint64TimeSeries {
-	return &uint64TimeSeries{
 		timeSeries: timeSeries{
 			data: ring.New(capacity),
 			lock: &sync.Mutex{},

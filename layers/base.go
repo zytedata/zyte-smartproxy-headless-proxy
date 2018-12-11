@@ -2,7 +2,7 @@ package layers
 
 import (
 	"crypto/hmac"
-	"crypto/sha1"
+	"crypto/sha1" // nolint: gosec
 	"fmt"
 	"net"
 	"time"
@@ -27,7 +27,7 @@ func (b *BaseLayer) OnRequest(state *httransform.LayerState) error {
 		"url":         string(state.Request.URI().FullURI()),
 	})
 
-	state.Set(logLayerContextType, &logger)
+	state.Set(logLayerContextType, logger)
 	state.Set(metricsLayerContextType, b.metrics)
 	state.Set(startTimeLayerContextType, time.Now())
 	state.Set(clientIDLayerContextType, clientID)
@@ -70,7 +70,7 @@ func (b *BaseLayer) getClientID(state *httransform.LayerState) string {
 
 	hsh := hmac.New(sha1.New, []byte(host))
 	userAgent, _ := state.RequestHeaders.GetBytes([]byte("user-agent"))
-	hsh.Write(userAgent)
+	hsh.Write(userAgent) // nolint: errcheck
 
 	return fmt.Sprintf("%x", hsh.Sum(nil))
 }

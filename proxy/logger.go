@@ -1,4 +1,4 @@
-package proxy2
+package proxy
 
 import log "github.com/sirupsen/logrus"
 

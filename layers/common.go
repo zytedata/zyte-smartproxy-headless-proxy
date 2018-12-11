@@ -12,6 +12,7 @@ const (
 	metricsLayerContextType   = "metrics"
 	startTimeLayerContextType = "start_time"
 	clientIDLayerContextType  = "client_id"
+	sessionChanContextType    = "session_chan"
 )
 
 func isCrawleraError(state *httransform.LayerState) bool {
@@ -31,9 +32,9 @@ func getClientID(state *httransform.LayerState) string {
 	return clientIDUntyped.(string)
 }
 
-func getLogger(state *httransform.LayerState) *log.Logger {
+func getLogger(state *httransform.LayerState) *log.Entry {
 	loggerUntyped, _ := state.Get(logLayerContextType)
-	return loggerUntyped.(*log.Logger)
+	return loggerUntyped.(*log.Entry)
 }
 
 func getMetrics(state *httransform.LayerState) *stats.Stats {

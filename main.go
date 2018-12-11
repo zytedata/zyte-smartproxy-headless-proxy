@@ -15,7 +15,7 @@ import (
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/scrapinghub/crawlera-headless-proxy/config"
-	"github.com/scrapinghub/crawlera-headless-proxy/proxy2"
+	"github.com/scrapinghub/crawlera-headless-proxy/proxy"
 	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
@@ -149,7 +149,7 @@ func main() {
 	statsContainer := stats.NewStats()
 	go stats.RunStats(statsContainer, conf)
 
-	if crawleraProxy, err := proxy2.NewProxy(conf, statsContainer); err == nil {
+	if crawleraProxy, err := proxy.NewProxy(conf, statsContainer); err == nil {
 		if ln, err2 := net.Listen("tcp", listen); err2 != nil {
 			log.Fatal(err2)
 		} else {
