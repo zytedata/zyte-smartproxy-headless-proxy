@@ -2,6 +2,7 @@ package proxy2
 
 import (
 	"net/url"
+	"time"
 
 	"github.com/9seconds/httransform"
 	"github.com/juju/errors"
@@ -21,6 +22,12 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 	if err != nil {
 		return nil, errors.Annotate(err, "Cannot make proxy chain executor")
 	}
+	crawleraExecutor := func(state *httransform.LayerState) {
+		startTime := time.Now()
+		executor(state)
+		statsContainer.NewCrawleraTime(time.Now().Sub(startTime))
+		statsContainer.NewCrawleraRequest()
+	}
 
 	opts := httransform.ServerOpts{
 		CertCA:  []byte(conf.TLSCaCertificate),
@@ -28,8 +35,8 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 	}
 
 	srv, err := httransform.NewServer(opts,
-		makeProxyLayers(conf, statsContainer),
-		executor,
+		makeProxyLayers(conf, crawleraExecutor, statsContainer),
+		crawleraExecutor,
 		&Logger{},
 		statsContainer,
 	)
@@ -40,7 +47,7 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 	return srv, nil
 }
 
-func makeProxyLayers(conf *config.Config, statsContainer *stats.Stats) []httransform.Layer {
+func makeProxyLayers(conf *config.Config, crawleraExecutor httransform.Executor, statsContainer *stats.Stats) []httransform.Layer {
 	proxyLayers := []httransform.Layer{
 		layers.NewBaseLayer(statsContainer),
 	}
