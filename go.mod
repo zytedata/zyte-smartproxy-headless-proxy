@@ -8,7 +8,6 @@ require (
 	github.com/go-chi/chi v3.3.3+incompatible
 	github.com/juju/errors v0.0.0-20181118221551-089d3ea4e4d5
 	github.com/karlseguin/ccache v2.0.3-0.20181126132943-142396791ef4+incompatible
-	github.com/kr/pty v1.1.3 // indirect
 	github.com/montanaflynn/stats v0.0.0-20180911141734-db72e6cae808
 	github.com/pmezard/adblock v0.0.0-20171028110701-edfb97ad89cd
 	github.com/sirupsen/logrus v1.2.0
