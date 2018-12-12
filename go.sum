@@ -2,6 +2,8 @@ github.com/9seconds/httransform v0.0.0-20181211112027-ff331b7f0e63 h1:pI8P3WMssx
 github.com/9seconds/httransform v0.0.0-20181211112027-ff331b7f0e63/go.mod h1:uIleU1BYwDbeH9mdrHPDjH7v52TDnzMs0Ql/kpgwtBo=
 github.com/9seconds/httransform v0.0.0-20181212054016-5babefef781d h1:UWhNNBJIfDrTLgbBG9uShuU3qP77sklbflRFNF7cNQg=
 github.com/9seconds/httransform v0.0.0-20181212054016-5babefef781d/go.mod h1:uIleU1BYwDbeH9mdrHPDjH7v52TDnzMs0Ql/kpgwtBo=
+github.com/9seconds/httransform v0.0.0-20181212144131-cee3954e5b91 h1:Na7F2gitYAXKzIyDMvP4VR57RkE4h6RUIsV7lZqQeLQ=
+github.com/9seconds/httransform v0.0.0-20181212144131-cee3954e5b91/go.mod h1:uIleU1BYwDbeH9mdrHPDjH7v52TDnzMs0Ql/kpgwtBo=
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc h1:cAKDfWh5VpdgMhJosfJnn5/FoN2SRZ4p7fJNX58YPaU=
@@ -64,6 +66,8 @@ golang.org/x/net v0.0.0-20181207154023-610586996380/go.mod h1:mL1N/T3taQHkDXs73r
 golang.org/x/sys v0.0.0-20180905080454-ebe1bf3edb33/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20181211161752-7da8ea5c8182 h1:3jwI9dC+BuoXWS+QtR/HhfGTGTuB6ZzL6II6S1IuVvo=
 golang.org/x/sys v0.0.0-20181211161752-7da8ea5c8182/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
+golang.org/x/sys v0.0.0-20181212120007-b05ddf57801d h1:G59MrP9Qg6bymPjN3yGmqnmuCEH1h0eFP8zpRpl1RiU=
+golang.org/x/sys v0.0.0-20181212120007-b05ddf57801d/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/text v0.3.0 h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 gopkg.in/alecthomas/kingpin.v2 v2.2.6 h1:jMFz6MfLP0/4fUyZle81rXUoxOBFi19VUFKVDOQfozc=

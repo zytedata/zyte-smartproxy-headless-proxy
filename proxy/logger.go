@@ -34,7 +34,7 @@ func (l *Logger) Panic(msg string, args ...interface{}) {
 	log.WithFields(l.getFields(args)).Panic(msg)
 }
 
-func (l *Logger) getFields(args ...interface{}) log.Fields {
+func (l *Logger) getFields(args []interface{}) log.Fields {
 	if len(args)%2 != 0 {
 		panic("Length of args %!= 2")
 	}

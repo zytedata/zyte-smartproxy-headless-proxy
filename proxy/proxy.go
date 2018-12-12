@@ -30,8 +30,9 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 	}
 
 	opts := httransform.ServerOpts{
-		CertCA:  []byte(conf.TLSCaCertificate),
-		CertKey: []byte(conf.TLSPrivateKey),
+		CertCA:      []byte(conf.TLSCaCertificate),
+		CertKey:     []byte(conf.TLSPrivateKey),
+		TraceLayers: conf.Debug,
 	}
 
 	srv, err := httransform.NewServer(opts,
