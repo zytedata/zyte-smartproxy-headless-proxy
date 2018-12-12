@@ -64,5 +64,4 @@ func main() {
 		CA:   string(bytes.TrimSpace(caCert)),
 		Key:  string(bytes.TrimSpace(caKey)),
 	})
-
 }
