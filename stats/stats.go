@@ -27,7 +27,6 @@ type Stats struct {
 	CrawleraRequests  uint64 `json:"crawlera_requests"`
 	SessionsCreated   uint64 `json:"sessions_created"`
 	ClientsConnected  uint64 `json:"clients_connected"`
-	ClientsServing    uint64 `json:"clients_serving"`
 	AdblockedRequests uint64 `json:"adblocked_requests"`
 	CrawleraErrors    uint64 `json:"crawlera_errors"`
 	AllErrors         uint64 `json:"all_errors"`
