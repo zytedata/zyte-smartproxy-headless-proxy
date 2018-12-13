@@ -30,17 +30,20 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 	}
 
 	opts := httransform.ServerOpts{
-		CertCA:      []byte(conf.TLSCaCertificate),
-		CertKey:     []byte(conf.TLSPrivateKey),
-		TraceLayers: conf.Debug,
+		CertCA:   []byte(conf.TLSCaCertificate),
+		CertKey:  []byte(conf.TLSPrivateKey),
+		Executor: crawleraExecutor,
+		Logger:   &Logger{},
+		Metrics:  statsContainer,
+		Layers:   makeProxyLayers(conf, crawleraExecutor, statsContainer),
+	}
+	if conf.Debug {
+		opts.TracerPool = httransform.NewTracerPool(func() httransform.Tracer {
+			return &httransform.LogTracer{}
+		})
 	}
 
-	srv, err := httransform.NewServer(opts,
-		makeProxyLayers(conf, crawleraExecutor, statsContainer),
-		crawleraExecutor,
-		&Logger{},
-		statsContainer,
-	)
+	srv, err := httransform.NewServer(opts)
 	if err != nil {
 		return nil, errors.Annotate(err, "Cannot create an instance of proxy")
 	}
