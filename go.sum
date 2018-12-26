@@ -1,5 +1,5 @@
-github.com/9seconds/httransform v0.0.0-20181226054444-c79c9d8573d9 h1:KKY0q5D9vMpRsK+E8KeCMqBe//U5JG7ZYEZ5dC1t/fM=
-github.com/9seconds/httransform v0.0.0-20181226054444-c79c9d8573d9/go.mod h1:v26G2je/zOXP2DrJvyxTOVDW1hY3C/wop6wTJHaqEbI=
+github.com/9seconds/httransform v0.0.0-20181226073653-358efddac866 h1:np6I9yr8Ce3qsd6A6vjqL7wVRVaQvtXPoxkdbzKlCu0=
+github.com/9seconds/httransform v0.0.0-20181226073653-358efddac866/go.mod h1:v26G2je/zOXP2DrJvyxTOVDW1hY3C/wop6wTJHaqEbI=
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc h1:cAKDfWh5VpdgMhJosfJnn5/FoN2SRZ4p7fJNX58YPaU=

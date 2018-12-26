@@ -1,7 +1,7 @@
 module github.com/scrapinghub/crawlera-headless-proxy
 
 require (
-	github.com/9seconds/httransform v0.0.0-20181226054444-c79c9d8573d9
+	github.com/9seconds/httransform v0.0.0-20181226073653-358efddac866
 	github.com/BurntSushi/toml v0.3.1
 	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc // indirect
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
