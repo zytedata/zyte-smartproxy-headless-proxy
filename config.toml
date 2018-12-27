@@ -67,7 +67,7 @@ crawlera_port = 8010
 crawlera_host = "proxy.crawlera.com"
 
 # What is API key for accessing Crawlera.
-api_key = "MY_API_KEY"
+api_key = ""
 
 # Path to your own TLS CA certificate if you do not like to use
 # own crawlera-headless-proxy certificate.

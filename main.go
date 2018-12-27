@@ -1,11 +1,13 @@
 package main
 
+//go:generate go run ./scripts/generate_certs.go ./ca.crt ./private-key.pem ./certs.go
+
 import (
 	"bytes"
 	"crypto/sha1" // nolint: gosec
 	"fmt"
 	"io/ioutil"
-	"net/http"
+	"net"
 	"os"
 
 	"github.com/juju/errors"
@@ -148,7 +150,11 @@ func main() {
 	go stats.RunStats(statsContainer, conf)
 
 	if crawleraProxy, err := proxy.NewProxy(conf, statsContainer); err == nil {
-		log.Fatal(http.ListenAndServe(listen, crawleraProxy))
+		if ln, err2 := net.Listen("tcp", listen); err2 != nil {
+			log.Fatal(err2)
+		} else {
+			log.Fatal(crawleraProxy.Serve(ln))
+		}
 	} else {
 		log.Fatal(err)
 	}
@@ -190,8 +196,8 @@ func getConfig() (*config.Config, error) {
 }
 
 func initCertificates(conf *config.Config) (err error) {
-	caCertificate := proxy.DefaultCertCA
-	privateKey := proxy.DefaultPrivateKey
+	caCertificate := DefaultCertCA
+	privateKey := DefaultPrivateKey
 
 	if conf.TLSCaCertificate != "" {
 		caCertificate, err = ioutil.ReadFile(conf.TLSCaCertificate)
@@ -206,13 +212,13 @@ func initCertificates(conf *config.Config) (err error) {
 		}
 	}
 
-	caCertificate = bytes.TrimSpace(caCertificate)
-	privateKey = bytes.TrimSpace(privateKey)
+	conf.TLSCaCertificate = string(bytes.TrimSpace(caCertificate))
+	conf.TLSPrivateKey = string(bytes.TrimSpace(privateKey))
 
 	log.WithFields(log.Fields{
-		"ca-cert":  fmt.Sprintf("%x", sha1.Sum(caCertificate)), // nolint: gosec
-		"priv-key": fmt.Sprintf("%x", sha1.Sum(privateKey)),    // nolint: gosec
+		"ca-cert":  fmt.Sprintf("%x", sha1.Sum([]byte(conf.TLSCaCertificate))), // nolint: gosec
+		"priv-key": fmt.Sprintf("%x", sha1.Sum([]byte(conf.TLSPrivateKey))),    // nolint: gosec
 	}).Debug("TLS checksums.")
 
-	return proxy.InitCertificates(caCertificate, privateKey)
+	return nil
 }

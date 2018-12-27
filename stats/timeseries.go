@@ -26,6 +26,15 @@ var statsPercentilesToCalculate = [13]uint8{
 	99,
 }
 
+type timeSeriesJSON struct {
+	Average           float64           `json:"average"`
+	Minimal           float64           `json:"minimal"`
+	Maximal           float64           `json:"maximal"`
+	Median            float64           `json:"median"`
+	StandardDeviation float64           `json:"standard_deviation"`
+	Percentiles       map[uint8]float64 `json:"percentiles"`
+}
+
 type timeSeries struct {
 	data *ring.Ring
 	lock *sync.Mutex
@@ -33,39 +42,32 @@ type timeSeries struct {
 
 func (ts *timeSeries) MarshalJSON() ([]byte, error) {
 	floats := ts.collect()
-	marshalled := map[string]interface{}{
-		"average":            0,
-		"minimal":            0,
-		"maximal":            0,
-		"median":             0,
-		"standard_deviation": 0,
-		"percentiles":        map[uint8]float64{},
-	}
+	marshalled := timeSeriesJSON{}
 
 	if len(floats) > 0 {
-		marshalled["percentiles"] = ts.calculatePercentiles(floats)
+		marshalled.Percentiles = ts.calculatePercentiles(floats)
 
 		mean, _ := mstats.Mean(floats) // nolint: gosec
-		marshalled["average"] = mean
+		marshalled.Average = mean
 
 		min, _ := mstats.Min(floats) // nolint: gosec
-		marshalled["minimal"] = min
+		marshalled.Minimal = min
 
 		max, _ := mstats.Max(floats) // nolint: gosec
-		marshalled["maximal"] = max
+		marshalled.Maximal = max
 
 		median, _ := mstats.Median(floats) // nolint: gosec
-		marshalled["median"] = median
+		marshalled.Median = median
 
 		dev, _ := mstats.StandardDeviation(floats) // nolint: gosec
-		marshalled["standard_deviation"] = dev
+		marshalled.StandardDeviation = dev
 	}
 
-	return json.Marshal(marshalled)
+	return json.Marshal(&marshalled)
 }
 
 func (ts *timeSeries) calculatePercentiles(floats []float64) map[uint8]float64 {
-	percentiles := map[uint8]float64{}
+	percentiles := make(map[uint8]float64, len(statsPercentilesToCalculate))
 
 	if len(floats) >= 100 {
 		for _, perc := range statsPercentilesToCalculate {
@@ -79,23 +81,21 @@ func (ts *timeSeries) calculatePercentiles(floats []float64) map[uint8]float64 {
 
 func (ts *timeSeries) add(item float64) {
 	ts.lock.Lock()
-	defer ts.lock.Unlock()
-
 	ts.data.Value = item
 	ts.data = ts.data.Next()
+	ts.lock.Unlock()
 }
 
 func (ts *timeSeries) collect() []float64 {
 	series := &([]float64{})
 
 	ts.lock.Lock()
-	defer ts.lock.Unlock()
-
 	ts.data.Do(func(item interface{}) {
 		if item != nil {
 			*series = append(*series, item.(float64))
 		}
 	})
+	ts.lock.Unlock()
 
 	return *series
 }
@@ -108,25 +108,8 @@ func (d *durationTimeSeries) add(item time.Duration) {
 	d.timeSeries.add(item.Seconds())
 }
 
-type uint64TimeSeries struct {
-	timeSeries
-}
-
-func (u *uint64TimeSeries) add(item uint64) {
-	u.timeSeries.add(float64(item))
-}
-
 func newDurationTimeSeries(capacity int) *durationTimeSeries {
 	return &durationTimeSeries{
-		timeSeries: timeSeries{
-			data: ring.New(capacity),
-			lock: &sync.Mutex{},
-		},
-	}
-}
-
-func newUint64TimeSeries(capacity int) *uint64TimeSeries {
-	return &uint64TimeSeries{
 		timeSeries: timeSeries{
 			data: ring.New(capacity),
 			lock: &sync.Mutex{},

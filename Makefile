@@ -2,15 +2,14 @@ ROOT_DIR   := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 IMAGE_NAME := crawlera-headless-proxy
 APP_NAME   := $(IMAGE_NAME)
 
-CC_BINARIES  := $(shell bash -c "echo -n $(APP_NAME)-{linux,windows,darwin,freebsd,openbsd}-{386,amd64} $(APP_NAME)-linux-{arm,arm64}")
-APP_DEPS     := proxy/certs.go
-
+APP_DEPS           := certs.go
+CC_BINARIES        := $(shell bash -c "echo -n $(APP_NAME)-{linux,windows,darwin,freebsd,openbsd}-{386,amd64} $(APP_NAME)-linux-{arm,arm64}")
 VERSION_GO         := $(shell go version)
 VERSION_DATE       := $(shell date -Ru)
 VERSION_TAG        := $(shell git describe --tags --always)
 COMMON_BUILD_FLAGS := -ldflags="-s -w -X 'main.version=$(VERSION_TAG) ($(VERSION_GO)) [$(VERSION_DATE)]'"
 
-GOLANGCI_LINT_VERSION := v1.12.2
+GOLANGCI_LINT_VERSION := v1.12.5
 
 MOD_ON  := env GO111MODULE=on
 MOD_OFF := env GO111MODULE=auto
@@ -34,8 +33,8 @@ $(APP_NAME)-%: $(APP_DEPS) ccbuilds
 ccbuilds:
 	@rm -rf ./ccbuilds && mkdir -p ./ccbuilds
 
-proxy/certs.go:
-	@$(MOD_ON) go generate proxy/proxy.go
+certs.go:
+	@$(MOD_ON) go generate
 
 vendor: go.mod go.sum
 	@$(MOD_ON) go mod vendor
@@ -63,10 +62,6 @@ test: $(APP_DEPS)
 lint: vendor $(APP_DEPS)
 	@$(MOD_OFF) golangci-lint run
 
-.PHONY: critic
-critic: vendor $(APP_DEPS)
-	@$(MOD_OFF) gocritic check-project "$(ROOT_DIR)"
-
 .PHONY: clean
 clean:
 	@git clean -xfd && \
@@ -82,13 +77,9 @@ docker-slim:
 	@docker build --pull -t "$(IMAGE_NAME)" --build-arg upx=1 "$(ROOT_DIR)"
 
 .PHONY: prepare
-prepare: install-lint install-critic
+prepare: install-lint
 
 .PHONY: install-lint
 install-lint:
 	@curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh \
 		| $(MOD_OFF) bash -s -- -b $(GOPATH)/bin $(GOLANGCI_LINT_VERSION)
-
-.PHONY: install-critic
-install-critic:
-	@$(MOD_OFF) go get -u github.com/go-critic/go-critic/...

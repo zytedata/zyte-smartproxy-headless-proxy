@@ -35,8 +35,8 @@ func RunStats(statsContainer *Stats, conf *config.Config) {
 		encoder.SetEscapeHTML(false)
 		encoder.SetIndent("", "  ")
 
-		statsContainer.StatsLock.Lock()
-		defer statsContainer.StatsLock.Unlock()
+		statsContainer.statsLock.Lock()
+		defer statsContainer.statsLock.Unlock()
 
 		if err := encoder.Encode(statsContainer); err != nil {
 			log.WithFields(log.Fields{
@@ -50,6 +50,5 @@ func RunStats(statsContainer *Stats, conf *config.Config) {
 		Handler: router,
 	}
 
-	statsContainer.RunCollect()
-	go log.Fatal(srv.ListenAndServe())
+	log.Fatal(srv.ListenAndServe())
 }

@@ -1,97 +1,77 @@
 package proxy
 
-//go:generate ../scripts/generate_certs.sh
-
 import (
-	"crypto/tls"
-	"crypto/x509"
-	"net/http"
 	"net/url"
-	"regexp"
+	"time"
 
-	"github.com/elazarl/goproxy"
+	"github.com/9seconds/httransform"
 	"github.com/juju/errors"
 
 	"github.com/scrapinghub/crawlera-headless-proxy/config"
-	"github.com/scrapinghub/crawlera-headless-proxy/middleware"
+	"github.com/scrapinghub/crawlera-headless-proxy/layers"
 	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
-// NewProxy returns a new configured instance of goproxy.
-func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*goproxy.ProxyHttpServer, error) {
-	proxy := goproxy.NewProxyHttpServer()
-	proxy.Verbose = false
-
-	crawleraURL := conf.CrawleraURL()
-	crawleraURLParsed, err := url.Parse(crawleraURL)
+func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Server, error) {
+	crawleraURL, err := url.Parse(conf.CrawleraURL())
 	if err != nil {
 		return nil, errors.Annotate(err, "Incorrect Crawlera URL")
 	}
-	proxy.Tr = &http.Transport{
-		Proxy: http.ProxyURL(crawleraURLParsed),
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: !conf.DoNotVerifyCrawleraCert, // nolint: gas
-		},
-	}
-	proxy.ConnectDial = proxy.NewConnectDialToProxy(crawleraURL)
 
-	proxy.OnRequest(goproxy.ReqHostMatches(regexp.MustCompile("^.*$"))).
-		HandleConnect(goproxy.AlwaysMitm)
-
-	proxy.OnRequest().DoFunc(middleware.InitMiddlewares(statsContainer))
-	middlewares := []middleware.Middleware{
-		middleware.NewIncomingLogMiddleware(conf, proxy, statsContainer),
-		middleware.NewStateMiddleware(conf, proxy, statsContainer),
+	executor, err := httransform.MakeProxyChainExecutor(crawleraURL)
+	if err != nil {
+		return nil, errors.Annotate(err, "Cannot make proxy chain executor")
 	}
-	if len(conf.AdblockLists) > 0 {
-		middlewares = append(middlewares, middleware.NewAdblockMiddleware(conf, proxy, statsContainer))
-	}
-	middlewares = append(middlewares,
-		middleware.NewRateLimiterMiddleware(conf, proxy, statsContainer),
-		middleware.NewHeadersMiddleware(conf, proxy, statsContainer),
-		middleware.NewRefererMiddleware(conf, proxy, statsContainer),
-	)
-	if !conf.NoAutoSessions {
-		middlewares = append(middlewares, middleware.NewSessionsMiddleware(conf, proxy, statsContainer))
-	}
-	middlewares = append(middlewares, middleware.NewProxyRequestMiddleware(conf, proxy, statsContainer))
-
-	for i := 0; i < len(middlewares); i++ {
-		proxy.OnRequest().DoFunc(middlewares[i].OnRequest())
-		proxy.OnResponse().DoFunc(middlewares[len(middlewares)-i-1].OnResponse())
+	crawleraExecutor := func(state *httransform.LayerState) {
+		startTime := time.Now()
+		executor(state)
+		statsContainer.NewCrawleraTime(time.Since(startTime))
+		statsContainer.NewCrawleraRequest()
 	}
 
-	return proxy, nil
+	opts := httransform.ServerOpts{
+		CertCA:   []byte(conf.TLSCaCertificate),
+		CertKey:  []byte(conf.TLSPrivateKey),
+		Executor: crawleraExecutor,
+		Logger:   &Logger{},
+		Metrics:  statsContainer,
+		Layers:   makeProxyLayers(conf, crawleraExecutor, statsContainer),
+	}
+	if conf.Debug {
+		opts.TracerPool = httransform.NewTracerPool(func() httransform.Tracer {
+			return &httransform.LogTracer{}
+		})
+	}
+
+	srv, err := httransform.NewServer(opts)
+	if err != nil {
+		return nil, errors.Annotate(err, "Cannot create an instance of proxy")
+	}
+
+	return srv, nil
 }
 
-// InitCertificates sets certificates for goproxy
-func InitCertificates(certCA, certKey []byte) error {
-	ca, err := tls.X509KeyPair(certCA, certKey)
-	if err != nil {
-		return errors.Annotate(err, "Invalid certificates")
-	}
-	if ca.Leaf, err = x509.ParseCertificate(ca.Certificate[0]); err != nil {
-		return errors.Annotate(err, "Invalid certificates")
+func makeProxyLayers(conf *config.Config, crawleraExecutor httransform.Executor, statsContainer *stats.Stats) []httransform.Layer {
+	proxyLayers := []httransform.Layer{
+		layers.NewBaseLayer(statsContainer),
 	}
 
-	goproxy.GoproxyCa = ca
-	tlsConfig := goproxy.TLSConfigFromCA(&ca)
-	goproxy.OkConnect = &goproxy.ConnectAction{
-		Action:    goproxy.ConnectAccept,
-		TLSConfig: tlsConfig,
+	if len(conf.AdblockLists) > 0 {
+		proxyLayers = append(proxyLayers, layers.NewAdblockLayer(conf.AdblockLists))
 	}
-	goproxy.MitmConnect = &goproxy.ConnectAction{
-		Action:    goproxy.ConnectMitm,
-		TLSConfig: tlsConfig,
-	}
-	goproxy.HTTPMitmConnect = &goproxy.ConnectAction{
-		Action:    goproxy.ConnectHTTPMitm,
-		TLSConfig: tlsConfig,
-	}
-	goproxy.RejectConnect = &goproxy.ConnectAction{
-		Action:    goproxy.ConnectReject,
-		TLSConfig: tlsConfig,
+	if conf.ConcurrentConnections > 0 {
+		proxyLayers = append(proxyLayers, layers.NewRateLimiterLayer(conf.ConcurrentConnections))
 	}
 
-	return nil
+	if len(conf.XHeaders) > 0 {
+		proxyLayers = append(proxyLayers, layers.NewXHeadersLayer(conf.XHeaders))
+	}
+
+	proxyLayers = append(proxyLayers, layers.NewRefererLayer())
+
+	if !conf.NoAutoSessions {
+		proxyLayers = append(proxyLayers, layers.NewSessionsLayer(conf, crawleraExecutor))
+	}
+
+	return proxyLayers
 }
