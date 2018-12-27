@@ -27,7 +27,6 @@ func (l *Logger) Error(msg string, args ...interface{}) {
 	if log.IsLevelEnabled(log.ErrorLevel) {
 		log.WithFields(l.getFields(args)).Error(msg)
 	}
-	log.WithFields(l.getFields(args)).Error(msg)
 }
 
 func (l *Logger) Panic(msg string, args ...interface{}) {
