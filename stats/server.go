@@ -30,7 +30,7 @@ func RunStats(statsContainer *Stats, conf *config.Config) {
 	router.Use(middleware.SetHeader("Content-Type", "application/json"))
 	router.Use(middleware.Compress(6))
 
-	router.Get("/stats", func(w http.ResponseWriter, r *http.Request) {
+	router.Get("/stats", func(w http.ResponseWriter, r *http.Request) { // nolint: unparam
 		encoder := json.NewEncoder(w)
 		encoder.SetEscapeHTML(false)
 		encoder.SetIndent("", "  ")

@@ -3,3 +3,4 @@ proxy/certs.go
 tags
 .dockerignore
 vendor/
+examples/
