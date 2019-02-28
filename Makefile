@@ -9,7 +9,7 @@ VERSION_DATE       := $(shell date -Ru)
 VERSION_TAG        := $(shell git describe --tags --always)
 COMMON_BUILD_FLAGS := -ldflags="-s -w -X 'main.version=$(VERSION_TAG) ($(VERSION_GO)) [$(VERSION_DATE)]'"
 
-GOLANGCI_LINT_VERSION := v1.13.2
+GOLANGCI_LINT_VERSION := v1.15.0
 
 MOD_ON  := env GO111MODULE=on
 MOD_OFF := env GO111MODULE=auto

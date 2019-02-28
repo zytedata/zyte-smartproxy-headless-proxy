@@ -127,7 +127,7 @@ func (a *AdblockLayer) fetchList(channel chan<- *adblockParsedResult, item strin
 
 func (a *AdblockLayer) fetchURL(url string) (io.ReadCloser, error) {
 	log.WithFields(log.Fields{"url": url}).Debug("Fetch adblock list")
-	resp, err := http.Get(url)
+	resp, err := http.Get(url) // nolint: gosec
 	log.WithFields(log.Fields{
 		"url":    url,
 		"err":    err,
