@@ -105,6 +105,12 @@ var ( // nolint: gochecknoglobals
 		Short('k').
 		Envar("CRAWLERA_HEADLESS_ADBLOCKLISTS").
 		Strings()
+	pathSuffixesWithDirectAccess = app.Flag("path-suffixes-with-direct-access",
+		"A list of path suffixes which proxy has to access directly, "+
+			"bypassing Crawlera").
+		Short('z').
+		Envar("CRAWLERA_HEADLESS_PATHSUFFIXESWITHDIRECTACCESS").
+		Strings()
 )
 
 func main() {
@@ -184,6 +190,7 @@ func getConfig() (*config.Config, error) {
 	conf.MaybeSetTLSPrivateKey(*tlsPrivateKey)
 	conf.MaybeSetProxyAPIIP(*proxyAPIIP)
 	conf.MaybeSetProxyAPIPort(*proxyAPIPort)
+	conf.MaybeSetPathSuffixesWithDirectAccess(*pathSuffixesWithDirectAccess)
 	for k, v := range *xheaders {
 		conf.SetXHeader(k, v)
 	}
