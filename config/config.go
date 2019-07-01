@@ -14,7 +14,7 @@ import (
 
 // Config stores global configuration data of the application.
 type Config struct {
-	Debug                        bool
+	Debug                        bool     `toml:"debug"`
 	DoNotVerifyCrawleraCert      bool     `toml:"dont_verify_crawlera_cert"`
 	NoAutoSessions               bool     `toml:"no_auto_sessions"`
 	ConcurrentConnections        int      `toml:"concurrent_connections"`
