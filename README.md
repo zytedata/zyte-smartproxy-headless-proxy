@@ -193,8 +193,8 @@ Flags:
   -x, --xheader=XHEADER ...  Crawlera X-Headers.
   -k, --adblock-list=ADBLOCK-LIST ...
                              A list to requests to filter out (ADBlock compatible).
-  -z, --path-suffixes-with-direct-access=PATH-SUFFIXES-WITH-DIRECT-ACCESS ...
-                             A list of path suffixes which proxy has to access directly, bypassing Crawlera.
+  -z, --direct-access-hostpath-regexps=DIRECT-ACCESS-HOSTPATH-REGEXPS ...
+                             A list of regexps for hostpath for direct access, bypassing Crawlera.
       --version              Show application version.
 ```
 
@@ -215,25 +215,25 @@ Also, it is possible to configure this tool using environment variables.
 Here is the complete table of configuration options and corresponding
 environment variables.
 
-| *Description*                                                     | *Environment variable*                           | *Comandline parameter*                     | *Parameter in configuration file*  | *Default value*      |
-|-------------------------------------------------------------------|--------------------------------------------------|--------------------------------------------|------------------------------------|----------------------|
-| Run in debug/verbose mode.                                        | `CRAWLERA_HEADLESS_DEBUG`                        | `-d`, `--debug`                            | `debug`                            | `false`              |
-| Which IP this tool should listen on (0.0.0.0 for all interfaces). | `CRAWLERA_HEADLESS_BINDIP`                       | `-b`, `--bind-ip`                          | `bind_ip`                          | `127.0.0.1`          |
-| Which port this tool should listen.                               | `CRAWLERA_HEADLESS_BINDPORT`                     | `-p`, `--bind-port`                        | `bind_port`                        | 3128                 |
-| Path to the configuration file.                                   | `CRAWLERA_HEADLESS_CONFIG`                       | `-c`, `--config`                           | -                                  |                      |
-| API key of Crawlera.                                              | `CRAWLERA_HEADLESS_APIKEY`                       | `-a`, `--api-key`                          | `api_key`                          |                      |
-| Hostname of Crawlera.                                             | `CRAWLERA_HEADLESS_CHOST`                        | `-u`, `--crawlera-host`                    | `crawlera_host`                    | `proxy.crawlera.com` |
-| Port of Crawlera.                                                 | `CRAWLERA_HEADLESS_CPORT`                        | `-o`, `--crawlera-port`                    | `crawlera_port`                    | 8010                 |
-| Do not verify Crawlera own TLS certificate.                       | `CRAWLERA_HEADLESS_DONTVERIFY`                   | `-k`, `dont-verify-crawlera-cert`          | `dont_verify_crawlera_cert`        | `false`              |
-| Path to own TLS CA certificate.                                   | `CRAWLERA_HEADLESS_TLSCACERTPATH`                | `-l`, `tls-ca-certificate`                 | `tls_ca_certificate`               | <embeded>            |
-| Path to own TLS private key.                                      | `CRAWLERA_HEADLESS_TLSPRIVATEKEYPATH`            | `-r`, `tls-private-key`                    | `tls_private_key`                  | <embeded>            |
-| Disable automatic session management                              | `CRAWLERA_HEADLESS_NOAUTOSESSIONS`               | `-t`, `--no-auto-sessions`                 | `no_auto_sessions`                 | `false`              |
-| Maximal ammount of concurrent connections to process              | `CRAWLERA_HEADLESS_CONCURRENCY`                  | `-n`, `--concurrent-connections`           | `concurrent_connections`           | 0                    |
-| Additional Crawlera X-Headers.                                    | `CRAWLERA_HEADLESS_XHEADERS`                     | `-x`, `--xheaders`                         | Section `xheaders`                 |                      |
-| Adblock-compatible filter lists.                                  | `CRAWLERA_HEADLESS_ADBLOCKLISTS`                 | `-k`, `--adblock-list`                     | `adblock_lists`                    |                      |
-| URL path suffixes for direct access, bypassing Crawlera.          | `CRAWLERA_HEADLESS_PATHSUFFIXESWITHDIRECTACCESS` | `-z`, `--path-suffixes-with-direct-access` | `path_suffixes_with_direct_access` |                      |
-| Which IP should proxy API listen on (default is `bind-ip` value). | `CRAWLERA_HEADLESS_PROXYAPIIP`                   | `-m`, `--proxy-api-ip`                     | `proxy_api_ip`                     | <same as `bind_ip`>  |
-| Which port proxy API should listen on.                            | `CRAWLERA_HEADLESS_PROXYAPIPORT`                 | `-w`, `--proxy-api-port`                   | `proxy_api_port`                   | 3130                 |
+| *Description*                                                                    | *Environment variable*                | *Comandline parameter*                   | *Parameter in configuration file* | *Default value*      |
+|----------------------------------------------------------------------------------|---------------------------------------|------------------------------------------|-----------------------------------|----------------------|
+| Run in debug/verbose mode.                                                       | `CRAWLERA_HEADLESS_DEBUG`             | `-d`, `--debug`                          | `debug`                           | `false`              |
+| Which IP this tool should listen on (0.0.0.0 for all interfaces).                | `CRAWLERA_HEADLESS_BINDIP`            | `-b`, `--bind-ip`                        | `bind_ip`                         | `127.0.0.1`          |
+| Which port this tool should listen.                                              | `CRAWLERA_HEADLESS_BINDPORT`          | `-p`, `--bind-port`                      | `bind_port`                       | 3128                 |
+| Path to the configuration file.                                                  | `CRAWLERA_HEADLESS_CONFIG`            | `-c`, `--config`                         | -                                 |                      |
+| API key of Crawlera.                                                             | `CRAWLERA_HEADLESS_APIKEY`            | `-a`, `--api-key`                        | `api_key`                         |                      |
+| Hostname of Crawlera.                                                            | `CRAWLERA_HEADLESS_CHOST`             | `-u`, `--crawlera-host`                  | `crawlera_host`                   | `proxy.crawlera.com` |
+| Port of Crawlera.                                                                | `CRAWLERA_HEADLESS_CPORT`             | `-o`, `--crawlera-port`                  | `crawlera_port`                   | 8010                 |
+| Do not verify Crawlera own TLS certificate.                                      | `CRAWLERA_HEADLESS_DONTVERIFY`        | `-k`, `dont-verify-crawlera-cert`        | `dont_verify_crawlera_cert`       | `false`              |
+| Path to own TLS CA certificate.                                                  | `CRAWLERA_HEADLESS_TLSCACERTPATH`     | `-l`, `tls-ca-certificate`               | `tls_ca_certificate`              | <embeded>            |
+| Path to own TLS private key.                                                     | `CRAWLERA_HEADLESS_TLSPRIVATEKEYPATH` | `-r`, `tls-private-key`                  | `tls_private_key`                 | <embeded>            |
+| Disable automatic session management                                             | `CRAWLERA_HEADLESS_NOAUTOSESSIONS`    | `-t`, `--no-auto-sessions`               | `no_auto_sessions`                | `false`              |
+| Maximal ammount of concurrent connections to process                             | `CRAWLERA_HEADLESS_CONCURRENCY`       | `-n`, `--concurrent-connections`         | `concurrent_connections`          | 0                    |
+| Additional Crawlera X-Headers.                                                   | `CRAWLERA_HEADLESS_XHEADERS`          | `-x`, `--xheaders`                       | Section `xheaders`                |                      |
+| Adblock-compatible filter lists.                                                 | `CRAWLERA_HEADLESS_ADBLOCKLISTS`      | `-k`, `--adblock-list`                   | `adblock_lists`                   |                      |
+| Regular expressions for hostpath URL part for direct access, bypassing Crawlera. | `CRAWLERA_HEADLESS_DIRECTACCESS`      | `-z`, `--direct-access-hostpath-regexps` | `direct_access_hostpath_regexps`  |                      |
+| Which IP should proxy API listen on (default is `bind-ip` value).                | `CRAWLERA_HEADLESS_PROXYAPIIP`        | `-m`, `--proxy-api-ip`                   | `proxy_api_ip`                    | <same as `bind_ip`>  |
+| Which port proxy API should listen on.                                           | `CRAWLERA_HEADLESS_PROXYAPIPORT`      | `-w`, `--proxy-api-port`                 | `proxy_api_port`                  | 3130                 |
 
 0 concurrent connections means unlimited. Embedded TLS key/certificate
 means that headless proxy will use ones from the repository.
@@ -334,9 +334,10 @@ be enabled. The list we recommend to use is
 
 Sometimes you want to save a capacity and execute requests bypassing
 Crawlera. These requests can include some static assets, text files or
-anything else where Crawlera is not necessary. You can specify a list of
-suffixes in URL paths in configuration file so crawlera-headless-proxy
-will access them on its own, bypassing sending this request to Crawlera.
+anything else where Crawlera is not necessary.
+
+You can specify a list of regular expressions which matches host + path
+parts of URL for direct access from headless proxy, ignoring Crawlera.
 
 
 ## TLS keys

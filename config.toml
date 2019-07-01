@@ -92,39 +92,19 @@ adblock_lists = [
   "https://s3.amazonaws.com/lists.disconnect.me/simple_malware.txt"
 ]
 
-# This is a list of suffixes for URL path which have to be accessed with
-# directly from headless proxy, but not Crawlera.
+# A list of regular expressions to match hostpath part of URL for direct
+# access bypassing Crawlera.
 #
-# Example: https://example.com/images/cat.png?hash=123134234
-# Path here is '/images/cat.png'. So, if we have 'png' or '.png' in the list
-# of suffixes, headless proxy won't make a request through Crawlera but
-# request picture of cat directly.
-# path_suffixes_with_direct_access = [
-#   ".txt",
-#   ".css",
-#   ".css.gz",
-#   ".eot",
-#   ".gif",
-#   ".gif",
-#   ".ico",
-#   ".jpeg",
-#   ".jpg",
-#   ".js",
-#   ".js.gz",
-#   ".less",
-#   ".less.gz",
-#   ".mkv",
-#   ".mp4",
-#   ".mpeg",
-#   ".mpg",
-#   ".png",
-#   ".png",
-#   ".ttf",
-#   ".txt",
-#   ".webm",
-#   ".webp",
-#   ".woff",
-#   ".woff2"
+# Example: https://www.example.com/images/cat.png?foo=111&bar=lala#segment
+#
+# HostPath is a full combination of host and path parameters of URL. In our
+# example, it would be 'www.example.com/images/cat.png'. Regular expression
+# searches for _substring_, it does not do full match. So, if you pass
+# `cat` there, it will work. `\.png$` will also work.
+#
+# Regular expressions are case sensitive.
+# direct_access_hostpath_regexps = [
+#   '\.(?:txt|css|eot|gif|ico|jpe?g|js|less|mkv|mp4|mpe?g|png|ttf|webm|webp|woff2?)$'
 # ]
 
 # A list of Crawlera XHeaders to propagate to real Crawlera from this
