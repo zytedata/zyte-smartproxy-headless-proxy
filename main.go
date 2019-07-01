@@ -107,7 +107,7 @@ var ( // nolint: gochecknoglobals
 		Strings()
 	pathSuffixesWithDirectAccess = app.Flag("path-suffixes-with-direct-access",
 		"A list of path suffixes which proxy has to access directly, "+
-			"bypassing Crawlera").
+			"bypassing Crawlera.").
 		Short('z').
 		Envar("CRAWLERA_HEADLESS_PATHSUFFIXESWITHDIRECTACCESS").
 		Strings()
