@@ -105,6 +105,11 @@ var ( // nolint: gochecknoglobals
 		Short('k').
 		Envar("CRAWLERA_HEADLESS_ADBLOCKLISTS").
 		Strings()
+	directAccessHostPathRegexps = app.Flag("direct-access-hostpath-regexps",
+		"A list of regexps for hostpath for direct access, bypassing Crawlera.").
+		Short('z').
+		Envar("CRAWLERA_HEADLESS_DIRECTACCESS").
+		Strings()
 )
 
 func main() {
@@ -131,19 +136,20 @@ func main() {
 
 	listen := conf.Bind()
 	log.WithFields(log.Fields{
-		"debug":                     conf.Debug,
-		"adblock-lists":             conf.AdblockLists,
-		"no-auto-sessions":          conf.NoAutoSessions,
-		"apikey":                    conf.APIKey,
-		"bindip":                    conf.BindIP,
-		"bindport":                  conf.BindPort,
-		"proxy-api-ip":              conf.ProxyAPIIP,
-		"proxy-api-port":            conf.ProxyAPIPort,
-		"crawlera-host":             conf.CrawleraHost,
-		"crawlera-port":             conf.CrawleraPort,
-		"dont-verify-crawlera-cert": conf.DoNotVerifyCrawleraCert,
-		"concurrent-connections":    conf.ConcurrentConnections,
-		"xheaders":                  conf.XHeaders,
+		"debug":                          conf.Debug,
+		"adblock-lists":                  conf.AdblockLists,
+		"no-auto-sessions":               conf.NoAutoSessions,
+		"apikey":                         conf.APIKey,
+		"bindip":                         conf.BindIP,
+		"bindport":                       conf.BindPort,
+		"proxy-api-ip":                   conf.ProxyAPIIP,
+		"proxy-api-port":                 conf.ProxyAPIPort,
+		"crawlera-host":                  conf.CrawleraHost,
+		"crawlera-port":                  conf.CrawleraPort,
+		"dont-verify-crawlera-cert":      conf.DoNotVerifyCrawleraCert,
+		"concurrent-connections":         conf.ConcurrentConnections,
+		"xheaders":                       conf.XHeaders,
+		"direct-access-hostpath-regexps": conf.DirectAccessHostPathRegexps,
 	}).Debugf("Listen on %s", listen)
 
 	statsContainer := stats.NewStats()
@@ -184,6 +190,7 @@ func getConfig() (*config.Config, error) {
 	conf.MaybeSetTLSPrivateKey(*tlsPrivateKey)
 	conf.MaybeSetProxyAPIIP(*proxyAPIIP)
 	conf.MaybeSetProxyAPIPort(*proxyAPIPort)
+	conf.MaybeSetDirectAccessHostPathRegexps(*directAccessHostPathRegexps)
 	for k, v := range *xheaders {
 		conf.SetXHeader(k, v)
 	}
