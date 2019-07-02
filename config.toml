@@ -103,9 +103,9 @@ adblock_lists = [
 # work, but '.*?cat.*?' - will.
 #
 # Regular expressions are case sensitive.
-direct_access_hostpath_regexps = [
-  '.*?\.(?:txt|css|eot|gif|ico|jpe?g|js|less|mkv|mp4|mpe?g|png|ttf|webm|webp|woff2?)$'
-]
+# direct_access_hostpath_regexps = [
+#   '.*?\.(?:txt|css|eot|gif|ico|jpe?g|js|less|mkv|mp4|mpe?g|png|ttf|webm|webp|woff2?)$'
+# ]
 
 # A list of Crawlera XHeaders to propagate to real Crawlera from this
 # headless proxy.
