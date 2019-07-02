@@ -25,7 +25,7 @@ func (d *DirectAccessLayer) OnRequest(state *httransform.LayerState) error {
 	hostpath = append(hostpath, url.Path()...)
 
 	for _, v := range d.rules {
-		if v.Find(hostpath) != nil {
+		if v.Match(hostpath) {
 			return errDirectAccess
 		}
 	}

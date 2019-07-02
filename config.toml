@@ -97,15 +97,15 @@ adblock_lists = [
 #
 # Example: https://www.example.com/images/cat.png?foo=111&bar=lala#segment
 #
-# HostPath is a full combination of host and path parameters of URL. In our
-# example, it would be 'www.example.com/images/cat.png'. Regular expression
-# searches for _substring_, it does not do full match. So, if you pass
-# `cat` there, it will work. `\.png$` will also work.
+# HostPath is a full combination of host and path parameters of URL. In
+# our example, it would be 'www.example.com/images/cat.png'. Regular
+# expression searches for full match, so in example above 'cat' won't
+# work, but '.*?cat.*?' - will.
 #
 # Regular expressions are case sensitive.
-# direct_access_hostpath_regexps = [
-#   '\.(?:txt|css|eot|gif|ico|jpe?g|js|less|mkv|mp4|mpe?g|png|ttf|webm|webp|woff2?)$'
-# ]
+direct_access_hostpath_regexps = [
+  '.*?\.(?:txt|css|eot|gif|ico|jpe?g|js|less|mkv|mp4|mpe?g|png|ttf|webm|webp|woff2?)$'
+]
 
 # A list of Crawlera XHeaders to propagate to real Crawlera from this
 # headless proxy.
