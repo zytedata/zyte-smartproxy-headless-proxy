@@ -10,7 +10,6 @@ import (
 	"net"
 	"os"
 
-	"github.com/juju/errors"
 	log "github.com/sirupsen/logrus"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
@@ -209,13 +208,13 @@ func initCertificates(conf *config.Config) (err error) {
 	if conf.TLSCaCertificate != "" {
 		caCertificate, err = ioutil.ReadFile(conf.TLSCaCertificate)
 		if err != nil {
-			return errors.Annotate(err, "Cannot read TLS CA certificate")
+			return fmt.Errorf("cannot read TLS CA certificate: %w", err)
 		}
 	}
 	if conf.TLSPrivateKey != "" {
 		privateKey, err = ioutil.ReadFile(conf.TLSPrivateKey)
 		if err != nil {
-			return errors.Annotate(err, "Cannot read TLS private key")
+			return fmt.Errorf("cannot read TLS private key: %w", err)
 		}
 	}
 

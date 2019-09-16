@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/juju/errors"
 )
 
 // Config stores global configuration data of the application.
@@ -185,12 +184,12 @@ func (c *Config) SetXHeader(key, value string) {
 func Parse(file io.Reader) (*Config, error) {
 	buf, err := ioutil.ReadAll(file)
 	if err != nil {
-		return nil, errors.Annotate(err, "Cannot read config file")
+		return nil, fmt.Errorf("cannot read config file: %w", err)
 	}
 
 	conf := NewConfig()
 	if _, err := toml.Decode(string(buf), conf); err != nil {
-		return nil, errors.Annotate(err, "Cannot parse config file")
+		return nil, fmt.Errorf("cannot parse config file: %w", err)
 	}
 
 	xheaders := conf.XHeaders

@@ -1,11 +1,11 @@
 package proxy
 
 import (
+	"fmt"
 	"net/url"
 	"time"
 
 	"github.com/9seconds/httransform"
-	"github.com/juju/errors"
 
 	"github.com/scrapinghub/crawlera-headless-proxy/config"
 	"github.com/scrapinghub/crawlera-headless-proxy/layers"
@@ -15,12 +15,12 @@ import (
 func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Server, error) {
 	crawleraURL, err := url.Parse(conf.CrawleraURL())
 	if err != nil {
-		return nil, errors.Annotate(err, "Incorrect Crawlera URL")
+		return nil, fmt.Errorf("incorrect crawlera url: %w", err)
 	}
 
 	executor, err := httransform.MakeProxyChainExecutor(crawleraURL)
 	if err != nil {
-		return nil, errors.Annotate(err, "Cannot make proxy chain executor")
+		return nil, fmt.Errorf("cannot make proxy chain executor: %w", err)
 	}
 	crawleraExecutor := func(state *httransform.LayerState) {
 		startTime := time.Now()
@@ -45,7 +45,7 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 
 	srv, err := httransform.NewServer(opts)
 	if err != nil {
-		return nil, errors.Annotate(err, "Cannot create an instance of proxy")
+		return nil, fmt.Errorf("cannot create an instance of proxy: %w", err)
 	}
 
 	return srv, nil

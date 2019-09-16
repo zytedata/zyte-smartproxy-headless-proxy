@@ -1,11 +1,11 @@
 package layers
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 	"time"
 
-	"github.com/juju/errors"
 	"github.com/stretchr/testify/suite"
 	gock "gopkg.in/h2non/gock.v1"
 )

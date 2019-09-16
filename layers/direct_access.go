@@ -1,9 +1,9 @@
 package layers
 
 import (
+	"errors"
 	"regexp"
 
-	"github.com/juju/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/valyala/fasthttp"
 
