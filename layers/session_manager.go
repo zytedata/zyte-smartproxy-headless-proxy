@@ -18,6 +18,7 @@ const (
 	sessionClientTimeout      = 180 * time.Second
 	sessionClientTimeoutRetry = 30 * time.Second
 	sessionAPITimeout         = 10 * time.Second
+	sessionTTL                = 5 * time.Minute
 
 	sessionUserAgent = "crawlera-headless-proxy"
 )
@@ -26,6 +27,7 @@ type sessionManager struct {
 	id           string
 	apiKey       string
 	crawleraHost string
+	lastUsed     time.Time
 
 	requestIDChan     chan *sessionIDRequest
 	brokenSessionChan chan string
@@ -56,6 +58,9 @@ func (s *sessionManager) getBrokenSessionChan() chan<- string {
 func (s *sessionManager) Start() {
 	go s.startCrawleraAPISessionDeleter()
 
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
 	for {
 		select {
 		case feedback := <-s.requestIDChan:
@@ -63,16 +68,28 @@ func (s *sessionManager) Start() {
 				s.requestNewSession(feedback)
 			} else {
 				feedback.channel <- s.id
+				s.lastUsed = time.Now()
 			}
 		case brokenSession := <-s.brokenSessionChan:
 			if s.id == brokenSession {
 				s.sessionsToDelete <- brokenSession
 				s.id = ""
+				s.lastUsed = time.Time{}
 			} else {
 				log.WithFields(log.Fields{
 					"current-id": s.id,
 					"broken-id":  brokenSession,
 				}).Debug("Unknown broken session has been reported.")
+			}
+		case <-ticker.C:
+			if !s.lastUsed.IsZero() && s.id != "" && time.Since(s.lastUsed) >= sessionTTL {
+				log.WithFields(log.Fields{
+					"id": s.id,
+				}).Debug("Delete session by timeout")
+
+				s.sessionsToDelete <- s.id
+				s.id = ""
+				s.lastUsed = time.Time{}
 			}
 		}
 	}
@@ -134,6 +151,7 @@ func (s *sessionManager) requestNewSession(feedback *sessionIDRequest) {
 			if s.id == brokenSession {
 				s.sessionsToDelete <- brokenSession
 				s.id = ""
+				s.lastUsed = time.Time{}
 			} else {
 				log.WithFields(log.Fields{
 					"current-id": s.id,
@@ -143,6 +161,7 @@ func (s *sessionManager) requestNewSession(feedback *sessionIDRequest) {
 		case newSession, notClosed := <-newSessionChan:
 			if notClosed {
 				s.id = newSession
+				s.lastUsed = time.Now()
 			}
 			return
 		case <-timeAfter:
