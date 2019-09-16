@@ -19,8 +19,7 @@ const (
 	sessionClientTimeoutRetry = 30 * time.Second
 	sessionAPITimeout         = 10 * time.Second
 
-	sessionToDeleteQueueSize = 5000
-	sessionUserAgent         = "crawlera-headless-proxy"
+	sessionUserAgent = "crawlera-headless-proxy"
 )
 
 type sessionManager struct {
@@ -166,6 +165,6 @@ func newSessionManager(apiKey, crawleraHost string, crawleraPort int) *sessionMa
 		crawleraHost:      net.JoinHostPort(crawleraHost, strconv.Itoa(crawleraPort)),
 		requestIDChan:     make(chan *sessionIDRequest),
 		brokenSessionChan: make(chan string),
-		sessionsToDelete:  make(chan string, sessionToDeleteQueueSize),
+		sessionsToDelete:  make(chan string, 1),
 	}
 }
