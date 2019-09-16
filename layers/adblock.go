@@ -16,7 +16,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var errAdblockedRequest = errors.New("Request was adblocked")
+var errAdblockedRequest = errors.New("request was adblocked")
 
 const adblockTimeout = 2 * time.Second
 

@@ -117,7 +117,7 @@ func (s *sessionManager) deleteCrawleraSession(sessionID string) error {
 	io.Copy(ioutil.Discard, resp.Body) // nolint: errcheck, gosec
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		return fmt.Errorf("Response status code is %d", resp.StatusCode)
+		return fmt.Errorf("response status code is %d", resp.StatusCode)
 	}
 
 	return nil
