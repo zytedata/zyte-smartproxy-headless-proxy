@@ -1,16 +1,16 @@
 package layers
 
 import (
+	"errors"
 	"regexp"
 
-	"github.com/juju/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/valyala/fasthttp"
 
 	"github.com/9seconds/httransform"
 )
 
-var errDirectAccess = errors.New("Direct access to the URL")
+var errDirectAccess = errors.New("direct access to the URL")
 
 type DirectAccessLayer struct {
 	rules    []*regexp.Regexp

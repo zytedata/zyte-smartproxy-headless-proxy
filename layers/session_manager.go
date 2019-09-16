@@ -1,6 +1,7 @@
 package layers
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
@@ -10,7 +11,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/juju/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -117,7 +117,7 @@ func (s *sessionManager) deleteCrawleraSession(sessionID string) error {
 	io.Copy(ioutil.Discard, resp.Body) // nolint: errcheck, gosec
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		return errors.Errorf("Response status code is %d", resp.StatusCode)
+		return fmt.Errorf("response status code is %d", resp.StatusCode)
 	}
 
 	return nil

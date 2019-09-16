@@ -1,6 +1,8 @@
 package layers
 
 import (
+	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -10,12 +12,11 @@ import (
 	"time"
 
 	"github.com/9seconds/httransform"
-	"github.com/juju/errors"
 	"github.com/pmezard/adblock/adblock"
 	log "github.com/sirupsen/logrus"
 )
 
-var errAdblockedRequest = errors.New("Request was adblocked")
+var errAdblockedRequest = errors.New("request was adblocked")
 
 const adblockTimeout = 2 * time.Second
 
@@ -101,7 +102,7 @@ func (a *AdblockLayer) fetchList(channel chan<- *adblockParsedResult, item strin
 	}
 
 	if err != nil {
-		result.err = errors.Annotatef(err, "Cannot parse rules of item %s", item)
+		result.err = fmt.Errorf("cannot parse rules of item %s", item)
 		channel <- result
 		return
 	}
@@ -109,7 +110,7 @@ func (a *AdblockLayer) fetchList(channel chan<- *adblockParsedResult, item strin
 	defer io.Copy(ioutil.Discard, reader) // nolint: errcheck
 
 	if rules, err := adblock.ParseRules(reader); err != nil {
-		result.err = errors.Annotatef(err, "Cannot parse rules of item %s", item)
+		result.err = fmt.Errorf("cannot parse rules of item %s", item)
 	} else {
 		for _, rule := range rules {
 			if !rule.HasUnsupportedOpts() {
@@ -140,7 +141,7 @@ func (a *AdblockLayer) fetchURL(url string) (io.ReadCloser, error) {
 	}).Debug("Got adblock list response")
 
 	if err != nil {
-		return nil, errors.Annotatef(err, "Cannot fetch URL %s", url)
+		return nil, fmt.Errorf("cannot fetch url %s: %w", url, err)
 	}
 
 	return resp.Body, nil
@@ -155,7 +156,7 @@ func (a *AdblockLayer) readFileSystem(path string) (io.ReadCloser, error) {
 	}).Debug("Opened filesystem adblock list")
 
 	if err != nil {
-		return nil, errors.Annotatef(err, "Cannot open file %s", path)
+		return nil, fmt.Errorf("cannot open file %s: %w", path, err)
 	}
 
 	return fp, nil
