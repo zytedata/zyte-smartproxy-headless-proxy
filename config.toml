@@ -5,7 +5,7 @@
 
 # Should we run this tool in debug mode or not. Basically, this makes
 # the tool more verbose on stderr.
-debug = true
+debug = false
 
 # This tool talks with Crawlera and Crawlera has its own TLS certificate
 # authority. This option defines if if we need to verify TLS certificate
