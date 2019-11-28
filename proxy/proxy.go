@@ -30,12 +30,13 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 	}
 
 	opts := httransform.ServerOpts{
-		CertCA:   []byte(conf.TLSCaCertificate),
-		CertKey:  []byte(conf.TLSPrivateKey),
-		Executor: crawleraExecutor,
-		Logger:   &Logger{},
-		Metrics:  statsContainer,
-		Layers:   makeProxyLayers(conf, crawleraExecutor, statsContainer),
+		CertCA:           []byte(conf.TLSCaCertificate),
+		CertKey:          []byte(conf.TLSPrivateKey),
+		Executor:         crawleraExecutor,
+		Logger:           &Logger{},
+		Metrics:          statsContainer,
+		Layers:           makeProxyLayers(conf, crawleraExecutor, statsContainer),
+		OrganizationName: "ScrapingHub",
 	}
 	if conf.Debug {
 		opts.TracerPool = httransform.NewTracerPool(func() httransform.Tracer {
