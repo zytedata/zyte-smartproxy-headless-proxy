@@ -36,6 +36,7 @@ func (d *DirectAccessLayer) OnRequest(state *httransform.LayerState) error {
 func (d *DirectAccessLayer) OnResponse(state *httransform.LayerState, err error) {
 	if err == errDirectAccess {
 		httransform.HTTPExecutor(state)
+
 		if err := httransform.ParseHeaders(state.ResponseHeaders, state.Response.Header.Header()); err != nil {
 			logger := getLogger(state)
 			logger.WithFields(log.Fields{"err": err}).Debug("Cannot process response")

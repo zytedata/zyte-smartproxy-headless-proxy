@@ -56,6 +56,7 @@ func (a *AdblockLayer) OnRequest(state *httransform.LayerState) error {
 	if err != nil {
 		logger.WithFields(log.Fields{"err": err}).Debug("Cannot match request.")
 	}
+
 	if matched {
 		return errAdblockedRequest
 	}
@@ -78,6 +79,7 @@ func (a *AdblockLayer) sync(lists []string) {
 
 	for _, v := range lists {
 		wg.Add(1)
+
 		go func(channel chan<- *adblockParsedResult, item string) {
 			defer wg.Done()
 			a.fetchList(channel, item)
@@ -92,7 +94,9 @@ func (a *AdblockLayer) sync(lists []string) {
 
 func (a *AdblockLayer) fetchList(channel chan<- *adblockParsedResult, item string) {
 	var reader io.ReadCloser
+
 	var err error
+
 	result := &adblockParsedResult{}
 
 	if strings.HasPrefix(item, "http://") || strings.HasPrefix(item, "https://") {
@@ -104,8 +108,10 @@ func (a *AdblockLayer) fetchList(channel chan<- *adblockParsedResult, item strin
 	if err != nil {
 		result.err = fmt.Errorf("cannot parse rules of item %s", item)
 		channel <- result
+
 		return
 	}
+
 	defer reader.Close()                  // nolint: errcheck
 	defer io.Copy(ioutil.Discard, reader) // nolint: errcheck
 
@@ -128,12 +134,14 @@ func (a *AdblockLayer) fetchList(channel chan<- *adblockParsedResult, item strin
 
 func (a *AdblockLayer) fetchURL(url string) (io.ReadCloser, error) {
 	log.WithFields(log.Fields{"url": url}).Debug("Fetch adblock list")
+
 	resp, err := http.Get(url) // nolint: gosec, bodyclose
 
 	status := ""
 	if resp != nil {
 		status = resp.Status
 	}
+
 	log.WithFields(log.Fields{
 		"url":    url,
 		"err":    err,
@@ -149,7 +157,9 @@ func (a *AdblockLayer) fetchURL(url string) (io.ReadCloser, error) {
 
 func (a *AdblockLayer) readFileSystem(path string) (io.ReadCloser, error) {
 	log.WithFields(log.Fields{"path": path}).Debug("Open filesystem adblock list")
+
 	fp, err := os.Open(path) // nolint: gosec
+
 	log.WithFields(log.Fields{
 		"path": path,
 		"err":  err,
@@ -164,10 +174,12 @@ func (a *AdblockLayer) readFileSystem(path string) (io.ReadCloser, error) {
 
 func (a *AdblockLayer) consumeItems(channel <-chan *adblockParsedResult) {
 	rules := []*adblock.Rule{}
+
 	for item := range channel {
 		if item.err != nil {
 			log.Fatal(item.err.Error())
 		}
+
 		rules = append(rules, item.rules...)
 	}
 

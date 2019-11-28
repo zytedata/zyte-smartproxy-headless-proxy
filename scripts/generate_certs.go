@@ -33,6 +33,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	caCert, err := ioutil.ReadFile(caCertFile)
 	if err != nil {
 		log.Fatal(err)
@@ -42,6 +43,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	caKey, err := ioutil.ReadFile(caKeyFile)
 	if err != nil {
 		log.Fatal(err)

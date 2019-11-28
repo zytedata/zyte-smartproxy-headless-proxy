@@ -125,11 +125,14 @@ func (s *sessionManager) deleteCrawleraSession(sessionID string) error {
 	req.Header.Set("User-Agent", sessionUserAgent)
 
 	client := &http.Client{Timeout: sessionAPITimeout}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()            // nolint: errcheck
+
+	defer resp.Body.Close() // nolint: errcheck
+
 	io.Copy(ioutil.Discard, resp.Body) // nolint: errcheck, gosec
 
 	if resp.StatusCode >= http.StatusBadRequest {
@@ -137,7 +140,6 @@ func (s *sessionManager) deleteCrawleraSession(sessionID string) error {
 	}
 
 	return nil
-
 }
 
 func (s *sessionManager) requestNewSession(feedback *sessionIDRequest) {
@@ -145,6 +147,7 @@ func (s *sessionManager) requestNewSession(feedback *sessionIDRequest) {
 	feedback.channel <- (chan<- string(newSessionChan))
 
 	timeAfter := s.getTimeoutChannel(feedback.retry)
+
 	for {
 		select {
 		case brokenSession := <-s.brokenSessionChan:
@@ -163,6 +166,7 @@ func (s *sessionManager) requestNewSession(feedback *sessionIDRequest) {
 				s.id = newSession
 				s.lastUsed = time.Now()
 			}
+
 			return
 		case <-timeAfter:
 			log.Debug("Timeout in waiting for the new session.")
@@ -175,6 +179,7 @@ func (s *sessionManager) getTimeoutChannel(retry bool) <-chan time.Time {
 	if retry {
 		return time.After(sessionClientTimeoutRetry)
 	}
+
 	return time.After(sessionClientTimeout)
 }
 

@@ -22,6 +22,7 @@ func (s *SessionsLayer) OnRequest(state *httransform.LayerState) error {
 	mgrRaw, loaded := s.clients.LoadOrStore(clientID,
 		newSessionManager(s.apiKey, s.crawleraHost, s.crawleraPort))
 	mgr := mgrRaw.(*sessionManager)
+
 	if !loaded {
 		go mgr.Start()
 	}
@@ -100,6 +101,7 @@ func (s *SessionsLayer) onResponseErrorRetryCreateSession(state *httransform.Lay
 
 	sessionID := string(state.Response.Header.Peek("X-Crawlera-Session"))
 	channel <- sessionID
+
 	getMetrics(state).NewSessionCreated()
 
 	logger.WithFields(log.Fields{
@@ -112,11 +114,13 @@ func (s *SessionsLayer) onResponseErrorRetryWithSession(state *httransform.Layer
 	logger := getLogger(state).WithFields(log.Fields{
 		"session-id": sessionID,
 	})
+
 	s.executeRequest(state)
 
 	if isCrawleraResponseError(state) {
 		mgr.getBrokenSessionChan() <- sessionID
 		logger.Info("Request failed even with new session ID after retry")
+
 		return
 	}
 

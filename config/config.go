@@ -194,6 +194,7 @@ func Parse(file io.Reader) (*Config, error) {
 
 	xheaders := conf.XHeaders
 	conf.XHeaders = map[string]string{}
+
 	for k, v := range xheaders {
 		conf.SetXHeader(k, v)
 	}

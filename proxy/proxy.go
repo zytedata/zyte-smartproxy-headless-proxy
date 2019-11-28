@@ -22,8 +22,10 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 	if err != nil {
 		return nil, fmt.Errorf("cannot make proxy chain executor: %w", err)
 	}
+
 	crawleraExecutor := func(state *httransform.LayerState) {
 		startTime := time.Now()
+
 		executor(state)
 		statsContainer.NewCrawleraTime(time.Since(startTime))
 		statsContainer.NewCrawleraRequest()
@@ -60,9 +62,11 @@ func makeProxyLayers(conf *config.Config, crawleraExecutor httransform.Executor,
 	if len(conf.AdblockLists) > 0 {
 		proxyLayers = append(proxyLayers, layers.NewAdblockLayer(conf.AdblockLists))
 	}
+
 	if len(conf.DirectAccessHostPathRegexps) > 0 {
 		proxyLayers = append(proxyLayers, layers.NewDirectAccessLayer(conf.DirectAccessHostPathRegexps))
 	}
+
 	if conf.ConcurrentConnections > 0 {
 		proxyLayers = append(proxyLayers, layers.NewRateLimiterLayer(conf.ConcurrentConnections))
 	}

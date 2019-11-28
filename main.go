@@ -123,12 +123,15 @@ func main() {
 		log.Errorf("Cannot get configuration: %s", err)
 		os.Exit(1)
 	}
+
 	if conf.Debug {
 		log.SetLevel(log.DebugLevel)
 	}
+
 	if conf.APIKey == "" {
 		log.Fatal("API key is not set")
 	}
+
 	if err = initCertificates(conf); err != nil {
 		log.Fatal(err)
 	}
@@ -152,6 +155,7 @@ func main() {
 	}).Debugf("Listen on %s", listen)
 
 	statsContainer := stats.NewStats()
+
 	go stats.RunStats(statsContainer, conf)
 
 	if crawleraProxy, err := proxy.NewProxy(conf, statsContainer); err == nil {
@@ -167,11 +171,13 @@ func main() {
 
 func getConfig() (*config.Config, error) {
 	conf := config.NewConfig()
+
 	if *configFileName != nil {
 		newConf, err := config.Parse(*configFileName)
 		if err != nil {
 			return nil, err
 		}
+
 		conf = newConf
 	}
 
@@ -190,6 +196,7 @@ func getConfig() (*config.Config, error) {
 	conf.MaybeSetProxyAPIIP(*proxyAPIIP)
 	conf.MaybeSetProxyAPIPort(*proxyAPIPort)
 	conf.MaybeSetDirectAccessHostPathRegexps(*directAccessHostPathRegexps)
+
 	for k, v := range *xheaders {
 		conf.SetXHeader(k, v)
 	}
@@ -211,6 +218,7 @@ func initCertificates(conf *config.Config) (err error) {
 			return fmt.Errorf("cannot read TLS CA certificate: %w", err)
 		}
 	}
+
 	if conf.TLSPrivateKey != "" {
 		privateKey, err = ioutil.ReadFile(conf.TLSPrivateKey)
 		if err != nil {
