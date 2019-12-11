@@ -10,13 +10,7 @@ install Poetry. After that, please prepare the environment with the
 following command:
 
 ```console
-$ poetry install
-```
-
-If you have a problem with python version, please execute this instead:
-
-```console
-$ python3 "$(which poetry)" install
+$ python3 "$(command -v poetry)" install
 ```
 
 Also, you need to have node.js and npm installed to be
@@ -29,12 +23,6 @@ $ npm install
 ```
 
 Now let's run headless proxy:
-
-```console
-$ poetry run docker-compose up
-```
-
-or
 
 ```console
 $ python3 "$(which poetry)" run docker-compose up
