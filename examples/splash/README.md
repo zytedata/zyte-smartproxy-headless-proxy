@@ -4,19 +4,19 @@ This repository contains a simple example of how to work with
 [Splash](https://splash.readthedocs.io) and crawlera-headless-proxy.
 
 To run this example, please follow [official
-instructions](https://pipenv.readthedocs.io/en/latest/install/) on how
-to install pipenv. After that, please prepare the environment with the
+instructions](https://poetry.eustace.io/docs/#installation) on how to
+install Poetry. After that, please prepare the environment with the
 following command:
 
 ```console
-$ pipenv sync
+$ python3 "$(command -v poetry)" install
 ```
 
 This will install docker-compose. After that, please run the following
 command:
 
 ```console
-$ pipenv run docker-compose up
+$ python3 "$(command -v poetry)" run docker-compose up
 ```
 
 This will start up both headless-proxy and Splash instance.

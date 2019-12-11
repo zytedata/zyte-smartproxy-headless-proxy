@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "crawlera-selenium-example"
+name = "crawlera-splash-example"
 version = "0.1.0"
-description = "crawlera-headless-proxy Selenium example"
+description = "crawlera-headless-proxy Splash example"
 authors = ["Crawlera Team"]
 license = "MIT"
 homepage = "https://github.com/scrapinghub/crawlera-headless-proxy"
@@ -11,7 +11,6 @@ documentation = "https://github.com/scrapinghub/crawlera-headless-proxy/blob/mas
 [tool.poetry.dependencies]
 python = "^3.4"
 docker-compose = "^1.25.0"
-selenium = "^3.141.0"
 
 [tool.poetry.dev-dependencies]
 
