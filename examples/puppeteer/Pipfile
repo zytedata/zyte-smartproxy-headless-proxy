@@ -1,2 +1,0 @@
-[packages]
-docker-compose = '~=1.24.1'
