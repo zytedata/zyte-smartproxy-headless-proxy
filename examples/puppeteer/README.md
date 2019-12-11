@@ -5,12 +5,12 @@ Chrome using [Puppeteer](https://pptr.dev), official JS API for headless
 Chrome.
 
 To run this example, please follow [official
-instructions](https://pipenv.readthedocs.io/en/latest/install/) on how
-to install pipenv. After that, please prepare the environment with the
+instructions](https://poetry.eustace.io/docs/#installation) on how to
+install Poetry. After that, please prepare the environment with the
 following command:
 
 ```console
-$ pipenv sync
+$ python3 "$(command -v poetry)" install
 ```
 
 Also, you need to have node.js and npm installed to be
@@ -25,7 +25,7 @@ $ npm install
 Now let's run headless proxy:
 
 ```console
-$ pipenv run docker-compose up
+$ python3 "$(which poetry)" run docker-compose up
 ```
 
 If this command will fail on absent `crawlera-headless-proxy` image,

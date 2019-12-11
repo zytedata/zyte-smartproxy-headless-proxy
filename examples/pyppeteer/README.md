@@ -5,25 +5,25 @@ Chrome using [Pypeteer](https://miyakogi.github.io/pyppeteer/),
 unofficial Python port of [Puppeteer](https://pptr.dev/).
 
 To run this example, please follow [official
-instructions](https://pipenv.readthedocs.io/en/latest/install/) on how
-to install pipenv. After that, please prepare the environment with the
+instructions](https://poetry.eustace.io/docs/#installation) on how to
+install Poetry. After that, please prepare the environment with the
 following command:
 
 ```console
-$ pipenv sync
+$ python3 "$(command -v poetry)" install
 ```
 
 This will install docker-compose and pyppeteer. After that, please
 install Chrome with following command:
 
 ```console
-$ pipenv run pyppeteer-install
+$ python3 "$(command -v poetry)" run pyppeteer-install
 ```
 
 Now let's run headless proxy:
 
 ```console
-$ pipenv run docker-compose up
+$ python3 "$(command -v poetry)" run docker-compose up
 ```
 
 If this command will fail on absent `crawlera-headless-proxy` image,
@@ -37,5 +37,5 @@ Now everything is up and running. To execute the example, please do the
 following:
 
 ```console
-$ pipenv run ./run-example.py
+$ python "$(command -v poetry)" run ./run-example.py
 ```
