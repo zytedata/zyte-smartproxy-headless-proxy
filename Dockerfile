@@ -1,7 +1,7 @@
 ###############################################################################
 # BUILD STAGE
 
-FROM golang:1.13-alpine AS build-env
+FROM golang:1.14-alpine AS build-env
 
 WORKDIR /app
 
@@ -11,8 +11,10 @@ RUN set -x \
     ca-certificates \
     git \
     make \
-    upx \
-  && wget -O /usr/local/share/ca-certificates/crawlera-ca.crt https://doc.scrapinghub.com/_downloads/639adb203cdcb1249a5a7618d9f4fa96/crawlera-ca.crt \
+    upx
+
+ADD https://doc.scrapinghub.com/_downloads/639adb203cdcb1249a5a7618d9f4fa96/crawlera-ca.crt /usr/local/share/ca-certificates/crawlera-ca.crt
+RUN set -x \
   && sha1sum /usr/local/share/ca-certificates/crawlera-ca.crt | cut -f1 -d' ' | \
     while read -r sum _; do \
       if [ "${sum}" != "5798e59f6f7ecad3c0e1284f42b07dcaa63fbd37" ]; then \

@@ -13,6 +13,8 @@ import (
 	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
+const baseLayerBadStatusCode = 400
+
 type BaseLayer struct {
 	metrics *stats.Stats
 }
@@ -46,9 +48,10 @@ func (b *BaseLayer) OnResponse(state *httransform.LayerState, err error) {
 		"error":         err,
 	}).Info("Finish request")
 
-	if isCrawleraError(state) {
+	switch {
+	case isCrawleraError(state):
 		metrics.NewCrawleraError()
-	} else if state.Response.Header.StatusCode() >= 400 {
+	case state.Response.Header.StatusCode() >= baseLayerBadStatusCode:
 		metrics.NewOtherError()
 	}
 

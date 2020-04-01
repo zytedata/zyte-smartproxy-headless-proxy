@@ -28,7 +28,7 @@ func RunStats(statsContainer *Stats, conf *config.Config) {
 	router.Use(middleware.Timeout(statsServerTimeout))
 	router.Use(middleware.StripSlashes)
 	router.Use(middleware.SetHeader("Content-Type", "application/json"))
-	router.Use(middleware.Compress(6))
+	router.Use(middleware.Compress(6)) // nolint: gomnd
 
 	router.Get("/stats", func(w http.ResponseWriter, r *http.Request) { // nolint: unparam
 		encoder := json.NewEncoder(w)

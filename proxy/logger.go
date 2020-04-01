@@ -38,7 +38,7 @@ func (l *Logger) getFields(args []interface{}) log.Fields {
 		panic("Length of args %!= 2")
 	}
 
-	fields := make(log.Fields, len(args)/2)
+	fields := make(log.Fields, len(args)/2) // nolint: gomnd
 	for i := 0; i < len(args); i += 2 {
 		fields[args[i].(string)] = args[i+1]
 	}
