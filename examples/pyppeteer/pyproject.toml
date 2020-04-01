@@ -10,7 +10,7 @@ documentation = "https://github.com/scrapinghub/crawlera-headless-proxy/blob/mas
 
 [tool.poetry.dependencies]
 python = "^3.5"
-docker-compose = "^1.25.0"
+docker-compose = "^1.25.4"
 pyppeteer = "^0.0.25"
 
 [tool.poetry.dev-dependencies]
