@@ -208,10 +208,10 @@ func NewConfig() *Config {
 	return &Config{
 		AdblockLists: []string{},
 		BindIP:       "127.0.0.1",
-		BindPort:     3128,
-		ProxyAPIPort: 3129,
+		BindPort:     3128, // nolint: gomnd
+		ProxyAPIPort: 3129, // nolint: gomnd
 		CrawleraHost: "proxy.crawlera.com",
-		CrawleraPort: 8010,
+		CrawleraPort: 8010, // nolint: gomnd
 		XHeaders:     map[string]string{},
 	}
 }

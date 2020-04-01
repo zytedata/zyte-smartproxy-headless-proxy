@@ -69,7 +69,7 @@ func (ts *timeSeries) MarshalJSON() ([]byte, error) {
 func (ts *timeSeries) calculatePercentiles(floats []float64) map[uint8]float64 {
 	percentiles := make(map[uint8]float64, len(statsPercentilesToCalculate))
 
-	if len(floats) >= 100 {
+	if len(floats) >= 100 { // nolint: gomnd
 		for _, perc := range statsPercentilesToCalculate {
 			calculated, _ := mstats.Percentile(floats, float64(perc)) // nolint: gosec
 			percentiles[perc] = calculated
