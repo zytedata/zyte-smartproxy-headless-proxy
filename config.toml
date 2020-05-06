@@ -120,5 +120,5 @@ adblock_lists = [
 # A full list can be found here:
 # https://doc.scrapinghub.com/crawlera.html#request-headers
 [xheaders]
-cookies = "disable"
+# cookies = "disable"
 # profile = "desktop"
