@@ -4,7 +4,7 @@ import (
 	"github.com/9seconds/httransform"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/scrapinghub/crawlera-headless-proxy/stats"
+	"github.com/zytegroup/zyte-proxy-headless-proxy/stats"
 )
 
 const (
@@ -15,16 +15,16 @@ const (
 	sessionChanContextType    = "session_chan"
 )
 
-func isCrawleraError(state *httransform.LayerState) bool {
-	if _, ok := state.ResponseHeaders.GetString("x-crawlera-error"); ok {
+func isZyteProxyError(state *httransform.LayerState) bool {
+	if _, ok := state.ResponseHeaders.GetString("zyte-proxy-error"); ok {
 		return true
 	}
 
-	return isCrawleraResponseError(state)
+	return isZyteProxyResponseError(state)
 }
 
-func isCrawleraResponseError(state *httransform.LayerState) bool {
-	return len(state.Response.Header.Peek("X-Crawlera-Error")) > 0
+func isZyteProxyResponseError(state *httransform.LayerState) bool {
+	return len(state.Response.Header.Peek("Zyte-Proxy-Error")) > 0
 }
 
 func getClientID(state *httransform.LayerState) string {

@@ -3,8 +3,8 @@
 
 version: "3.7"
 services:
-  crawlera-headless-proxy:
-    image: crawlera-headless-proxy
+  zyte-proxy-headless-proxy:
+    image: zyte-proxy-headless-proxy
     build: .
     deploy:
       restart_policy:
@@ -17,7 +17,7 @@ services:
       - 8.8.8.8
       - 8.8.4.4
     environment:
-      CRAWLERA_HEADLESS_APIKEY: USER_API_KEY
+      ZYTE_PROXY_HEADLESS_APIKEY: USER_API_KEY
     ports:
       - target: 3128
         published: 3128

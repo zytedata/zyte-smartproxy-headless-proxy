@@ -19,11 +19,11 @@ the docker-compose stack with following command:
 $ python3 "$(command -v poetry)" run docker-compose up
 ```
 
-If this command will fail on absent `crawlera-headless-proxy` image,
+If this command will fail on absent `zyte-proxy-headless-proxy` image,
 please build one (follow the instructions to
-[crawlera-headless-proxy](https://github.com/scrapinghub/crawlera-headless-proxy)
-project). If you need to provide your own API key to Crawlera, please
-check `docker-compose.yml` and update the corresponding line to
+[zyte-proxy-headless-proxy](https://github.com/zytegroup/zyte-proxy-headless-proxy)
+project). If you need to provide your own API key to Zyte Smart Proxy Manager,
+please check `docker-compose.yml` and update the corresponding line to
 `headless-proxy` service.
 
 Now everything is up and running. To execute the example, please do the

@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/valyala/fasthttp"
 
-	"github.com/scrapinghub/crawlera-headless-proxy/stats"
+	"github.com/zytegroup/zyte-proxy-headless-proxy/stats"
 )
 
 type CommonLayerTestSuite struct {

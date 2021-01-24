@@ -3,17 +3,17 @@
 version: "2"
 services:
   splash:
-    image: scrapinghub/splash
+    image: zytegroup/splash
     ports:
       - 8050:8050
       - 5023:5023
 
   headless-proxy:
-    image: crawlera-headless-proxy
+    image: zyte-proxy-headless-proxy
     ports:
       - 3128:3128
     environment:
-      CRAWLERA_HEADLESS_APIKEY: USER_API_KEY
+      ZYTE_PROXY_HEADLESS_APIKEY: USER_API_KEY
     networks:
       default:
         aliases:

@@ -10,16 +10,16 @@ var headersProfileToRemove = [5]string{
 	"user-agent",
 }
 
-type XHeadersLayer struct {
-	XHeaders map[string]string
+type ZyteProxyHeadersLayer struct {
+	ZyteProxyHeaders map[string]string
 }
 
-func (h *XHeadersLayer) OnRequest(state *httransform.LayerState) error {
-	for k, v := range h.XHeaders {
+func (h *ZyteProxyHeadersLayer) OnRequest(state *httransform.LayerState) error {
+	for k, v := range h.ZyteProxyHeaders {
 		state.RequestHeaders.SetString(k, v)
 	}
 
-	profile, ok := state.RequestHeaders.GetString("x-crawlera-profile")
+	profile, ok := state.RequestHeaders.GetString("zyte-proxy-profile")
 	if ok && (profile == "desktop" || profile == "mobile") {
 		for _, v := range headersProfileToRemove {
 			state.RequestHeaders.DeleteString(v)
@@ -29,11 +29,11 @@ func (h *XHeadersLayer) OnRequest(state *httransform.LayerState) error {
 	return nil
 }
 
-func (h *XHeadersLayer) OnResponse(_ *httransform.LayerState, _ error) {
+func (h *ZyteProxyHeadersLayer) OnResponse(_ *httransform.LayerState, _ error) {
 }
 
-func NewXHeadersLayer(xheaders map[string]string) httransform.Layer {
-	return &XHeadersLayer{
-		XHeaders: xheaders,
+func NewZyteProxyHeadersLayer(zyteProxyHeaders map[string]string) httransform.Layer {
+	return &ZyteProxyHeadersLayer{
+		ZyteProxyHeaders: zyteProxyHeaders,
 	}
 }

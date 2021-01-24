@@ -13,101 +13,101 @@ import (
 	log "github.com/sirupsen/logrus"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
-	"github.com/scrapinghub/crawlera-headless-proxy/config"
-	"github.com/scrapinghub/crawlera-headless-proxy/proxy"
-	"github.com/scrapinghub/crawlera-headless-proxy/stats"
+	"github.com/zytegroup/zyte-proxy-headless-proxy/config"
+	"github.com/zytegroup/zyte-proxy-headless-proxy/proxy"
+	"github.com/zytegroup/zyte-proxy-headless-proxy/stats"
 )
 
 var version = "dev" // nolint: gochecknoglobals
 
 var ( // nolint: gochecknoglobals
-	app = kingpin.New("crawlera-headless-proxy",
-		"Local proxy for Crawlera to be used with headless browsers.")
+	app = kingpin.New("zyte-proxy-headless-proxy",
+		"Local proxy for Zyte Smart Proxy Manager to be used with headless browsers.")
 
 	debug = app.Flag("debug",
 		"Run in debug mode.").
 		Short('d').
-		Envar("CRAWLERA_HEADLESS_DEBUG").
+		Envar("ZYTE_PROXY_HEADLESS_DEBUG").
 		Bool()
 	bindIP = app.Flag("bind-ip",
 		"IP to bind to. Default is 127.0.0.1.").
 		Short('b').
-		Envar("CRAWLERA_HEADLESS_BINDIP").
+		Envar("ZYTE_PROXY_HEADLESS_BINDIP").
 		IP()
 	proxyAPIIP = app.Flag("proxy-api-ip",
 		"IP to bind proxy API to. Default is the bind-ip value.").
 		Short('m').
-		Envar("CRAWLERA_HEADLESS_PROXYAPIIP").
+		Envar("ZYTE_PROXY_HEADLESS_PROXYAPIIP").
 		IP()
 	bindPort = app.Flag("bind-port",
 		"Port to bind to. Default is 3128.").
 		Short('p').
-		Envar("CRAWLERA_HEADLESS_BINDPORT").
+		Envar("ZYTE_PROXY_HEADLESS_BINDPORT").
 		Int()
 	proxyAPIPort = app.Flag("proxy-api-port",
 		"Port to bind proxy api to. Default is 3130.").
 		Short('w').
-		Envar("CRAWLERA_HEADLESS_PROXYAPIPORT").
+		Envar("ZYTE_PROXY_HEADLESS_PROXYAPIPORT").
 		Int()
 	configFileName = app.Flag("config",
 		"Path to configuration file.").
 		Short('c').
-		Envar("CRAWLERA_HEADLESS_CONFIG").
+		Envar("ZYTE_PROXY_HEADLESS_CONFIG").
 		File()
 	tlsCaCertificate = app.Flag("tls-ca-certificate",
 		"Path to TLS CA certificate file.").
 		Short('l').
-		Envar("CRAWLERA_HEADLESS_TLSCACERTPATH").
+		Envar("ZYTE_PROXY_HEADLESS_TLSCACERTPATH").
 		ExistingFile()
 	tlsPrivateKey = app.Flag("tls-private-key",
 		"Path to TLS private key.").
 		Short('r').
-		Envar("CRAWLERA_HEADLESS_TLSPRIVATEKEYPATH").
+		Envar("ZYTE_PROXY_HEADLESS_TLSPRIVATEKEYPATH").
 		ExistingFile()
 	noAutoSessions = app.Flag("no-auto-sessions",
 		"Disable automatic session management.").
 		Short('t').
-		Envar("CRAWLERA_HEADLESS_NOAUTOSESSIONS").
+		Envar("ZYTE_PROXY_HEADLESS_NOAUTOSESSIONS").
 		Bool()
 	concurrentConnections = app.Flag("concurrent-connections",
 		"Number of concurrent connections.").
 		Short('n').
-		Envar("CRAWLERA_HEADLESS_CONCURRENCY").
+		Envar("ZYTE_PROXY_HEADLESS_CONCURRENCY").
 		Int()
 	apiKey = app.Flag("api-key",
-		"API key to Crawlera.").
+		"API key to Zyte Smart Proxy Manager.").
 		Short('a').
-		Envar("CRAWLERA_HEADLESS_APIKEY").
+		Envar("ZYTE_PROXY_HEADLESS_APIKEY").
 		String()
-	crawleraHost = app.Flag("crawlera-host",
-		"Hostname of Crawlera. Default is proxy.crawlera.com.").
+	zyteProxyHost = app.Flag("zyte-proxy-host",
+		"Hostname of Zyte Smart Proxy Manager. Default is proxy.zyte.com.").
 		Short('u').
-		Envar("CRAWLERA_HEADLESS_CHOST").
+		Envar("ZYTE_PROXY_HEADLESS_ZYTEPROXYHOST").
 		String()
-	crawleraPort = app.Flag("crawlera-port",
-		"Port of Crawlera. Default is 8010.").
+	zyteProxyPort = app.Flag("zyte-proxy-port",
+		"Port of Zyte Smart Proxy Manager. Default is 8010.").
 		Short('o').
-		Envar("CRAWLERA_HEADLESS_CPORT").
+		Envar("ZYTE_PROXY_HEADLESS_ZYTEPROXYPORT").
 		Int()
-	doNotVerifyCrawleraCert = app.Flag("dont-verify-crawlera-cert",
-		"Do not verify Crawlera own certificate.").
+	doNotVerifyZyteProxyCert = app.Flag("dont-verify-zyte-proxy-cert",
+		"Do not verify Zyte Smart Proxy Manager own certificate.").
 		Short('v').
-		Envar("CRAWLERA_HEADLESS_DONTVERIFY").
+		Envar("ZYTE_PROXY_HEADLESS_DONTVERIFY").
 		Bool()
-	xheaders = app.Flag("xheader",
-		"Crawlera X-Headers.").
+	zyteProxyHeaders = app.Flag("zyte-proxy-header",
+		"Zyte Smart Proxy Manager headers.").
 		Short('x').
-		Envar("CRAWLERA_HEADLESS_XHEADERS").
+		Envar("ZYTE_PROXY_HEADLESS_ZYTEPROXYHEADERS").
 		StringMap()
 	adblockLists = app.Flag("adblock-list",
 		"A list to requests to filter out (ADBlock compatible).").
 		Short('k').
-		Envar("CRAWLERA_HEADLESS_ADBLOCKLISTS").
+		Envar("ZYTE_PROXY_HEADLESS_ADBLOCKLISTS").
 		Strings()
 	directAccessHostPathRegexps = app.Flag("direct-access-hostpath-regexps",
-		"A list of regexps for hostpath for direct access, bypassing Crawlera.").
+		"A list of regexps for hostpath for direct access, bypassing Zyte Smart Proxy Manager.").
 		Short('z').
-		Envar("CRAWLERA_HEADLESS_DIRECTACCESS").
+		Envar("ZYTE_PROXY_HEADLESS_DIRECTACCESS").
 		Strings()
 )
 
@@ -146,11 +146,11 @@ func main() {
 		"bindport":                       conf.BindPort,
 		"proxy-api-ip":                   conf.ProxyAPIIP,
 		"proxy-api-port":                 conf.ProxyAPIPort,
-		"crawlera-host":                  conf.CrawleraHost,
-		"crawlera-port":                  conf.CrawleraPort,
-		"dont-verify-crawlera-cert":      conf.DoNotVerifyCrawleraCert,
+		"zyte-proxy-host":                conf.ZyteProxyHost,
+		"zyte-proxy-port":                conf.ZyteProxyPort,
+		"dont-verify-zyte-proxy-cert":    conf.DoNotVerifyZyteProxyCert,
 		"concurrent-connections":         conf.ConcurrentConnections,
-		"xheaders":                       conf.XHeaders,
+		"zyte-proxy-headers":             conf.ZyteProxyHeaders,
 		"direct-access-hostpath-regexps": conf.DirectAccessHostPathRegexps,
 	}).Debugf("Listen on %s", listen)
 
@@ -158,11 +158,11 @@ func main() {
 
 	go stats.RunStats(statsContainer, conf)
 
-	if crawleraProxy, err := proxy.NewProxy(conf, statsContainer); err == nil {
+	if zyteProxyProxy, err := proxy.NewProxy(conf, statsContainer); err == nil {
 		if ln, err2 := net.Listen("tcp", listen); err2 != nil {
 			log.Fatal(err2)
 		} else {
-			log.Fatal(crawleraProxy.Serve(ln))
+			log.Fatal(zyteProxyProxy.Serve(ln))
 		}
 	} else {
 		log.Fatal(err)
@@ -182,14 +182,14 @@ func getConfig() (*config.Config, error) {
 	}
 
 	conf.MaybeSetDebug(*debug)
-	conf.MaybeDoNotVerifyCrawleraCert(*doNotVerifyCrawleraCert)
+	conf.MaybeDoNotVerifyZyteProxyCert(*doNotVerifyZyteProxyCert)
 	conf.MaybeSetAdblockLists(*adblockLists)
 	conf.MaybeSetAPIKey(*apiKey)
 	conf.MaybeSetBindIP(*bindIP)
 	conf.MaybeSetBindPort(*bindPort)
 	conf.MaybeSetConcurrentConnections(*concurrentConnections)
-	conf.MaybeSetCrawleraHost(*crawleraHost)
-	conf.MaybeSetCrawleraPort(*crawleraPort)
+	conf.MaybeSetZyteProxyHost(*zyteProxyHost)
+	conf.MaybeSetZyteProxyPort(*zyteProxyPort)
 	conf.MaybeSetNoAutoSessions(*noAutoSessions)
 	conf.MaybeSetTLSCaCertificate(*tlsCaCertificate)
 	conf.MaybeSetTLSPrivateKey(*tlsPrivateKey)
@@ -197,7 +197,7 @@ func getConfig() (*config.Config, error) {
 	conf.MaybeSetProxyAPIPort(*proxyAPIPort)
 	conf.MaybeSetDirectAccessHostPathRegexps(*directAccessHostPathRegexps)
 
-	for k, v := range *xheaders {
+	for k, v := range *zyteProxyHeaders {
 		conf.SetXHeader(k, v)
 	}
 

@@ -20,14 +20,14 @@ const (
 	sessionAPITimeout         = 10 * time.Second
 	sessionTTL                = 5 * time.Minute
 
-	sessionUserAgent = "crawlera-headless-proxy"
+	sessionUserAgent = "zyte-proxy-headless-proxy"
 )
 
 type sessionManager struct {
-	id           string
-	apiKey       string
-	crawleraHost string
-	lastUsed     time.Time
+	id            string
+	apiKey        string
+	zyteProxyHost string
+	lastUsed      time.Time
 
 	requestIDChan     chan *sessionIDRequest
 	brokenSessionChan chan string
@@ -56,7 +56,7 @@ func (s *sessionManager) getBrokenSessionChan() chan<- string {
 }
 
 func (s *sessionManager) Start() {
-	go s.startCrawleraAPISessionDeleter()
+	go s.startZyteProxyAPISessionDeleter()
 
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
@@ -95,29 +95,29 @@ func (s *sessionManager) Start() {
 	}
 }
 
-func (s *sessionManager) startCrawleraAPISessionDeleter() {
+func (s *sessionManager) startZyteProxyAPISessionDeleter() {
 	for sessionID := range s.sessionsToDelete {
 		if sessionID == "" {
 			continue
 		}
 
-		if err := s.deleteCrawleraSession(sessionID); err != nil {
+		if err := s.deleteZyteProxySession(sessionID); err != nil {
 			log.WithFields(log.Fields{
 				"session-id": sessionID,
 				"error":      err,
-			}).Warn("Cannot delete session from Crawlera")
+			}).Warn("Cannot delete session from Zyte Smart Proxy Manager")
 		} else {
 			log.WithFields(log.Fields{
 				"session-id": sessionID,
-			}).Warn("Session was deleted from Crawlera")
+			}).Warn("Session was deleted from Zyte Smart Proxy Manager")
 		}
 	}
 }
 
-func (s *sessionManager) deleteCrawleraSession(sessionID string) error {
+func (s *sessionManager) deleteZyteProxySession(sessionID string) error {
 	apiURL := url.URL{
 		Scheme: "http",
-		Host:   s.crawleraHost,
+		Host:   s.zyteProxyHost,
 		Path:   path.Join("sessions", sessionID),
 	}
 	req, _ := http.NewRequest("DELETE", apiURL.String(), http.NoBody) // nolint: gosec
@@ -183,10 +183,10 @@ func (s *sessionManager) getTimeoutChannel(retry bool) <-chan time.Time {
 	return time.After(sessionClientTimeout)
 }
 
-func newSessionManager(apiKey, crawleraHost string, crawleraPort int) *sessionManager {
+func newSessionManager(apiKey, zyteProxyHost string, zyteProxyPort int) *sessionManager {
 	return &sessionManager{
 		apiKey:            apiKey,
-		crawleraHost:      net.JoinHostPort(crawleraHost, strconv.Itoa(crawleraPort)),
+		zyteProxyHost:     net.JoinHostPort(zyteProxyHost, strconv.Itoa(zyteProxyPort)),
 		requestIDChan:     make(chan *sessionIDRequest),
 		brokenSessionChan: make(chan string),
 		sessionsToDelete:  make(chan string, 1),

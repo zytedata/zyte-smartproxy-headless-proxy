@@ -1,7 +1,7 @@
 bind_port = 3128
 bind_ip = "0.0.0.0"
-crawlera_port = 8010
-crawlera_host = "proxy.crawlera.com"
+zyte_proxy_port = 8010
+zyte_proxy_host = "proxy.zyte.com"
 api_key = "USER_API_KEY"
 adblock_lists = [
   "https://fanboy.co.nz/r/fanboy-ultimate.txt",
@@ -10,6 +10,6 @@ adblock_lists = [
   "https://s3.amazonaws.com/lists.disconnect.me/simple_malware.txt"
 ]
 
-[xheaders]
+[zyte_proxy_headers]
 cookies = "disable"
 profile = "desktop"
