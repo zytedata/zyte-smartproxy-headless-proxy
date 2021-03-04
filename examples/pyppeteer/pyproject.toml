@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "crawlera-pyppeteer-example"
+name = "zyte-smart-proxy-manager-pyppeteer-example"
 version = "0.1.0"
-description = "crawlera-headless-proxy Pyppeteer example"
-authors = ["Crawlera Team"]
+description = "zyte-proxy-headless-proxy Pyppeteer example"
+authors = ["Zyte"]
 license = "MIT"
-homepage = "https://github.com/scrapinghub/crawlera-headless-proxy"
-repository = "https://github.com/scrapinghub/crawlera-headless-proxy.git"
-documentation = "https://github.com/scrapinghub/crawlera-headless-proxy/blob/master/README.md"
+homepage = "https://github.com/scrapinghub/zyte-proxy-headless-proxy"
+repository = "https://github.com/scrapinghub/zyte-proxy-headless-proxy.git"
+documentation = "https://github.com/scrapinghub/zyte-proxy-headless-proxy/blob/master/README.md"
 
 [tool.poetry.dependencies]
 python = "^3.6.1"

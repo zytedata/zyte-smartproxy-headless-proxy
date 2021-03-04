@@ -6,21 +6,21 @@ import (
 	"github.com/9seconds/httransform"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/scrapinghub/crawlera-headless-proxy/config"
+	"github.com/scrapinghub/zyte-proxy-headless-proxy/config"
 )
 
 type SessionsLayer struct {
-	apiKey       string
-	crawleraHost string
-	crawleraPort int
-	clients      *sync.Map
-	executor     httransform.Executor
+	apiKey      string
+	smpHost     string
+	smpPort     int
+	clients     *sync.Map
+	executor    httransform.Executor
 }
 
 func (s *SessionsLayer) OnRequest(state *httransform.LayerState) error {
 	clientID := getClientID(state)
 	mgrRaw, loaded := s.clients.LoadOrStore(clientID,
-		newSessionManager(s.apiKey, s.crawleraHost, s.crawleraPort))
+		newSessionManager(s.apiKey, s.smpHost, s.smpPort))
 	mgr := mgrRaw.(*sessionManager)
 
 	if !loaded {
@@ -44,12 +44,12 @@ func (s *SessionsLayer) OnResponse(state *httransform.LayerState, err error) {
 		return
 	}
 
-	if !isCrawleraError(state) {
+	if !isSmartProxyManagerError(state) {
 		s.onResponseOK(state)
 		return
 	}
 
-	getMetrics(state).NewCrawleraError()
+	getMetrics(state).NewSmartProxyManagerError()
 	s.onResponseError(state)
 }
 
@@ -94,7 +94,7 @@ func (s *SessionsLayer) onResponseErrorRetryCreateSession(state *httransform.Lay
 	state.Request.Header.Set("X-Crawlera-Session", "create")
 	s.executeRequest(state)
 
-	if isCrawleraResponseError(state) {
+	if isSmartProxyManagerResponseError(state) {
 		log.Warn("Could not obtain new session even after retry")
 		return
 	}
@@ -117,7 +117,7 @@ func (s *SessionsLayer) onResponseErrorRetryWithSession(state *httransform.Layer
 
 	s.executeRequest(state)
 
-	if isCrawleraResponseError(state) {
+	if isSmartProxyManagerResponseError(state) {
 		mgr.getBrokenSessionChan() <- sessionID
 		logger.Info("Request failed even with new session ID after retry")
 
@@ -138,10 +138,10 @@ func (s *SessionsLayer) executeRequest(state *httransform.LayerState) {
 
 func NewSessionsLayer(conf *config.Config, executor httransform.Executor) httransform.Layer {
 	return &SessionsLayer{
-		crawleraHost: conf.CrawleraHost,
-		crawleraPort: conf.CrawleraPort,
-		apiKey:       conf.APIKey,
-		clients:      &sync.Map{},
-		executor:     executor,
+		smpHost:    conf.SmartProxyManagerHost,
+		smpPort:    conf.SmartProxyManagerPort,
+		apiKey:     conf.APIKey,
+		clients:    &sync.Map{},
+		executor:   executor,
 	}
 }

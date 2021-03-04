@@ -23,18 +23,18 @@ func (s statsUptime) MarshalJSON() ([]byte, error) {
 // Stats is a collector of statistics. Its idea is to listen to all provided
 // channels and generate reports (JSON data structures).
 type Stats struct {
-	RequestsNumber    uint64 `json:"requests_number"`
-	CrawleraRequests  uint64 `json:"crawlera_requests"`
-	SessionsCreated   uint64 `json:"sessions_created"`
-	ClientsConnected  uint64 `json:"clients_connected"`
-	AdblockedRequests uint64 `json:"adblocked_requests"`
-	CrawleraErrors    uint64 `json:"crawlera_errors"`
-	AllErrors         uint64 `json:"all_errors"`
+	RequestsNumber              uint64 `json:"requests_number"`
+	SmartProxyManagerRequests   uint64 `json:"spm_requests"`
+	SessionsCreated             uint64 `json:"sessions_created"`
+	ClientsConnected            uint64 `json:"clients_connected"`
+	AdblockedRequests           uint64 `json:"adblocked_requests"`
+	SmartProxyManagerErrors     uint64 `json:"spm_errors"`
+	AllErrors                   uint64 `json:"all_errors"`
 
 	// The owls are not what they seem
 	// do not believe RWMutex. We use it as shared/exclusive lock.
 	OverallTimes  *durationTimeSeries `json:"overall_times"`
-	CrawleraTimes *durationTimeSeries `json:"crawlera_times"`
+	SmartProxyManagerTimes *durationTimeSeries `json:"spm_times"`
 
 	Uptime statsUptime `json:"uptime"`
 
@@ -120,9 +120,9 @@ func (s *Stats) NewCertificate() {
 func (s *Stats) DropCertificate() {
 }
 
-func (s *Stats) NewCrawleraRequest() {
+func (s *Stats) NewSmartProxyManagerRequest() {
 	s.statsLock.RLock()
-	atomic.AddUint64(&s.CrawleraRequests, 1)
+	atomic.AddUint64(&s.SmartProxyManagerRequests, 1)
 	s.statsLock.RUnlock()
 }
 
@@ -138,9 +138,9 @@ func (s *Stats) NewAdblockedRequest() {
 	s.statsLock.RUnlock()
 }
 
-func (s *Stats) NewCrawleraError() {
+func (s *Stats) NewSmartProxyManagerError() {
 	s.statsLock.RLock()
-	atomic.AddUint64(&s.CrawleraErrors, 1)
+	atomic.AddUint64(&s.SmartProxyManagerErrors, 1)
 	atomic.AddUint64(&s.AllErrors, 1)
 	s.statsLock.RUnlock()
 }
@@ -151,9 +151,9 @@ func (s *Stats) NewOtherError() {
 	s.statsLock.RUnlock()
 }
 
-func (s *Stats) NewCrawleraTime(elapsed time.Duration) {
+func (s *Stats) NewSmartProxyManagerTime(elapsed time.Duration) {
 	s.statsLock.RLock()
-	s.CrawleraTimes.add(elapsed)
+	s.SmartProxyManagerTimes.add(elapsed)
 	s.statsLock.RUnlock()
 }
 
@@ -167,7 +167,7 @@ func (s *Stats) NewOverallTime(elapsed time.Duration) {
 func NewStats() *Stats {
 	return &Stats{
 		OverallTimes:  newDurationTimeSeries(statsRingLength),
-		CrawleraTimes: newDurationTimeSeries(statsRingLength),
+		SmartProxyManagerTimes: newDurationTimeSeries(statsRingLength),
 		Uptime:        statsUptime(time.Now()),
 		statsLock:     &sync.RWMutex{},
 	}

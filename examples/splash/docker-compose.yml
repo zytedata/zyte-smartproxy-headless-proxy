@@ -9,11 +9,11 @@ services:
       - 5023:5023
 
   headless-proxy:
-    image: crawlera-headless-proxy
+    image: zyte-proxy-headless-proxy
     ports:
       - 3128:3128
     environment:
-      CRAWLERA_HEADLESS_APIKEY: USER_API_KEY
+      ZYTE_SPM_HEADLESS_APIKEY: USER_API_KEY
     networks:
       default:
         aliases:

@@ -10,7 +10,7 @@ import (
 	"github.com/9seconds/httransform"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/scrapinghub/crawlera-headless-proxy/stats"
+	"github.com/scrapinghub/zyte-proxy-headless-proxy/stats"
 )
 
 const baseLayerBadStatusCode = 400
@@ -49,8 +49,8 @@ func (b *BaseLayer) OnResponse(state *httransform.LayerState, err error) {
 	}).Info("Finish request")
 
 	switch {
-	case isCrawleraError(state):
-		metrics.NewCrawleraError()
+	case isSmartProxyManagerError(state):
+		metrics.NewSmartProxyManagerError()
 	case state.Response.Header.StatusCode() >= baseLayerBadStatusCode:
 		metrics.NewOtherError()
 	}

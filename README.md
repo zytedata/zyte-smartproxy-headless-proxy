@@ -1,50 +1,50 @@
-# Crawlera Headless Proxy
+# Zyte Smart Proxy Manager Headless Proxy
 
-[![Build Status](https://travis-ci.org/scrapinghub/crawlera-headless-proxy.svg?branch=master)](https://travis-ci.org/scrapinghub/crawlera-headless-proxy)
-[![Go Report Card](https://goreportcard.com/badge/github.com/scrapinghub/crawlera-headless-proxy)](https://goreportcard.com/report/github.com/scrapinghub/crawlera-headless-proxy)
+[![Build Status](https://travis-ci.org/scrapinghub/zyte-proxy-headless-proxy.svg?branch=master)](https://travis-ci.org/scrapinghub/zyte-proxy-headless-proxy)
+[![Go Report Card](https://goreportcard.com/badge/github.com/scrapinghub/zyte-proxy-headless-proxy)](https://goreportcard.com/report/github.com/scrapinghub/zyte-proxy-headless-proxy)
 
-Crawlera Headless proxy is a proxy which main intent
+Zyte Smart Proxy Manager Headless proxy is a proxy which main intent
 is to help users with headless browsers to use
-[Crawlera](https://scrapinghub.com/crawlera). This
+[Zyte Smart Proxy Manager](https://www.zyte.com/smart-proxy-manager/). This
 includes different implementations of headless browsers
-such as [Splash](https://scrapinghub.com/splash),
+such as [Splash](https://www.zyte.com/splash/),
 headless [Chrome](https://google.com/chrome/), and
 [Firefox](https://www.mozilla.org/en-US/firefox/).
 Also, this proxy should help users of such frameworks
 as [Selenium](https://www.seleniumhq.org/) and
-[Puppeteer](https://github.com/GoogleChrome/puppeteer) to use Crawlera
+[Puppeteer](https://github.com/GoogleChrome/puppeteer) to use Zyte Smart Proxy Manager
 without a need to build [Squid](http://www.squid-cache.org/) chains or
 install [Polipo](https://www.irif.fr/~jch/software/polipo/).
 
 The biggest problem with headless browsers is their configuration:
 
-1. Crawlera uses proxy authentication protocol described in
+1. Zyte Smart Proxy Manager uses proxy authentication protocol described in
    [RFC 7235](https://tools.ietf.org/html/rfc7235#section-4.3) but it is
    rather hard to configure such authentication in headless browsers. The
    most popular way of bypassing this problem is to use Polipo which is,
    unfortunately, unsupported for a long time.
-2. Crawlera uses
-   [X-Headers as configuration](https://doc.scrapinghub.com/crawlera.html#request-headers).
+2. Zyte Smart Proxy Manager uses
+   [X-Headers as configuration](https://docs.zyte.com/smart-proxy-manager-get-started.html#request-headers).
    To use this API with headless browsers, users have to install plugins or
    extensions in their browsers and configure them to propagate such headers
-   to Crawlera.
+   to Zyte Smart Proxy Manager.
 3. Also, it is rather hard and complex to maintain best practices of using
    these headers. For example,
-   [support of Browser Profiles](https://doc.scrapinghub.com/crawlera.html#x-crawlera-profile)
+   [support of Browser Profiles](https://docs.zyte.com/smart-proxy-manager-get-started.html#x-crawlera-profile)
    requires to have a minimal possible set of headers. For example, it is
    recommended to remove `Accept` header by default. It is rather hard
    to do that using headless browsers API.
-4. Crawlera works best with browsers only with some preconditions which
+4. Zyte Smart Proxy Manager works best with browsers only with some preconditions which
    users have to repeat everytime: session usage, some recommended headers
    like `Referer` etc.
 
-Crawlera Headless Proxy intended to help users to avoid such
+Zyte Smart Proxy Manager Headless Proxy intended to help users to avoid such
 problems. You should generally think about it as a proxy which should
 be accessible by your headless browser of Selenium grid. This proxy
-propagates your requests to Crawlera maintaining API key and injecting
-headers into the requests. Basically, you have to do a bare minimum:
+propagates your requests to Zyte Smart Proxy Manager maintaining API key and
+injecting headers into the requests. Basically, you have to do a bare minimum:
 
-1. Get Crawlera API key
+1. Get Zyte Smart Proxy Manager API key
 2. Run this proxy on your local machine or any machine accessible by
    headless browser, configuring it with a configuration file, command line
    parameters or environment variables.
@@ -95,21 +95,21 @@ If you use [HomeBrew](https://brew.sh) or
 proxy:
 
 ```console
-$ brew install https://raw.githubusercontent.com/scrapinghub/crawlera-headless-proxy/master/crawlera-headless-proxy.rb
+$ brew install https://raw.githubusercontent.com/scrapinghub/zyte-proxy-headless-proxy/master/zyte-proxy-headless-proxy.rb
 ```
 
 or if you want to have a development version:
 
 ```console
-$ brew install --HEAD https://raw.githubusercontent.com/scrapinghub/crawlera-headless-proxy/master/crawlera-headless-proxy.rb
+$ brew install --HEAD https://raw.githubusercontent.com/scrapinghub/zyte-proxy-headless-proxy/master/zyte-proxy-headless-proxy.rb
 ```
 
 
 #### Build binary
 
 ```console
-$ git clone https://github.com/scrapinghub/crawlera-headless-proxy.git
-$ cd crawlera-headless-proxy
+$ git clone https://github.com/scrapinghub/zyte-proxy-headless-proxy.git
+$ cd zyte-proxy-headless-proxy
 ```
 
 The next step is to execute make
@@ -118,7 +118,7 @@ The next step is to execute make
 $ make
 ```
 
-This will build binary `crawlera-headless-proxy`. If you are interested
+This will build binary `zyte-proxy-headless-proxy`. If you are interested
 in compiling for other OS/CPU architecture, please cross-compile:
 
 ```console
@@ -134,7 +134,7 @@ the process is finished.
 To download prebuilt container, please do the following:
 
 ```console
-$ docker pull scrapinghub/crawlera-headless-proxy
+$ docker pull scrapinghub/zyte-proxy-headless-proxy
 ```
 
 If you want to build this image locally, please do it with make (also,
@@ -144,7 +144,7 @@ be sure that [docker is installed](https://docs.docker.com/install/)).
 $ make docker
 ```
 
-This will build an image with tag `crawlera-headless-proxy`. It can
+This will build an image with tag `zyte-proxy-headless-proxy`. It can
 be configured by environment variables or command flags. Default
 configuration file path within a container is `/config.toml`.
 
@@ -161,10 +161,10 @@ $ make docker-slim
 ### Help output
 
 ```console
-$ crawlera-headless-proxy --help
-usage: crawlera-headless-proxy [<flags>]
+$ zyte-proxy-headless-proxy --help
+usage: zyte-proxy-headless-proxy [<flags>]
 
-Local proxy for Crawlera to be used with headless browsers.
+Local proxy for Zyte Smart Proxy Manager to be used with headless browsers.
 
 Flags:
       --help                 Show context-sensitive help (also try --help-long and --help-man).
@@ -183,18 +183,18 @@ Flags:
   -t, --no-auto-sessions     Disable automatic session management.
   -n, --concurrent-connections=CONCURRENT-CONNECTIONS
                              Number of concurrent connections.
-  -a, --api-key=API-KEY      API key to Crawlera.
-  -u, --crawlera-host=CRAWLERA-HOST
-                             Hostname of Crawlera. Default is proxy.crawlera.com.
-  -o, --crawlera-port=CRAWLERA-PORT
-                             Port of Crawlera. Default is 8010.
-  -v, --dont-verify-crawlera-cert
-                             Do not verify Crawlera own certificate.
-  -x, --xheader=XHEADER ...  Crawlera X-Headers.
+  -a, --api-key=API-KEY      API key to Zyte Smart Proxy Manager.
+  -u, --spm-host=SPM-HOST
+                             Hostname of Zyte Smart Proxy Manager. Default is proxy.zyte.com.
+  -o, --spm-port=SPM-PORT
+                             Port of Zyte Smart Proxy Manager. Default is 8011.
+  -v, --dont-verify-spm-cert
+                             Do not verify Zyte Smart Proxy Manager own certificate.
+  -x, --xheader=XHEADER ...  Zyte Smart Proxy Manager X-Headers.
   -k, --adblock-list=ADBLOCK-LIST ...
                              A list to requests to filter out (ADBlock compatible).
   -z, --direct-access-hostpath-regexps=DIRECT-ACCESS-HOSTPATH-REGEXPS ...
-                             A list of regexps for hostpath for direct access, bypassing Crawlera.
+                             A list of regexps for hostpath for direct access, bypassing Zyte Smart Proxy Manager.
       --version              Show application version.
 ```
 
@@ -205,11 +205,11 @@ it will start HTTP/HTTPS proxy on `localhost:3128`. The only thing you
 usually need to do is to propagate API key.
 
 ```console
-$ crawlera-headless-proxy -a myapikey
+$ zyte-proxy-headless-proxy -a myapikey
 ```
 
 This will start local HTTP/HTTPS proxy on `localhost:3128` and will proxy all
-requests to `proxy.crawlera.com:8010` with API key `myapikey`.
+requests to `proxy.zyte.com:8011` with API key `myapikey`.
 
 Also, it is possible to configure this tool using environment variables.
 Here is the complete table of configuration options and corresponding
@@ -217,23 +217,23 @@ environment variables.
 
 | *Description*                                                                    | *Environment variable*                | *Comandline parameter*                   | *Parameter in configuration file* | *Default value*      |
 |----------------------------------------------------------------------------------|---------------------------------------|------------------------------------------|-----------------------------------|----------------------|
-| Run in debug/verbose mode.                                                       | `CRAWLERA_HEADLESS_DEBUG`             | `-d`, `--debug`                          | `debug`                           | `false`              |
-| Which IP this tool should listen on (0.0.0.0 for all interfaces).                | `CRAWLERA_HEADLESS_BINDIP`            | `-b`, `--bind-ip`                        | `bind_ip`                         | `127.0.0.1`          |
-| Which port this tool should listen.                                              | `CRAWLERA_HEADLESS_BINDPORT`          | `-p`, `--bind-port`                      | `bind_port`                       | 3128                 |
-| Path to the configuration file.                                                  | `CRAWLERA_HEADLESS_CONFIG`            | `-c`, `--config`                         | -                                 |                      |
-| API key of Crawlera.                                                             | `CRAWLERA_HEADLESS_APIKEY`            | `-a`, `--api-key`                        | `api_key`                         |                      |
-| Hostname of Crawlera.                                                            | `CRAWLERA_HEADLESS_CHOST`             | `-u`, `--crawlera-host`                  | `crawlera_host`                   | `proxy.crawlera.com` |
-| Port of Crawlera.                                                                | `CRAWLERA_HEADLESS_CPORT`             | `-o`, `--crawlera-port`                  | `crawlera_port`                   | 8010                 |
-| Do not verify Crawlera own TLS certificate.                                      | `CRAWLERA_HEADLESS_DONTVERIFY`        | `-v`, `--dont-verify-crawlera-cert`      | `dont_verify_crawlera_cert`       | `false`              |
-| Path to own TLS CA certificate.                                                  | `CRAWLERA_HEADLESS_TLSCACERTPATH`     | `-l`, `--tls-ca-certificate`             | `tls_ca_certificate`              | <embeded>            |
-| Path to own TLS private key.                                                     | `CRAWLERA_HEADLESS_TLSPRIVATEKEYPATH` | `-r`, `--tls-private-key`                | `tls_private_key`                 | <embeded>            |
-| Disable automatic session management                                             | `CRAWLERA_HEADLESS_NOAUTOSESSIONS`    | `-t`, `--no-auto-sessions`               | `no_auto_sessions`                | `false`              |
-| Maximal ammount of concurrent connections to process                             | `CRAWLERA_HEADLESS_CONCURRENCY`       | `-n`, `--concurrent-connections`         | `concurrent_connections`          | 0                    |
-| Additional Crawlera X-Headers.                                                   | `CRAWLERA_HEADLESS_XHEADERS`          | `-x`, `--xheaders`                       | Section `xheaders`                |                      |
-| Adblock-compatible filter lists.                                                 | `CRAWLERA_HEADLESS_ADBLOCKLISTS`      | `-k`, `--adblock-list`                   | `adblock_lists`                   |                      |
-| Regular expressions for hostpath URL part for direct access, bypassing Crawlera. | `CRAWLERA_HEADLESS_DIRECTACCESS`      | `-z`, `--direct-access-hostpath-regexps` | `direct_access_hostpath_regexps`  |                      |
-| Which IP should proxy API listen on (default is `bind-ip` value).                | `CRAWLERA_HEADLESS_PROXYAPIIP`        | `-m`, `--proxy-api-ip`                   | `proxy_api_ip`                    | <same as `bind_ip`>  |
-| Which port proxy API should listen on.                                           | `CRAWLERA_HEADLESS_PROXYAPIPORT`      | `-w`, `--proxy-api-port`                 | `proxy_api_port`                  | 3130                 |
+| Run in debug/verbose mode.                                                       | `ZYTE_SPM_HEADLESS_DEBUG`             | `-d`, `--debug`                          | `debug`                           | `false`              |
+| Which IP this tool should listen on (0.0.0.0 for all interfaces).                | `ZYTE_SPM_HEADLESS_BINDIP`            | `-b`, `--bind-ip`                        | `bind_ip`                         | `127.0.0.1`          |
+| Which port this tool should listen.                                              | `ZYTE_SPM_HEADLESS_BINDPORT`          | `-p`, `--bind-port`                      | `bind_port`                       | 3128                 |
+| Path to the configuration file.                                                  | `ZYTE_SPM_HEADLESS_CONFIG`            | `-c`, `--config`                         | -                                 |                      |
+| API key of SPM.                                                                  | `ZYTE_SPM_HEADLESS_APIKEY`            | `-a`, `--api-key`                        | `api_key`                         |                      |
+| Hostname of SPM.                                                                 | `ZYTE_SPM_HEADLESS_CHOST`             | `-u`, `--spm-host`                       | `spm_host`                        | `proxy.zyte.com`     |
+| Port of SPM.                                                                     | `ZYTE_SPM_HEADLESS_CPORT`             | `-o`, `--spm-port`                       | `spm_port`                        | 8011                 |
+| Do not verify SPM own TLS certificate.                                           | `ZYTE_SPM_HEADLESS_DONTVERIFY`        | `-v`, `--dont-verify-spm-cert`           | `dont_verify_spm_cert`            | `false`              |
+| Path to own TLS CA certificate.                                                  | `ZYTE_SPM_HEADLESS_TLSCACERTPATH`     | `-l`, `--tls-ca-certificate`             | `tls_ca_certificate`              | <embeded>            |
+| Path to own TLS private key.                                                     | `ZYTE_SPM_HEADLESS_TLSPRIVATEKEYPATH` | `-r`, `--tls-private-key`                | `tls_private_key`                 | <embeded>            |
+| Disable automatic session management                                             | `ZYTE_SPM_HEADLESS_NOAUTOSESSIONS`    | `-t`, `--no-auto-sessions`               | `no_auto_sessions`                | `false`              |
+| Maximal ammount of concurrent connections to process                             | `ZYTE_SPM_HEADLESS_CONCURRENCY`       | `-n`, `--concurrent-connections`         | `concurrent_connections`          | 0                    |
+| Additional SPM X-Headers.                                                        | `ZYTE_SPM_HEADLESS_XHEADERS`          | `-x`, `--xheaders`                       | Section `xheaders`                |                      |
+| Adblock-compatible filter lists.                                                 | `ZYTE_SPM_HEADLESS_ADBLOCKLISTS`      | `-k`, `--adblock-list`                   | `adblock_lists`                   |                      |
+| Regular expressions for hostpath URL part for direct access, bypassing SPM.      | `ZYTE_SPM_HEADLESS_DIRECTACCESS`      | `-z`, `--direct-access-hostpath-regexps` | `direct_access_hostpath_regexps`  |                      |
+| Which IP should proxy API listen on (default is `bind-ip` value).                | `ZYTE_SPM_HEADLESS_PROXYAPIIP`        | `-m`, `--proxy-api-ip`                   | `proxy_api_ip`                    | <same as `bind_ip`>  |
+| Which port proxy API should listen on.                                           | `ZYTE_SPM_HEADLESS_PROXYAPIPORT`      | `-w`, `--proxy-api-port`                 | `proxy_api_port`                  | 3130                 |
 
 0 concurrent connections means unlimited. Embedded TLS key/certificate
 means that headless proxy will use ones from the repository.
@@ -246,7 +246,7 @@ own section. Let's express following command line in the configuration
 file:
 
 ```console
-$ crawlera-headless-proxy -b 0.0.0.0 -p 3129 -u proxy.crawlera.com -o 8010 -x profile=desktop -x cookies=disable
+$ zyte-proxy-headless-proxy -b 0.0.0.0 -p 3129 -u proxy.zyte.com -o 8011 -x profile=desktop -x cookies=disable
 ```
 
 Configuration file will look like:
@@ -254,8 +254,8 @@ Configuration file will look like:
 ```toml
 bind_ip = "0.0.0.0"
 bind_port = 3129
-crawlera_host = "proxy.crawlera.com"
-crawlera_port = 8010
+spm_host = "proxy.zyte.com"
+spm_port = 8011
 
 [xheaders]
 profile = "desktop"
@@ -275,20 +275,21 @@ this order (1 has max priority, 4 - minimal):
 ## Concurrency
 
 There is a limiter on maximal amount of concurrent connections
-`--concurrent-connections`. This is required because default Crawlera
-limits the number of concurrent connections based on the billing
-plan of the user. If the user exceeds this amount, Crawlera returns
-a response with status code 429. This can be rather irritating so
+`--concurrent-connections`. This is required because default Zyte Smart Proxy
+Manager limits the number of concurrent connections based on the billing
+plan of the user. If the user exceeds this amount, Zyte Smart Proxy Manager
+returns a response with status code 429. This can be rather irritating so
 there is internal limiter which is more friendly to the browsers. You
 need to set up a number of concurrent connections for your plan and
-crawlera-headless-proxy will throttle your requests before they will go
-to Crawlera. It won't send 429 back, it just holds excess requests.
+zyte-proxy-headless-proxy will throttle your requests before they will go
+to Zyte Smart Proxy Manager. It won't send 429 back, it just holds excess
+requests.
 
 
 ## Automatic session management
 
-Crawlera allows using sessions and sessions are natural if we are
-talking about browsers. Session binds a certain IP to some session ID so
+Zyte Smart Proxy Manager allows using sessions and sessions are natural if we
+are talking about browsers. Session binds a certain IP to some session ID so
 all requests will go through the same IP, in the same way as ordinary
 work with browser looks like. It can slow down your crawl but increase
 its quality for some websites.
@@ -316,11 +317,11 @@ timeout.
 
 ## Adblock list support
 
-crawlera-headless-proxy supports preventive filtering by;
+zyte-proxy-headless-proxy supports preventive filtering by;
 adblock-compatible filter lists like EasyList. If you start the tool
 with such lists, they are going to be downloaded and requests to
 trackers/advertising platforms will be filtered. This will save you a
-lot of throughput and requests passed to Crawlera.
+lot of throughput and requests passed to Zyte Smart Proxy Manager.
 
 If you do not pass any list, such filtering won't
 be enabled. The list we recommend to use is
@@ -332,17 +333,18 @@ be enabled. The list we recommend to use is
 
 ## Direct access
 
-Sometimes you want to save a capacity and execute requests bypassing
-Crawlera. These requests can include some static assets, text files or
-anything else where Crawlera is not necessary.
+Sometimes you want to save a capacity and execute requests bypassing Zyte Smart
+Proxy Manager. These requests can include some static assets, text files or
+anything else where Zyte Smart Proxy Manager is not necessary.
 
 You can specify a list of regular expressions which matches host + path
-parts of URL for direct access from headless proxy, ignoring Crawlera.
+parts of URL for direct access from headless proxy, ignoring Zyte Smart Proxy
+Manager.
 
 
 ## TLS keys
 
-Since crawlera-headless-proxy has to inject X-Headers into responses,
+Since zyte-proxy-headless-proxy has to inject X-Headers into responses,
 it works with your browser only by HTTP 1.1. Unfortunately, there is no
 clear way how to hijack HTTP2 connections. Also, since it is effectively
 MITM proxy, you need to use its own TLS certificate. This is hardcoded
@@ -365,7 +367,7 @@ self-signed certificate `ca.crt`.
 
 ## Proxy API
 
-crawlera-headless-proxy has its own HTTP Rest API which is bind to
+zyte-proxy-headless-proxy has its own HTTP Rest API which is bind to
 another port. Right now only one endpoint is supported.
 
 ### `GET /stats`
@@ -377,8 +379,8 @@ Example:
 ```json
 {
   "requests_number": 423,
-  "crawlera_requests": 426,
-  "crawlera_errors": 0,
+  "spm_requests": 426,
+  "spm_errors": 0,
   "all_errors": 6,
   "adblocked_requests": 0,
   "sessions_created": 4,
@@ -407,7 +409,7 @@ Example:
       "99": 3.729193071
     }
   },
-  "crawlera_times": {
+  "spm_times": {
     "average": 0.30196985308000035,
     "minimal": 3.1394e-05,
     "maxmimal": 3.750836014,
@@ -459,31 +461,31 @@ Here is the description of these stats:
 
 * `requests_number` - a number of requests managed by headless proxy.
      This includes all possible requests, not only those which were
-     sent to Crawlera.
-* `crawlera_requests` - a number of requests which were sent to Crawlera.
+     sent to Zyte Smart Proxy Manager.
+* `spm_requests` - a number of requests which were sent to Zyte Smart Proxy Manager.
      This also includes retries on session restoration etc.
 * `sessions_created` - how many sessions were created by headless
      proxy so far.
 * `clients_connected` - how many clients (requests) are connected to
      the headless proxy at this moment.
 * `clients_serving` - how many clients (requests) are doing requests
-     to Crawlera now.
+     to Zyte Smart Proxy Manager now.
 * `traffic` - an amount of traffic sent to clients in bytes.
      This metric does include headers and body sizes.
-* `crawlera_errors` - a number of responses where `X-Crawlera-Error`
+* `spm_errors` - a number of responses where `X-Crawlera-Error`
      header is set.
 * `all_errors` - a number of responses with errors (canceled,
-     timeouts and crawlera_errors).
+     timeouts and spm_errors).
 * `adblocked_requests` - a number of requests which were
      blocked by Adblock lists.
 *_`times` describes different time series (overall response time,
-     time spent in crawlera) etc and provide average(mean), min and
+     time spent in smart proxy manager) etc and provide average(mean), min and
      max values, standard deviation and histogram of percentiles.
      Time series are done in window mode, tracking only latest 3000 values.
 
-Please pay attention that usually requests_number and crawlera_requests
+Please pay attention that usually requests_number and spm_requests
 are different. This is because headless proxy filters adblock requests
-and also retries to recreate sessions which imply additional Crawlera
+and also retries to recreate sessions which imply additional Zyte Smart Proxy Manager
 requests. So, depending on the netloc proportion of these numbers can
 differ.
 
@@ -491,11 +493,11 @@ Also, `clients_serving <= clients_connected` because of rate limiting. You
 may consider client_serving as requests which pass rate limiter.
 
 
-## Crawlera X-Headers
+## Zyte Smart Proxy Manager X-Headers
 
-Crawlera is configured using the special headers, which usually are
-called x-headers (they have `X-` prefix in their name). You can find a
-[full list](https://doc.scrapinghub.com/crawlera.html#request-headers)
+Zyte Smart Proxy Manager is configured using the special headers, which usually
+are called x-headers (they have `X-` prefix in their name). You can find a
+[full list](https://docs.zyte.com/smart-proxy-manager-get-started.html#request-headers)
 of them in documentation.
 
 There are 2 different ways of providing these header to the headless proxy:
@@ -515,7 +517,7 @@ x-crawlera-profile = "desktop"
 or pass it via command line:
 
 ```console
-$ crawlera-headless-proxy ... -x x-crawlera-profile=desktop
+$ zyte-proxy-headless-proxy ... -x x-crawlera-profile=desktop
 ```
 
 but it makes no sense to use `X-Crawlera-` prefix all the time, please omit it.
@@ -528,7 +530,7 @@ profile = "desktop"
 or pass it via command line:
 
 ```console
-$ crawlera-headless-proxy ... -x profile=desktop
+$ zyte-proxy-headless-proxy ... -x profile=desktop
 ```
 
 
@@ -537,8 +539,8 @@ $ crawlera-headless-proxy ... -x profile=desktop
 ## curl
 
 ```console
-$ crawlera-headless-proxy -p 3128 -a "$MYAPIKEY" -x profile=desktop
-$ curl -x localhost:3128 -sLI https://scrapinghub.com
+$ zyte-proxy-headless-proxy -p 3128 -a "$MYAPIKEY" -x profile=desktop
+$ curl -x localhost:3128 -sLI https://zyte.com
 ```
 
 ## Selenium (Python)
@@ -546,13 +548,13 @@ $ curl -x localhost:3128 -sLI https://scrapinghub.com
 ```python
 from selenium import webdriver
 
-CRAWLERA_HEADLESS_PROXY = "localhost:3128"
+ZYTE_SPM_HEADLESS_PROXY = "localhost:3128"
 
 profile = webdriver.DesiredCapabilities.FIREFOX.copy()
 profile["proxy"] = {
-    "httpProxy": CRAWLERA_HEADLESS_PROXY,
-    "ftpProxy": CRAWLERA_HEADLESS_PROXY,
-    "sslProxy": CRAWLERA_HEADLESS_PROXY,
+    "httpProxy": ZYTE_SPM_HEADLESS_PROXY,
+    "ftpProxy": ZYTE_SPM_HEADLESS_PROXY,
+    "sslProxy": ZYTE_SPM_HEADLESS_PROXY,
     "noProxy": None,
     "proxyType": "MANUAL",
     "class": "org.openqa.selenium.Proxy",
@@ -560,5 +562,5 @@ profile["proxy"] = {
 }
 
 driver = webdriver.Remote("http://localhost:4444/wd/hub", profile)
-driver.get("https://scrapinghub.com")
+driver.get("https://zyte.com")
 ```

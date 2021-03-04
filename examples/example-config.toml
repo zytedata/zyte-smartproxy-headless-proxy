@@ -1,7 +1,7 @@
 bind_port = 3128
 bind_ip = "0.0.0.0"
-crawlera_port = 8010
-crawlera_host = "proxy.crawlera.com"
+spm_port = 8011
+spm_host = "proxy.zyte.com"
 api_key = "USER_API_KEY"
 adblock_lists = [
   "https://fanboy.co.nz/r/fanboy-ultimate.txt",
