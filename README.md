@@ -1,7 +1,7 @@
 # Zyte Smart Proxy Manager Headless Proxy
 
-[![Build Status](https://travis-ci.org/scrapinghub/zyte-proxy-headless-proxy.svg?branch=master)](https://travis-ci.org/scrapinghub/zyte-proxy-headless-proxy)
-[![Go Report Card](https://goreportcard.com/badge/github.com/scrapinghub/zyte-proxy-headless-proxy)](https://goreportcard.com/report/github.com/scrapinghub/zyte-proxy-headless-proxy)
+[![Build Status](https://travis-ci.org/zytedata/zyte-headless-proxy.svg?branch=master)](https://travis-ci.org/zytedata/zyte-headless-proxy)
+[![Go Report Card](https://goreportcard.com/badge/github.com/zytedata/zyte-headless-proxy)](https://goreportcard.com/report/github.com/zytedata/zyte-headless-proxy)
 
 Zyte Smart Proxy Manager Headless proxy is a proxy which main intent
 is to help users with headless browsers to use
@@ -95,21 +95,21 @@ If you use [HomeBrew](https://brew.sh) or
 proxy:
 
 ```console
-$ brew install https://raw.githubusercontent.com/scrapinghub/zyte-proxy-headless-proxy/master/zyte-proxy-headless-proxy.rb
+$ brew install https://raw.githubusercontent.com/zytedata/zyte-headless-proxy/master/zyte-headless-proxy.rb
 ```
 
 or if you want to have a development version:
 
 ```console
-$ brew install --HEAD https://raw.githubusercontent.com/scrapinghub/zyte-proxy-headless-proxy/master/zyte-proxy-headless-proxy.rb
+$ brew install --HEAD https://raw.githubusercontent.com/zytedata/zyte-headless-proxy/master/zyte-headless-proxy.rb
 ```
 
 
 #### Build binary
 
 ```console
-$ git clone https://github.com/scrapinghub/zyte-proxy-headless-proxy.git
-$ cd zyte-proxy-headless-proxy
+$ git clone https://github.com/zytedata/zyte-headless-proxy.git
+$ cd zyte-headless-proxy
 ```
 
 The next step is to execute make
@@ -118,7 +118,7 @@ The next step is to execute make
 $ make
 ```
 
-This will build binary `zyte-proxy-headless-proxy`. If you are interested
+This will build binary `zyte-headless-proxy`. If you are interested
 in compiling for other OS/CPU architecture, please cross-compile:
 
 ```console
@@ -134,7 +134,7 @@ the process is finished.
 To download prebuilt container, please do the following:
 
 ```console
-$ docker pull scrapinghub/zyte-proxy-headless-proxy
+$ docker pull zytedata/zyte-headless-proxy
 ```
 
 If you want to build this image locally, please do it with make (also,
@@ -144,7 +144,7 @@ be sure that [docker is installed](https://docs.docker.com/install/)).
 $ make docker
 ```
 
-This will build an image with tag `zyte-proxy-headless-proxy`. It can
+This will build an image with tag `zyte-headless-proxy`. It can
 be configured by environment variables or command flags. Default
 configuration file path within a container is `/config.toml`.
 
@@ -161,8 +161,8 @@ $ make docker-slim
 ### Help output
 
 ```console
-$ zyte-proxy-headless-proxy --help
-usage: zyte-proxy-headless-proxy [<flags>]
+$ zyte-headless-proxy --help
+usage: zyte-headless-proxy [<flags>]
 
 Local proxy for Zyte Smart Proxy Manager to be used with headless browsers.
 
@@ -205,7 +205,7 @@ it will start HTTP/HTTPS proxy on `localhost:3128`. The only thing you
 usually need to do is to propagate API key.
 
 ```console
-$ zyte-proxy-headless-proxy -a myapikey
+$ zyte-headless-proxy -a myapikey
 ```
 
 This will start local HTTP/HTTPS proxy on `localhost:3128` and will proxy all
@@ -246,7 +246,7 @@ own section. Let's express following command line in the configuration
 file:
 
 ```console
-$ zyte-proxy-headless-proxy -b 0.0.0.0 -p 3129 -u proxy.zyte.com -o 8011 -x profile=desktop -x cookies=disable
+$ zyte-headless-proxy -b 0.0.0.0 -p 3129 -u proxy.zyte.com -o 8011 -x profile=desktop -x cookies=disable
 ```
 
 Configuration file will look like:
@@ -281,7 +281,7 @@ plan of the user. If the user exceeds this amount, Zyte Smart Proxy Manager
 returns a response with status code 429. This can be rather irritating so
 there is internal limiter which is more friendly to the browsers. You
 need to set up a number of concurrent connections for your plan and
-zyte-proxy-headless-proxy will throttle your requests before they will go
+zyte-headless-proxy will throttle your requests before they will go
 to Zyte Smart Proxy Manager. It won't send 429 back, it just holds excess
 requests.
 
@@ -317,7 +317,7 @@ timeout.
 
 ## Adblock list support
 
-zyte-proxy-headless-proxy supports preventive filtering by;
+zyte-headless-proxy supports preventive filtering by;
 adblock-compatible filter lists like EasyList. If you start the tool
 with such lists, they are going to be downloaded and requests to
 trackers/advertising platforms will be filtered. This will save you a
@@ -344,7 +344,7 @@ Manager.
 
 ## TLS keys
 
-Since zyte-proxy-headless-proxy has to inject X-Headers into responses,
+Since zyte-headless-proxy has to inject X-Headers into responses,
 it works with your browser only by HTTP 1.1. Unfortunately, there is no
 clear way how to hijack HTTP2 connections. Also, since it is effectively
 MITM proxy, you need to use its own TLS certificate. This is hardcoded
@@ -367,7 +367,7 @@ self-signed certificate `ca.crt`.
 
 ## Proxy API
 
-zyte-proxy-headless-proxy has its own HTTP Rest API which is bind to
+zyte-headless-proxy has its own HTTP Rest API which is bind to
 another port. Right now only one endpoint is supported.
 
 ### `GET /stats`
@@ -517,7 +517,7 @@ x-crawlera-profile = "desktop"
 or pass it via command line:
 
 ```console
-$ zyte-proxy-headless-proxy ... -x x-crawlera-profile=desktop
+$ zyte-headless-proxy ... -x x-crawlera-profile=desktop
 ```
 
 but it makes no sense to use `X-Crawlera-` prefix all the time, please omit it.
@@ -530,7 +530,7 @@ profile = "desktop"
 or pass it via command line:
 
 ```console
-$ zyte-proxy-headless-proxy ... -x profile=desktop
+$ zyte-headless-proxy ... -x profile=desktop
 ```
 
 
@@ -539,7 +539,7 @@ $ zyte-proxy-headless-proxy ... -x profile=desktop
 ## curl
 
 ```console
-$ zyte-proxy-headless-proxy -p 3128 -a "$MYAPIKEY" -x profile=desktop
+$ zyte-headless-proxy -p 3128 -a "$MYAPIKEY" -x profile=desktop
 $ curl -x localhost:3128 -sLI https://zyte.com
 ```
 

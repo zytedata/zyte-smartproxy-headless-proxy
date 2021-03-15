@@ -1,4 +1,4 @@
-module github.com/scrapinghub/zyte-proxy-headless-proxy
+module github.com/zytedata/zyte-headless-proxy
 
 require (
 	github.com/9seconds/httransform v1.0.0

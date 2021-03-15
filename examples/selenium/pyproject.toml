@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "zyte-smart-proxy-manager-selenium-example"
 version = "0.1.0"
-description = "zyte-proxy-headless-proxy Selenium example"
+description = "zyte-headless-proxy Selenium example"
 authors = ["Zyte"]
 license = "MIT"
-homepage = "https://github.com/scrapinghub/zyte-proxy-headless-proxy"
-repository = "https://github.com/scrapinghub/zyte-proxy-headless-proxy.git"
-documentation = "https://github.com/scrapinghub/zyte-proxy-headless-proxy/blob/master/README.md"
+homepage = "https://github.com/zytedata/zyte-headless-proxy"
+repository = "https://github.com/zytedata/zyte-headless-proxy.git"
+documentation = "https://github.com/zytedata/zyte-headless-proxy/blob/master/README.md"
 
 [tool.poetry.dependencies]
 python = "^3.6"

@@ -7,9 +7,9 @@ import (
 
 	"github.com/9seconds/httransform"
 
-	"github.com/scrapinghub/zyte-proxy-headless-proxy/config"
-	"github.com/scrapinghub/zyte-proxy-headless-proxy/layers"
-	"github.com/scrapinghub/zyte-proxy-headless-proxy/stats"
+	"github.com/zytedata/zyte-headless-proxy/config"
+	"github.com/zytedata/zyte-headless-proxy/layers"
+	"github.com/zytedata/zyte-headless-proxy/stats"
 )
 
 func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Server, error) {
@@ -38,7 +38,7 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 		Logger:           &Logger{},
 		Metrics:          statsContainer,
 		Layers:           makeProxyLayers(conf, smpExecutor, statsContainer),
-		OrganizationName: "ScrapingHub",
+		OrganizationName: "Zyte",
 	}
 	if conf.Debug {
 		opts.TracerPool = httransform.NewTracerPool(func() httransform.Tracer {

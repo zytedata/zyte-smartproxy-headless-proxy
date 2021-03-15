@@ -20,7 +20,7 @@ const (
 	sessionAPITimeout         = 10 * time.Second
 	sessionTTL                = 5 * time.Minute
 
-	sessionUserAgent = "zyte-proxy-headless-proxy"
+	sessionUserAgent = "zyte-headless-proxy"
 )
 
 type sessionManager struct {

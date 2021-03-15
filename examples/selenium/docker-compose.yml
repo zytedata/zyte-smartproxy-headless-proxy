@@ -24,7 +24,7 @@ services:
       - /dev/shm:/dev/shm
 
   headless-proxy:
-    image: zyte-proxy-headless-proxy
+    image: zyte-headless-proxy
     networks:
       default:
         aliases:

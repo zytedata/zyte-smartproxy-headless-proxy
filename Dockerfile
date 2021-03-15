@@ -13,7 +13,7 @@ RUN set -x \
     make \
     upx
 
-ADD https://docs.zyte.com/_downloads/753f39eae366f4d8c42249b7b1246c29/zyte-proxy-ca.crt /usr/local/share/ca-certificates/zyte-proxy-ca.crt
+ADD https://docs.zyte.com/_static/zyte-proxy-ca.crt /usr/local/share/ca-certificates/zyte-proxy-ca.crt
 RUN set -x \
   && sha1sum /usr/local/share/ca-certificates/zyte-proxy-ca.crt | cut -f1 -d' ' | \
     while read -r sum _; do \
@@ -31,7 +31,7 @@ RUN set -x \
 ARG upx=
 RUN set -x \
   && if [ -n "$upx" ]; then \
-    upx --ultra-brute -qq ./zyte-proxy-headless-proxy; \
+    upx --ultra-brute -qq ./zyte-headless-proxy; \
   fi
 
 
@@ -40,7 +40,7 @@ RUN set -x \
 
 FROM scratch
 
-ENTRYPOINT ["/zyte-proxy-headless-proxy"]
+ENTRYPOINT ["/zyte-headless-proxy"]
 ENV ZYTE_SPM_HEADLESS_BINDIP=0.0.0.0 \
     ZYTE_SPM_HEADLESS_BINDPORT=3128 \
     ZYTE_SPM_HEADLESS_PROXYAPIIP=0.0.0.0 \
@@ -51,6 +51,6 @@ EXPOSE 3128 3130
 COPY --from=build-env \
   /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=build-env \
-  /app/zyte-proxy-headless-proxy \
+  /app/zyte-headless-proxy \
   /app/config.toml \
   /

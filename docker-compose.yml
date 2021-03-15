@@ -3,8 +3,8 @@
 
 version: "3.7"
 services:
-  zyte-proxy-headless-proxy:
-    image: zyte-proxy-headless-proxy
+  zyte-headless-proxy:
+    image: zyte-headless-proxy
     build: .
     deploy:
       restart_policy:

@@ -10,6 +10,6 @@ adblock_lists = [
   "https://s3.amazonaws.com/lists.disconnect.me/simple_malware.txt"
 ]
 
-[xheaders]
+[zyte_proxy_headers]
 cookies = "disable"
 profile = "desktop"

@@ -28,9 +28,9 @@ Now let's run headless proxy:
 $ python3 "$(which poetry)" run docker-compose up
 ```
 
-If this command will fail on absent `zyte-proxy-headless-proxy` image,
+If this command will fail on absent `zyte-headless-proxy` image,
 please build one (follow the instructions to
-[zyte-proxy-headless-proxy](https://github.com/scrapinghub/zyte-proxy-headless-proxy)
+[zyte-headless-proxy](https://github.com/zytedata/zyte-headless-proxy)
 project). If you need to provide your own API key to Zyte Smart Proxy Manager,
 please check `docker-compose.yml` and update the corresponding line to
 `headless-proxy` service.

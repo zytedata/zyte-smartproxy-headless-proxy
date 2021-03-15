@@ -4,7 +4,7 @@ import (
 	"github.com/9seconds/httransform"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/scrapinghub/zyte-proxy-headless-proxy/stats"
+	"github.com/zytedata/zyte-headless-proxy/stats"
 )
 
 const (

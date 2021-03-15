@@ -13,15 +13,15 @@ import (
 	log "github.com/sirupsen/logrus"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
-	"github.com/scrapinghub/zyte-proxy-headless-proxy/config"
-	"github.com/scrapinghub/zyte-proxy-headless-proxy/proxy"
-	"github.com/scrapinghub/zyte-proxy-headless-proxy/stats"
+	"github.com/zytedata/zyte-headless-proxy/config"
+	"github.com/zytedata/zyte-headless-proxy/proxy"
+	"github.com/zytedata/zyte-headless-proxy/stats"
 )
 
 var version = "dev" // nolint: gochecknoglobals
 
 var ( // nolint: gochecknoglobals
-	app = kingpin.New("zyte-proxy-headless-proxy",
+	app = kingpin.New("zyte-headless-proxy",
 		"Local proxy for Zyte Smart Proxy Manager to be used with headless browsers.")
 
 	debug = app.Flag("debug",

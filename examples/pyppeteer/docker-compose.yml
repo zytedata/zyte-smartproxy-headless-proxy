@@ -3,7 +3,7 @@
 version: "2"
 services:
   headless-proxy:
-    image: zyte-proxy-headless-proxy
+    image: zyte-headless-proxy
     ports:
       - 3128:3128
     environment:
