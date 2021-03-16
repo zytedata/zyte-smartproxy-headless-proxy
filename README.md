@@ -24,13 +24,13 @@ The biggest problem with headless browsers is their configuration:
    most popular way of bypassing this problem is to use Polipo which is,
    unfortunately, unsupported for a long time.
 2. Zyte Smart Proxy Manager uses
-   [X-Headers as configuration](https://docs.zyte.com/smart-proxy-manager-get-started.html#request-headers).
+   [X-Headers as configuration](https://docs.zyte.com/smart-proxy-manager.html#request-headers).
    To use this API with headless browsers, users have to install plugins or
    extensions in their browsers and configure them to propagate such headers
    to Zyte Smart Proxy Manager.
 3. Also, it is rather hard and complex to maintain best practices of using
    these headers. For example,
-   [support of Browser Profiles](https://docs.zyte.com/smart-proxy-manager-get-started.html#x-crawlera-profile)
+   [support of Browser Profiles](https://docs.zyte.com/smart-proxy-manager.html#x-crawlera-profile)
    requires to have a minimal possible set of headers. For example, it is
    recommended to remove `Accept` header by default. It is rather hard
    to do that using headless browsers API.
@@ -497,7 +497,7 @@ may consider client_serving as requests which pass rate limiter.
 
 Zyte Smart Proxy Manager is configured using the special headers, which usually
 are called x-headers (they have `X-` prefix in their name). You can find a
-[full list](https://docs.zyte.com/smart-proxy-manager-get-started.html#request-headers)
+[full list](https://docs.zyte.com/smart-proxy-manager.html#request-headers)
 of them in documentation.
 
 There are 2 different ways of providing these header to the headless proxy:

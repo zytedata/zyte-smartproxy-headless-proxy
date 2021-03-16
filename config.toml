@@ -24,7 +24,7 @@ dont_verify_spm_cert = false
 # management.
 #
 # Here is how to use Zyte Smart Proxy Manager and sessions:
-# https://docs.zyte.com/smart-proxy-manager-get-started.html#x-crawlera-session
+# https://docs.zyte.com/smart-proxy-manager/sessions.html#using-sessions-with-the-proxy-api
 #
 # ATTENTION!
 # If you want to have a better experience in session management, we would
@@ -120,7 +120,7 @@ adblock_lists = [
 # `Zyte-Proxy-Cookies` and `cookies` define the same header.
 #
 # A full list can be found here:
-# https://docs.zyte.com/smart-proxy-manager-get-started.html#request-headers
+# https://docs.zyte.com/smart-proxy-manager.html#request-headers
 [xheaders]
 # cookies = "disable"
 # profile = "desktop"
