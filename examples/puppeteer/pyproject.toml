@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "zyte-smart-proxy-manager-puppeteer-example"
+name = "zyte-smartproxy-headless-proxy-puppeteer-example"
 version = "0.1.0"
-description = "zyte-headless-proxy Puppeteer example"
+description = "zyte-smartproxy-headless-proxy Puppeteer example"
 authors = ["Zyte"]
 license = "MIT"
-homepage = "https://github.com/zytedata/zyte-headless-proxy"
-repository = "https://github.com/zytedata/zyte-headless-proxy.git"
-documentation = "https://github.com/zytedata/zyte-headless-proxy/blob/master/README.md"
+homepage = "https://github.com/zytedata/zyte-smartproxy-headless-proxy"
+repository = "https://github.com/zytedata/zyte-smartproxy-headless-proxy.git"
+documentation = "https://github.com/zytedata/zyte-smartproxy-headless-proxy/blob/master/README.md"
 
 [tool.poetry.dependencies]
 python = "^3.6"

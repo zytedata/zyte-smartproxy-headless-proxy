@@ -3,8 +3,8 @@
 version: "2"
 services:
   headless-proxy:
-    image: zyte-headless-proxy
+    image: zyte-smartproxy-headless-proxy
     ports:
       - 3128:3128
     environment:
-      ZYTE_SPM_HEADLESS_APIKEY: USER_API_KEY
+      ZYTE_SMARTPROXY_HEADLESS_PROXY_APIKEY: USER_API_KEY

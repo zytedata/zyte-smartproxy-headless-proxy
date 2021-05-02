@@ -1,7 +1,7 @@
 # Splash example
 
 This repository contains a simple example of how to work with
-[Splash](https://splash.readthedocs.io) and zyte-proxy-headless-proxy.
+[Splash](https://splash.readthedocs.io) and zyte-smartproxy-headless-proxy.
 
 To run this example, please follow [official
 instructions](https://poetry.eustace.io/docs/#installation) on how to

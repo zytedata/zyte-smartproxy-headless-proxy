@@ -14,21 +14,21 @@ import (
 // Config stores global configuration data of the application.
 type Config struct {
 	Debug                                bool     `toml:"debug"`
-	DoNotVerifySmartProxyManagerCert     bool     `toml:"dont_verify_spm_cert"`
+	DoNotVerifyZyteSmartProxyCert        bool     `toml:"dont_verify_zyte_smartproxy_cert"`
 	NoAutoSessions                       bool     `toml:"no_auto_sessions"`
 	ConcurrentConnections                int      `toml:"concurrent_connections"`
 	BindPort                             int      `toml:"bind_port"`
-	SmartProxyManagerPort                int      `toml:"spm_port"`
+	ZyteSmartProxyPort                   int      `toml:"zyte_smartproxy_port"`
 	ProxyAPIPort                         int      `toml:"proxy_api_port"`
 	BindIP                               string   `toml:"bind_ip"`
 	ProxyAPIIP                           string   `toml:"proxy_api_ip"`
 	APIKey                               string   `toml:"api_key"`
-	SmartProxyManagerHost                string   `toml:"spm_host"`
+	ZyteSmartProxyHost                   string   `toml:"zyte_smartproxy_host"`
 	TLSCaCertificate                     string   `toml:"tls_ca_certificate"`
 	TLSPrivateKey                        string   `toml:"tls_private_key"`
 	AdblockLists                         []string `toml:"adblock_lists"`
 	DirectAccessHostPathRegexps          []string `toml:"direct_access_hostpath_regexps"`
-	XHeaders                             map[string]string
+	ZyteSmartProxyHeaders                map[string]string
 }
 
 // Bind returns a string for the http.ListenAndServe based on config
@@ -37,12 +37,12 @@ func (c *Config) Bind() string {
 	return net.JoinHostPort(c.BindIP, strconv.Itoa(c.BindPort))
 }
 
-// SmartProxyManagerURL builds and returns URL to Zyte Smart Proxy Manager.
+// ZyteSmartProxyURL builds and returns URL to Zyte Smart Proxy Manager.
 // Basically, this is required  for http.ProxyURL to have embedded credentials etc.
-func (c *Config) SmartProxyManagerURL() string {
+func (c *Config) ZyteSmartProxyURL() string {
 	return fmt.Sprintf("http://%s:@%s",
 		c.APIKey,
-		net.JoinHostPort(c.SmartProxyManagerHost, strconv.Itoa(c.SmartProxyManagerPort)))
+		net.JoinHostPort(c.ZyteSmartProxyHost, strconv.Itoa(c.ZyteSmartProxyPort)))
 }
 
 // MaybeSetNoAutoSessions defines is it is required to enable automatic
@@ -51,7 +51,7 @@ func (c *Config) MaybeSetNoAutoSessions(value bool) {
 	c.NoAutoSessions = c.NoAutoSessions || value
 }
 
-// MaybeSetDebug enabled debug mode of zyte-proxy-headless-proxy (verbosity
+// MaybeSetDebug enabled debug mode of zyte-smartproxy-headless-proxy (verbosity
 // mostly). If given value is not defined (false) then changes nothing.
 func (c *Config) MaybeSetDebug(value bool) {
 	c.Debug = c.Debug || value
@@ -65,14 +65,14 @@ func (c *Config) MaybeSetConcurrentConnections(value int) {
 	}
 }
 
-// MaybeDoNotVerifySmartProxyManagerCert defines is it necessary to verify Zyte
+// MaybeDoNotVerifyZyteSmartProxyCert defines is it necessary to verify Zyte
 // Smart Proxy Manager TLS certificate. If given value is not defined (false)
 // then changes nothing.
-func (c *Config) MaybeDoNotVerifySmartProxyManagerCert(value bool) {
-	c.DoNotVerifySmartProxyManagerCert = c.DoNotVerifySmartProxyManagerCert || value
+func (c *Config) MaybeDoNotVerifyZyteSmartProxyCert(value bool) {
+	c.DoNotVerifyZyteSmartProxyCert = c.DoNotVerifyZyteSmartProxyCert || value
 }
 
-// MaybeSetBindIP sets an IP zyte-proxy-headless-proxy should listen on.
+// MaybeSetBindIP sets an IP zyte-smartproxy-headless-proxy should listen on.
 // If given value is not defined (0) then changes nothing.
 //
 // If you want to have a global access (which is not recommended) please
@@ -83,7 +83,7 @@ func (c *Config) MaybeSetBindIP(value net.IP) {
 	}
 }
 
-// MaybeSetBindPort sets a port zyte-proxy-headless-proxy should listen on.
+// MaybeSetBindPort sets a port zyte-smartproxy-headless-proxy should listen on.
 // If given value is not defined (0) then changes nothing.
 func (c *Config) MaybeSetBindPort(value int) {
 	if value > 0 {
@@ -91,7 +91,7 @@ func (c *Config) MaybeSetBindPort(value int) {
 	}
 }
 
-// MaybeSetProxyAPIPort sets a port for own API of zyte-proxy-headless-proxy.
+// MaybeSetProxyAPIPort sets a port for own API of zyte-smartproxy-headless-proxy.
 // If given value is not defined (0) then changes nothing.
 func (c *Config) MaybeSetProxyAPIPort(value int) {
 	if value > 0 {
@@ -99,7 +99,7 @@ func (c *Config) MaybeSetProxyAPIPort(value int) {
 	}
 }
 
-// MaybeSetProxyAPIIP sets an ip for own API of zyte-proxy-headless-proxy.
+// MaybeSetProxyAPIIP sets an ip for own API of zyte-smartproxy-headless-proxy.
 // If given value is not defined ("") then changes nothing.
 func (c *Config) MaybeSetProxyAPIIP(value net.IP) {
 	if value != nil {
@@ -115,20 +115,20 @@ func (c *Config) MaybeSetAPIKey(value string) {
 	}
 }
 
-// MaybeSetSmartProxyManagerHost sets a host of Zyte Smart Proxy Manager
+// MaybeSetZyteSmartProxyHost sets a host of Zyte Smart Proxy Manager
 // (usually it is 'proxy.zyte.com'). If given value is not defined ("") then
 // changes nothing.
-func (c *Config) MaybeSetSmartProxyManagerHost(value string) {
+func (c *Config) MaybeSetZyteSmartProxyHost(value string) {
 	if value != "" {
-		c.SmartProxyManagerHost = value
+		c.ZyteSmartProxyHost = value
 	}
 }
 
-// MaybeSetSmartProxyManagerPort a port Zyte Smart Proxy Manager is listening
+// MaybeSetZyteSmartProxyPort a port Zyte Smart Proxy Manager is listening
 // to (usually it is 8011). If given value is not defined (0) then changes nothing.
-func (c *Config) MaybeSetSmartProxyManagerPort(value int) {
+func (c *Config) MaybeSetZyteSmartProxyPort(value int) {
 	if value > 0 {
-		c.SmartProxyManagerPort = value
+		c.ZyteSmartProxyPort = value
 	}
 }
 
@@ -163,17 +163,17 @@ func (c *Config) MaybeSetDirectAccessHostPathRegexps(value []string) {
 	}
 }
 
-// SetXHeader sets a header value of Zyte Smart Proxy Manager X-Header. It is
-// actually allowed to pass values in both ways: with full name
+// SetZyteSmartProxyHeader sets a header value of Zyte Smart Proxy Manager
+// header. It is actually allowed to pass values in both ways: with full name
 // (x-crawlera-profile)  for example, and in the short form: just 'profile'.
 // This effectively the same.
-func (c *Config) SetXHeader(key, value string) {
+func (c *Config) SetZyteSmartProxyHeader(key, value string) {
 	key = strings.ToLower(key)
 	key = strings.TrimPrefix(key, "x-crawlera-")
 	key = strings.Title(key)
 	key = fmt.Sprintf("X-Crawlera-%s", key)
 
-	c.XHeaders[key] = value
+	c.ZyteSmartProxyHeaders[key] = value
 }
 
 // Parse processes incoming file handler (usually, an instance of *os.File)
@@ -193,11 +193,11 @@ func Parse(file io.Reader) (*Config, error) {
 		return nil, fmt.Errorf("cannot parse config file: %w", err)
 	}
 
-	xheaders := conf.XHeaders
-	conf.XHeaders = map[string]string{}
+	zyteSmartProxyHeaders := conf.ZyteSmartProxyHeaders
+	conf.ZyteSmartProxyHeaders = map[string]string{}
 
-	for k, v := range xheaders {
-		conf.SetXHeader(k, v)
+	for k, v := range zyteSmartProxyHeaders {
+		conf.SetZyteSmartProxyHeader(k, v)
 	}
 
 	return conf, nil
@@ -211,8 +211,8 @@ func NewConfig() *Config {
 		BindIP:       "127.0.0.1",
 		BindPort:     3128, // nolint: gomnd
 		ProxyAPIPort: 3129, // nolint: gomnd
-		SmartProxyManagerHost: "proxy.zyte.com",
-		SmartProxyManagerPort: 8011, // nolint: gomnd
-		XHeaders:     map[string]string{},
+		ZyteSmartProxyHost: "proxy.zyte.com",
+		ZyteSmartProxyPort: 8011, // nolint: gomnd
+		ZyteSmartProxyHeaders:     map[string]string{},
 	}
 }
