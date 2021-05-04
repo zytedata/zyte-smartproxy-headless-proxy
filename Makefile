@@ -1,5 +1,5 @@
 ROOT_DIR   := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-IMAGE_NAME := zyte-headless-proxy
+IMAGE_NAME := zyte-smartproxy-headless-proxy
 APP_NAME   := $(IMAGE_NAME)
 
 APP_DEPS           := certs.go

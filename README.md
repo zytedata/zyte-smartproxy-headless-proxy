@@ -184,13 +184,13 @@ Flags:
   -n, --concurrent-connections=CONCURRENT-CONNECTIONS
                              Number of concurrent connections.
   -a, --api-key=API-KEY      API key to Zyte Smart Proxy Manager.
-  -u, --zyte-smartproxy-host=SPM-HOST
+  -u, --zyte-smartproxy-host=HOST
                              Hostname of Zyte Smart Proxy Manager. Default is proxy.zyte.com.
-  -o, --zyte-smartproxy-port=SPM-PORT
+  -o, --zyte-smartproxy-port=PORT
                              Port of Zyte Smart Proxy Manager. Default is 8011.
   -v, --dont-verify-zyte-smartproxy-cert
                              Do not verify Zyte Smart Proxy Manager own certificate.
-  -h, --zyte-smartproxy-header=HEADER ...  Zyte Smart Proxy Manager header.
+  -x, --zyte-smartproxy-header=HEADER ...  Zyte Smart Proxy Manager header.
   -k, --adblock-list=ADBLOCK-LIST ...
                              A list to requests to filter out (ADBlock compatible).
   -z, --direct-access-hostpath-regexps=DIRECT-ACCESS-HOSTPATH-REGEXPS ...
@@ -215,25 +215,25 @@ Also, it is possible to configure this tool using environment variables.
 Here is the complete table of configuration options and corresponding
 environment variables.
 
-| *Description*                                                                    | *Environment variable*                             | *Comandline parameter*                     | *Parameter in configuration file*  | *Default value*      |
-|----------------------------------------------------------------------------------|----------------------------------------------------|--------------------------------------------|------------------------------------|----------------------|
-| Run in debug/verbose mode.                                                       | `ZYTE_SMARTPROXY_HEADLESS_PROXY_DEBUG`             | `-d`, `--debug`                            | `debug`                            | `false`              |
-| Which IP this tool should listen on (0.0.0.0 for all interfaces).                | `ZYTE_SMARTPROXY_HEADLESS_PROXY_BINDIP`            | `-b`, `--bind-ip`                          | `bind_ip`                          | `127.0.0.1`          |
-| Which port this tool should listen.                                              | `ZYTE_SMARTPROXY_HEADLESS_PROXY_BINDPORT`          | `-p`, `--bind-port`                        | `bind_port`                        | 3128                 |
-| Path to the configuration file.                                                  | `ZYTE_SMARTPROXY_HEADLESS_PROXY_CONFIG`            | `-c`, `--config`                           | -                                  |                      |
-| API key of SPM.                                                                  | `ZYTE_SMARTPROXY_HEADLESS_PROXY_APIKEY`            | `-a`, `--api-key`                          | `api_key`                          |                      |
-| Hostname of SPM.                                                                 | `ZYTE_SMARTPROXY_HEADLESS_PROXY_CHOST`             | `-u`, `--zyte-smartproxy-host`             | `zyte_smartproxy_host`             | `proxy.zyte.com`     |
-| Port of SPM.                                                                     | `ZYTE_SMARTPROXY_HEADLESS_PROXY_CPORT`             | `-o`, `--zyte-smartproxy-port`             | `zyte_smartproxy_port`             | 8011                 |
-| Do not verify SPM own TLS certificate.                                           | `ZYTE_SMARTPROXY_HEADLESS_PROXY_DONTVERIFY`        | `-v`, `--dont-verify-zyte-smartproxy-cert` | `dont_verify_zyte_smartproxy_cert` | `false`              |
-| Path to own TLS CA certificate.                                                  | `ZYTE_SMARTPROXY_HEADLESS_PROXY_TLSCACERTPATH`     | `-l`, `--tls-ca-certificate`               | `tls_ca_certificate`               | <embeded>            |
-| Path to own TLS private key.                                                     | `ZYTE_SMARTPROXY_HEADLESS_PROXY_TLSPRIVATEKEYPATH` | `-r`, `--tls-private-key`                  | `tls_private_key`                  | <embeded>            |
-| Disable automatic session management                                             | `ZYTE_SMARTPROXY_HEADLESS_PROXY_NOAUTOSESSIONS`    | `-t`, `--no-auto-sessions`                 | `no_auto_sessions`                 | `false`              |
-| Maximal ammount of concurrent connections to process                             | `ZYTE_SMARTPROXY_HEADLESS_PROXY_CONCURRENCY`       | `-n`, `--concurrent-connections`           | `concurrent_connections`           | 0                    |
-| Additional SPM X-Headers.                                                        | `ZYTE_SMARTPROXY_HEADLESS_PROXY_XHEADERS`          | `-h`, `--zyte-smartproxy-header`           | Section `zyte-smartproxy-headers`  |                      |
-| Adblock-compatible filter lists.                                                 | `ZYTE_SMARTPROXY_HEADLESS_PROXY_ADBLOCKLISTS`      | `-k`, `--adblock-list`                     | `adblock_lists`                    |                      |
-| Regular expressions for hostpath URL part for direct access, bypassing SPM.      | `ZYTE_SMARTPROXY_HEADLESS_PROXY_DIRECTACCESS`      | `-z`, `--direct-access-hostpath-regexps`   | `direct_access_hostpath_regexps`   |                      |
-| Which IP should proxy API listen on (default is `bind-ip` value).                | `ZYTE_SMARTPROXY_HEADLESS_PROXY_PROXYAPIIP`        | `-m`, `--proxy-api-ip`                     | `proxy_api_ip`                     | <same as `bind_ip`>  |
-| Which port proxy API should listen on.                                           | `ZYTE_SMARTPROXY_HEADLESS_PROXY_PROXYAPIPORT`      | `-w`, `--proxy-api-port`                   | `proxy_api_port`                   | 3130                 |
+| *Description*                                                                                    | *Environment variable*                                   | *Comandline parameter*                     | *Parameter in configuration file*  | *Default value*      |
+|--------------------------------------------------------------------------------------------------|----------------------------------------------------------|--------------------------------------------|------------------------------------|----------------------|
+| Run in debug/verbose mode.                                                                       | `ZYTE_SMARTPROXY_HEADLESS_PROXY_DEBUG`                   | `-d`, `--debug`                            | `debug`                            | `false`              |
+| Which IP this tool should listen on (0.0.0.0 for all interfaces).                                | `ZYTE_SMARTPROXY_HEADLESS_PROXY_BINDIP`                  | `-b`, `--bind-ip`                          | `bind_ip`                          | `127.0.0.1`          |
+| Which port this tool should listen.                                                              | `ZYTE_SMARTPROXY_HEADLESS_PROXY_BINDPORT`                | `-p`, `--bind-port`                        | `bind_port`                        | 3128                 |
+| Path to the configuration file.                                                                  | `ZYTE_SMARTPROXY_HEADLESS_PROXY_CONFIG`                  | `-c`, `--config`                           | -                                  |                      |
+| API key of Zyte Smart Proxy Manager.                                                             | `ZYTE_SMARTPROXY_HEADLESS_PROXY_APIKEY`                  | `-a`, `--api-key`                          | `api_key`                          |                      |
+| Hostname of Zyte Smart Proxy Manager.                                                            | `ZYTE_SMARTPROXY_HEADLESS_PROXY_ZYTE_SMARTPROXY_HOST`    | `-u`, `--zyte-smartproxy-host`             | `zyte_smartproxy_host`             | `proxy.zyte.com`     |
+| Port of Zyte Smart Proxy Manager.                                                                | `ZYTE_SMARTPROXY_HEADLESS_PROXY_ZYTE_SMARTPROXY_PORT`    | `-o`, `--zyte-smartproxy-port`             | `zyte_smartproxy_port`             | 8011                 |
+| Do not verify Zyte Smart Proxy Manager own TLS certificate.                                      | `ZYTE_SMARTPROXY_HEADLESS_PROXY_DONTVERIFY`              | `-v`, `--dont-verify-zyte-smartproxy-cert` | `dont_verify_zyte_smartproxy_cert` | `false`              |
+| Path to own TLS CA certificate.                                                                  | `ZYTE_SMARTPROXY_HEADLESS_PROXY_TLSCACERTPATH`           | `-l`, `--tls-ca-certificate`               | `tls_ca_certificate`               | <embeded>            |
+| Path to own TLS private key.                                                                     | `ZYTE_SMARTPROXY_HEADLESS_PROXY_TLSPRIVATEKEYPATH`       | `-r`, `--tls-private-key`                  | `tls_private_key`                  | <embeded>            |
+| Disable automatic session management                                                             | `ZYTE_SMARTPROXY_HEADLESS_PROXY_NOAUTOSESSIONS`          | `-t`, `--no-auto-sessions`                 | `no_auto_sessions`                 | `false`              |
+| Maximal ammount of concurrent connections to process                                             | `ZYTE_SMARTPROXY_HEADLESS_PROXY_CONCURRENCY`             | `-n`, `--concurrent-connections`           | `concurrent_connections`           | 0                    |
+| Additional Zyte Smart Proxy Manager headers.                                                     | `ZYTE_SMARTPROXY_HEADLESS_PROXY_ZYTE_SMARTPROXY_HEADERS` | `-x`, `--zyte-smartproxy-header`           | Section `zyte-smartproxy-headers`  |                      |
+| Adblock-compatible filter lists.                                                                 | `ZYTE_SMARTPROXY_HEADLESS_PROXY_ADBLOCKLISTS`            | `-k`, `--adblock-list`                     | `adblock_lists`                    |                      |
+| Regular expressions for hostpath URL part for direct access, bypassing Zyte Smart Proxy Manager. | `ZYTE_SMARTPROXY_HEADLESS_PROXY_DIRECTACCESS`            | `-z`, `--direct-access-hostpath-regexps`   | `direct_access_hostpath_regexps`   |                      |
+| Which IP should proxy API listen on (default is `bind-ip` value).                                | `ZYTE_SMARTPROXY_HEADLESS_PROXY_PROXYAPIIP`              | `-m`, `--proxy-api-ip`                     | `proxy_api_ip`                     | <same as `bind_ip`>  |
+| Which port proxy API should listen on.                                                           | `ZYTE_SMARTPROXY_HEADLESS_PROXY_PROXYAPIPORT`            | `-w`, `--proxy-api-port`                   | `proxy_api_port`                   | 3130                 |
 
 0 concurrent connections means unlimited. Embedded TLS key/certificate
 means that headless proxy will use ones from the repository.
@@ -257,7 +257,7 @@ bind_port = 3129
 zyte_smartproxy_host = "proxy.zyte.com"
 zyte_smartproxy_port = 8011
 
-[xheaders]
+[zyte_smartproxy_headers]
 profile = "desktop"
 cookies = "disable"
 ```
@@ -462,8 +462,9 @@ Here is the description of these stats:
 * `requests_number` - a number of requests managed by headless proxy.
      This includes all possible requests, not only those which were
      sent to Zyte Smart Proxy Manager.
-* `zyte_smartproxy_requests` - a number of requests which were sent to Zyte Smart Proxy Manager.
-     This also includes retries on session restoration etc.
+* `zyte_smartproxy_requests` - a number of requests which were sent to Zyte
+     Smart Proxy Manager. This also includes retries on session restoration
+     etc.
 * `sessions_created` - how many sessions were created by headless
      proxy so far.
 * `clients_connected` - how many clients (requests) are connected to
@@ -479,8 +480,8 @@ Here is the description of these stats:
 * `adblocked_requests` - a number of requests which were
      blocked by Adblock lists.
 *_`times` describes different time series (overall response time,
-     time spent in smart proxy manager) etc and provide average(mean), min and
-     max values, standard deviation and histogram of percentiles.
+     time spent in Zyte Smart Proxy Manager) etc and provide average(mean), min
+     and max values, standard deviation and histogram of percentiles.
      Time series are done in window mode, tracking only latest 3000 values.
 
 Please pay attention that usually requests_number and zyte_smartproxy_requests
@@ -510,7 +511,7 @@ header is `X-Crawlera-Profile`. So, user can add following line to the
 configuration:
 
 ```toml
-[xheaders]
+[zyte_smartproxy_headers]
 x-crawlera-profile = "desktop"
 ```
 
@@ -523,7 +524,7 @@ $ zyte-smartproxy-headless-proxy ... -x x-crawlera-profile=desktop
 but it makes no sense to use `X-Crawlera-` prefix all the time, please omit it.
 
 ```toml
-[xheaders]
+[zyte_smartproxy_headers]
 profile = "desktop"
 ```
 

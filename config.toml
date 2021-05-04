@@ -1,4 +1,4 @@
-# This is an example of configuration file for zyte-headless-proxy
+# This is an example of configuration file for zyte-smartproxy-headless-proxy
 # All options here are optional, basically to run the proxy all you
 # need is to provide API key. It is doable with environment variable
 # or command line parameter. But of course, it is settable with config.
@@ -12,7 +12,7 @@ debug = true
 # TLS certificate given by Zyte Smart Proxy Manager or not.
 #
 # This certificate is placed here:
-# https://doc.zyte.com/_static/zyte-proxy-ca.crt
+# https://doc.zyte.com/_static/zyte-smartproxy-ca.crt
 #
 # SHA1 checksum of this certificate is 5798e59f6f7ecad3c0e1284f42b07dcaa63fbd37
 dont_verify_spm_cert = false
@@ -42,22 +42,22 @@ no_auto_sessions = false
 # experience.
 concurrent_connections = 0
 
-# Which port zyte-headless-proxy should listen on. Usually people like to
+# Which port zyte-smartproxy-headless-proxy should listen on. Usually people like to
 # set it to 3128.
 bind_port = 3128
 
-# Which IP should zyte-headless-proxy to use. As usual, 0.0.0.0 helps
+# Which IP should zyte-smartproxy-headless-proxy to use. As usual, 0.0.0.0 helps
 # to listen on every interface.
 bind_ip = "127.0.0.1"
 
-# Which IP should zyte-headless-proxy proxy API listen on. Please
+# Which IP should zyte-smartproxy-headless-proxy proxy API listen on. Please
 # remember that this is not HTTP Proxy interface you should set in your
 # browser, this is internal thing for getting stats etc.
 #
 # Default (empty value) will set this IP to the same value as bind_ip.
 proxy_api_ip = ""
 
-# Which port zyte-headless-proxy proxy API should listen on. Please
+# Which port zyte-smartproxy-headless-proxy proxy API should listen on. Please
 # remember that his is not HTTP proxy interface port.
 proxy_api_port = 3130
 
@@ -72,11 +72,11 @@ spm_host = "proxy.zyte.com"
 api_key = ""
 
 # Path to your own TLS CA certificate if you do not like to use
-# own zyte-headless-proxy certificate.
+# own zyte-smartproxy-headless-proxy certificate.
 # tls_ca_certificate = "/path/to/your/own/ca/certificate"
 
 # Path to your own TLS CA certificate if you do not like to use
-# own zyte-headless-proxy private key.
+# own zyte-smartproxy-headless-proxy private key.
 # tls_private_key = "/path/to/your/own/tls/private/key"
 
 # The list of adblock-compatible filters.
