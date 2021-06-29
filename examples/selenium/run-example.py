@@ -7,13 +7,13 @@ from __future__ import print_function
 from selenium import webdriver
 
 
-CRAWLERA_HEADLESS_PROXY = "proxy:3128"
+ZYTE_SMARTPROXY_HEADLESS_PROXY = "proxy:3128"
 
 profile = webdriver.DesiredCapabilities.CHROME.copy()
 profile["proxy"] = {
-    "httpProxy": CRAWLERA_HEADLESS_PROXY,
-    "ftpProxy": CRAWLERA_HEADLESS_PROXY,
-    "sslProxy": CRAWLERA_HEADLESS_PROXY,
+    "httpProxy": ZYTE_SMARTPROXY_HEADLESS_PROXY,
+    "ftpProxy": ZYTE_SMARTPROXY_HEADLESS_PROXY,
+    "sslProxy": ZYTE_SMARTPROXY_HEADLESS_PROXY,
     "noProxy": None,
     "proxyType": "MANUAL",
     "class": "org.openqa.selenium.Proxy",

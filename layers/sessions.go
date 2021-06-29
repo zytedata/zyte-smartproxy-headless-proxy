@@ -6,21 +6,21 @@ import (
 	"github.com/9seconds/httransform"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/scrapinghub/crawlera-headless-proxy/config"
+	"github.com/zytedata/zyte-headless-proxy/config"
 )
 
 type SessionsLayer struct {
-	apiKey       string
-	crawleraHost string
-	crawleraPort int
-	clients      *sync.Map
-	executor     httransform.Executor
+	apiKey      string
+	smpHost     string
+	smpPort     int
+	clients     *sync.Map
+	executor    httransform.Executor
 }
 
 func (s *SessionsLayer) OnRequest(state *httransform.LayerState) error {
 	clientID := getClientID(state)
 	mgrRaw, loaded := s.clients.LoadOrStore(clientID,
-		newSessionManager(s.apiKey, s.crawleraHost, s.crawleraPort))
+		newSessionManager(s.apiKey, s.smpHost, s.smpPort))
 	mgr := mgrRaw.(*sessionManager)
 
 	if !loaded {
@@ -29,9 +29,9 @@ func (s *SessionsLayer) OnRequest(state *httransform.LayerState) error {
 
 	switch value := mgr.getSessionID(false).(type) {
 	case string:
-		state.RequestHeaders.SetString("X-Crawlera-Session", value)
+		state.RequestHeaders.SetString("Zyte-Proxy-Session", value)
 	case chan<- string:
-		state.RequestHeaders.SetString("X-Crawlera-Session", "create")
+		state.RequestHeaders.SetString("Zyte-Proxy-Session", "create")
 		state.Set(sessionChanContextType, value)
 	}
 
@@ -44,18 +44,18 @@ func (s *SessionsLayer) OnResponse(state *httransform.LayerState, err error) {
 		return
 	}
 
-	if !isCrawleraError(state) {
+	if !isSmartProxyManagerError(state) {
 		s.onResponseOK(state)
 		return
 	}
 
-	getMetrics(state).NewCrawleraError()
+	getMetrics(state).NewSmartProxyManagerError()
 	s.onResponseError(state)
 }
 
 func (s *SessionsLayer) onResponseOK(state *httransform.LayerState) {
 	if channelUntyped, ok := state.Get(sessionChanContextType); ok {
-		sessionID, _ := state.ResponseHeaders.GetString("x-crawlera-session")
+		sessionID, _ := state.ResponseHeaders.GetString("zyte-proxy-session")
 		channelUntyped.(chan<- string) <- sessionID
 		close(channelUntyped.(chan<- string))
 
@@ -76,7 +76,7 @@ func (s *SessionsLayer) onResponseError(state *httransform.LayerState) {
 		close(channelUntyped.(chan<- string))
 	}
 
-	brokenSessionID, _ := state.ResponseHeaders.GetString("x-crawlera-session")
+	brokenSessionID, _ := state.ResponseHeaders.GetString("zyte-proxy-session")
 	mgr.getBrokenSessionChan() <- brokenSessionID
 
 	switch value := mgr.getSessionID(true).(type) {
@@ -91,15 +91,15 @@ func (s *SessionsLayer) onResponseErrorRetryCreateSession(state *httransform.Lay
 	defer close(channel)
 
 	logger := getLogger(state)
-	state.Request.Header.Set("X-Crawlera-Session", "create")
+	state.Request.Header.Set("Zyte-Proxy-Session", "create")
 	s.executeRequest(state)
 
-	if isCrawleraResponseError(state) {
+	if isSmartProxyManagerResponseError(state) {
 		log.Warn("Could not obtain new session even after retry")
 		return
 	}
 
-	sessionID := string(state.Response.Header.Peek("X-Crawlera-Session"))
+	sessionID := string(state.Response.Header.Peek("Zyte-Proxy-Session"))
 	channel <- sessionID
 
 	getMetrics(state).NewSessionCreated()
@@ -110,14 +110,14 @@ func (s *SessionsLayer) onResponseErrorRetryCreateSession(state *httransform.Lay
 }
 
 func (s *SessionsLayer) onResponseErrorRetryWithSession(state *httransform.LayerState, mgr *sessionManager, sessionID string) {
-	state.Request.Header.Set("X-Crawlera-Session", sessionID)
+	state.Request.Header.Set("Zyte-Proxy-Session", sessionID)
 	logger := getLogger(state).WithFields(log.Fields{
 		"session-id": sessionID,
 	})
 
 	s.executeRequest(state)
 
-	if isCrawleraResponseError(state) {
+	if isSmartProxyManagerResponseError(state) {
 		mgr.getBrokenSessionChan() <- sessionID
 		logger.Info("Request failed even with new session ID after retry")
 
@@ -138,10 +138,10 @@ func (s *SessionsLayer) executeRequest(state *httransform.LayerState) {
 
 func NewSessionsLayer(conf *config.Config, executor httransform.Executor) httransform.Layer {
 	return &SessionsLayer{
-		crawleraHost: conf.CrawleraHost,
-		crawleraPort: conf.CrawleraPort,
-		apiKey:       conf.APIKey,
-		clients:      &sync.Map{},
-		executor:     executor,
+		smpHost:    conf.SmartProxyManagerHost,
+		smpPort:    conf.SmartProxyManagerPort,
+		apiKey:     conf.APIKey,
+		clients:    &sync.Map{},
+		executor:   executor,
 	}
 }

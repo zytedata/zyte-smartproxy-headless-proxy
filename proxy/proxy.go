@@ -7,38 +7,38 @@ import (
 
 	"github.com/9seconds/httransform"
 
-	"github.com/scrapinghub/crawlera-headless-proxy/config"
-	"github.com/scrapinghub/crawlera-headless-proxy/layers"
-	"github.com/scrapinghub/crawlera-headless-proxy/stats"
+	"github.com/zytedata/zyte-smartproxy-headless-proxy/config"
+	"github.com/zytedata/zyte-smartproxy-headless-proxy/layers"
+	"github.com/zytedata/zyte-smartproxy-headless-proxy/stats"
 )
 
 func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Server, error) {
-	crawleraURL, err := url.Parse(conf.CrawleraURL())
+	zyteSmartProxyURL, err := url.Parse(conf.ZyteSmartProxyURL())
 	if err != nil {
-		return nil, fmt.Errorf("incorrect crawlera url: %w", err)
+		return nil, fmt.Errorf("incorrect zyte smart proxy manager url: %w", err)
 	}
 
-	executor, err := httransform.MakeProxyChainExecutor(crawleraURL)
+	executor, err := httransform.MakeProxyChainExecutor(zyteSmartProxyURL)
 	if err != nil {
 		return nil, fmt.Errorf("cannot make proxy chain executor: %w", err)
 	}
 
-	crawleraExecutor := func(state *httransform.LayerState) {
+	zyteSmartProxyExecutor := func(state *httransform.LayerState) {
 		startTime := time.Now()
 
 		executor(state)
-		statsContainer.NewCrawleraTime(time.Since(startTime))
-		statsContainer.NewCrawleraRequest()
+		statsContainer.NewZyteSmartProxyTime(time.Since(startTime))
+		statsContainer.NewZyteSmartProxyRequest()
 	}
 
 	opts := httransform.ServerOpts{
 		CertCA:           []byte(conf.TLSCaCertificate),
 		CertKey:          []byte(conf.TLSPrivateKey),
-		Executor:         crawleraExecutor,
+		Executor:         zyteSmartProxyExecutor,
 		Logger:           &Logger{},
 		Metrics:          statsContainer,
-		Layers:           makeProxyLayers(conf, crawleraExecutor, statsContainer),
-		OrganizationName: "ScrapingHub",
+		Layers:           makeProxyLayers(conf, zyteSmartProxyExecutor, statsContainer),
+		OrganizationName: "Zyte",
 	}
 	if conf.Debug {
 		opts.TracerPool = httransform.NewTracerPool(func() httransform.Tracer {
@@ -54,7 +54,7 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 	return srv, nil
 }
 
-func makeProxyLayers(conf *config.Config, crawleraExecutor httransform.Executor, statsContainer *stats.Stats) []httransform.Layer {
+func makeProxyLayers(conf *config.Config, zyteSmartProxyExecutor httransform.Executor, statsContainer *stats.Stats) []httransform.Layer {
 	proxyLayers := []httransform.Layer{
 		layers.NewBaseLayer(statsContainer),
 	}
@@ -71,14 +71,14 @@ func makeProxyLayers(conf *config.Config, crawleraExecutor httransform.Executor,
 		proxyLayers = append(proxyLayers, layers.NewRateLimiterLayer(conf.ConcurrentConnections))
 	}
 
-	if len(conf.XHeaders) > 0 {
-		proxyLayers = append(proxyLayers, layers.NewXHeadersLayer(conf.XHeaders))
+	if len(conf.ZyteSmartProxyHeaders) > 0 {
+		proxyLayers = append(proxyLayers, layers.NewZyteSmartProxyHeadersLayer(conf.ZyteSmartProxyHeaders))
 	}
 
 	proxyLayers = append(proxyLayers, layers.NewRefererLayer())
 
 	if !conf.NoAutoSessions {
-		proxyLayers = append(proxyLayers, layers.NewSessionsLayer(conf, crawleraExecutor))
+		proxyLayers = append(proxyLayers, layers.NewSessionsLayer(conf, zyteSmartProxyExecutor))
 	}
 
 	return proxyLayers

@@ -11,7 +11,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/scrapinghub/crawlera-headless-proxy/config"
+	"github.com/zytedata/zyte-smartproxy-headless-proxy/config"
 )
 
 const (

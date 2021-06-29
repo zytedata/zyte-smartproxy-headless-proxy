@@ -19,12 +19,12 @@ type AdblockLayerTestSuite struct {
 
 func (suite *AdblockLayerTestSuite) SetupTest() {
 	suite.CommonLayerTestSuite.SetupTest()
-	gock.New("https://scrapinghub.com/testlist.txt").
+	gock.New("https://zyte.com/testlist.txt").
 		Get("/").
 		Reply(200).
 		BodyString("ad_code=")
 
-	suite.lists = []string{"https://scrapinghub.com/testlist.txt"}
+	suite.lists = []string{"https://zyte.com/testlist.txt"}
 	suite.layer = NewAdblockLayer(suite.lists).(*AdblockLayer)
 }
 
@@ -36,8 +36,8 @@ func (suite *AdblockLayerTestSuite) TestPass() {
 	time.Sleep(10 * time.Millisecond)
 	suite.True(suite.layer.loaded)
 
-	suite.state.RequestHeaders.SetString("host", "scrapinghub.com")
-	suite.state.Request.SetRequestURI("https://scrapinghub.com/testlist.txt")
+	suite.state.RequestHeaders.SetString("host", "zyte.com")
+	suite.state.Request.SetRequestURI("https://zyte.com/testlist.txt")
 	suite.Nil(suite.layer.OnRequest(suite.state))
 }
 
@@ -61,8 +61,8 @@ func (suite *AdblockLayerTestSuite) TestDontPass() {
 	time.Sleep(10 * time.Millisecond)
 	suite.True(suite.layer.loaded)
 
-	suite.state.RequestHeaders.SetString("host", "scrapinghub.com")
-	suite.state.Request.SetRequestURI("https://scrapinghub.com/testlist.txt/?ad_code=111")
+	suite.state.RequestHeaders.SetString("host", "zyte.com")
+	suite.state.Request.SetRequestURI("https://zyte.com/testlist.txt/?ad_code=111")
 	suite.Equal(suite.layer.OnRequest(suite.state), errAdblockedRequest)
 }
 

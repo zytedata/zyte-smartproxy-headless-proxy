@@ -13,9 +13,9 @@ RUN set -x \
     make \
     upx
 
-ADD https://doc.scrapinghub.com/_downloads/639adb203cdcb1249a5a7618d9f4fa96/crawlera-ca.crt /usr/local/share/ca-certificates/crawlera-ca.crt
+ADD https://docs.zyte.com/_static/zyte-proxy-ca.crt /usr/local/share/ca-certificates/zyte-proxy-ca.crt
 RUN set -x \
-  && sha1sum /usr/local/share/ca-certificates/crawlera-ca.crt | cut -f1 -d' ' | \
+  && sha1sum /usr/local/share/ca-certificates/zyte-proxy-ca.crt | cut -f1 -d' ' | \
     while read -r sum _; do \
       if [ "${sum}" != "5798e59f6f7ecad3c0e1284f42b07dcaa63fbd37" ]; then \
         echo "Incorrect CA certificate checksum ${sum}"; \
@@ -31,7 +31,7 @@ RUN set -x \
 ARG upx=
 RUN set -x \
   && if [ -n "$upx" ]; then \
-    upx --ultra-brute -qq ./crawlera-headless-proxy; \
+    upx --ultra-brute -qq ./zyte-headless-proxy; \
   fi
 
 
@@ -40,17 +40,17 @@ RUN set -x \
 
 FROM scratch
 
-ENTRYPOINT ["/crawlera-headless-proxy"]
-ENV CRAWLERA_HEADLESS_BINDIP=0.0.0.0 \
-    CRAWLERA_HEADLESS_BINDPORT=3128 \
-    CRAWLERA_HEADLESS_PROXYAPIIP=0.0.0.0 \
-    CRAWLERA_HEADLESS_PROXYAPIPORT=3130 \
-    CRAWLERA_HEADLESS_CONFIG=/config.toml
+ENTRYPOINT ["/zyte-headless-proxy"]
+ENV ZYTE_SPM_HEADLESS_BINDIP=0.0.0.0 \
+    ZYTE_SPM_HEADLESS_BINDPORT=3128 \
+    ZYTE_SPM_HEADLESS_PROXYAPIIP=0.0.0.0 \
+    ZYTE_SPM_HEADLESS_PROXYAPIPORT=3130 \
+    ZYTE_SPM_HEADLESS_CONFIG=/config.toml
 EXPOSE 3128 3130
 
 COPY --from=build-env \
   /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=build-env \
-  /app/crawlera-headless-proxy \
+  /app/zyte-headless-proxy \
   /app/config.toml \
   /

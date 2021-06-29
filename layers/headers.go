@@ -19,7 +19,7 @@ func (h *XHeadersLayer) OnRequest(state *httransform.LayerState) error {
 		state.RequestHeaders.SetString(k, v)
 	}
 
-	profile, ok := state.RequestHeaders.GetString("x-crawlera-profile")
+	profile, ok := state.RequestHeaders.GetString("zyte-proxy-profile")
 	if ok && (profile == "desktop" || profile == "mobile") {
 		for _, v := range headersProfileToRemove {
 			state.RequestHeaders.DeleteString(v)

@@ -1,29 +1,30 @@
-# This is an example of configuration file for crawlera-headless-proxy
+# This is an example of configuration file for zyte-smartproxy-headless-proxy
 # All options here are optional, basically to run the proxy all you
 # need is to provide API key. It is doable with environment variable
 # or command line parameter. But of course, it is settable with config.
 
 # Should we run this tool in debug mode or not. Basically, this makes
 # the tool more verbose on stderr.
-debug = false
+debug = true
 
-# This tool talks with Crawlera and Crawlera has its own TLS certificate
-# authority. This option defines if if we need to verify TLS certificate
-# given by Crawlera or not.
+# This tool talks with Zyte Smart Proxy Manager and Zyte Smart Proxy Manager has
+# its own TLS certificate authority. This option defines if if we need to verify
+# TLS certificate given by Zyte Smart Proxy Manager or not.
 #
 # This certificate is placed here:
-# https://doc.scrapinghub.com/_downloads/crawlera-ca.crt
+# https://doc.zyte.com/_static/zyte-smartproxy-ca.crt
 #
 # SHA1 checksum of this certificate is 5798e59f6f7ecad3c0e1284f42b07dcaa63fbd37
-dont_verify_crawlera_cert = false
+dont_verify_spm_cert = false
 
 # Do not use automatic session management.
-# Basically, Crawlera works better with browsers only if you use sessions. If
-# you want to implement your own session management, please keep this option
-# as 'true'. Usually you want to have automatic session management.
+# Basically, Zyte Smart Proxy Manager works better with browsers only if you
+# use sessions. If you want to implement your own session management, please
+# keep this option as 'true'. Usually you want to have automatic session
+# management.
 #
-# Here is how to use Crawlera and sessions:
-# https://doc.scrapinghub.com/crawlera.html#x-crawlera-session
+# Here is how to use Zyte Smart Proxy Manager and sessions:
+# https://docs.zyte.com/smart-proxy-manager/sessions.html#using-sessions-with-the-proxy-api
 #
 # ATTENTION!
 # If you want to have a better experience in session management, we would
@@ -36,52 +37,53 @@ no_auto_sessions = false
 # option to 0 (disable internal throttling).
 #
 # In case of this parameter > 0 headless proxy is going to throttle your
-# requests before Crawlera. This really help to avoid you the problems
-# of 429 errors if you exceed this number and brings better overall experience.
+# requests before Zyte Smart Proxy Manager. This really help to avoid you the
+# problems of 429 errors if you exceed this number and brings better overall
+# experience.
 concurrent_connections = 0
 
-# Which port crawlera-headless-proxy should listen on. Usually people like to
+# Which port zyte-smartproxy-headless-proxy should listen on. Usually people like to
 # set it to 3128.
 bind_port = 3128
 
-# Which IP should crawlera-headless-proxy to use. As usual, 0.0.0.0 helps
+# Which IP should zyte-smartproxy-headless-proxy to use. As usual, 0.0.0.0 helps
 # to listen on every interface.
 bind_ip = "127.0.0.1"
 
-# Which IP should crawlera-headless-proxy proxy API listen on. Please
+# Which IP should zyte-smartproxy-headless-proxy proxy API listen on. Please
 # remember that this is not HTTP Proxy interface you should set in your
 # browser, this is internal thing for getting stats etc.
 #
 # Default (empty value) will set this IP to the same value as bind_ip.
 proxy_api_ip = ""
 
-# Which port crawlera-headless-proxy proxy API should listen on. Please
+# Which port zyte-smartproxy-headless-proxy proxy API should listen on. Please
 # remember that his is not HTTP proxy interface port.
 proxy_api_port = 3130
 
-# Which port is Crawlera listen on. In 99.999% of cases it is 8010 and you
-# do not need to change that.
-crawlera_port = 8010
+# Which port is Zyte Smart Proxy Manager listen on. In 99.999% of cases it is
+# 8011 and you do not need to change that.
+spm_port = 8011
 
-# Which host is Crawlera placed on.
-crawlera_host = "proxy.crawlera.com"
+# Which host is Zyte Smart Proxy Manager placed on.
+spm_host = "proxy.zyte.com"
 
-# What is API key for accessing Crawlera.
+# What is API key for accessing Zyte Smart Proxy Manager.
 api_key = ""
 
 # Path to your own TLS CA certificate if you do not like to use
-# own crawlera-headless-proxy certificate.
+# own zyte-smartproxy-headless-proxy certificate.
 # tls_ca_certificate = "/path/to/your/own/ca/certificate"
 
 # Path to your own TLS CA certificate if you do not like to use
-# own crawlera-headless-proxy private key.
+# own zyte-smartproxy-headless-proxy private key.
 # tls_private_key = "/path/to/your/own/tls/private/key"
 
 # The list of adblock-compatible filters.
 # Usually you do not want to spend resources (and concurrent connetions) on
 # advertisment, different trackers and other spyware. If you want to filter
-# these requests before they even go to Crawlera, please specify the lists
-# here. They can be HTTP(S) links or file paths.
+# these requests before they even go to Zyte Smart Proxy Manager, please specify
+# the lists here. They can be HTTP(S) links or file paths.
 #
 # Here is documentation on how to build your own filter list:
 # https://adblockplus.org/en/filters
@@ -93,7 +95,7 @@ adblock_lists = [
 ]
 
 # A list of regular expressions to match hostpath part of URL for direct
-# access bypassing Crawlera.
+# access bypassing Zyte Smart Proxy Manager.
 #
 # Example: https://www.example.com/images/cat.png?foo=111&bar=lala#segment
 #
@@ -107,18 +109,18 @@ adblock_lists = [
 #   '.*?\.(?:txt|css|eot|gif|ico|jpe?g|js|less|mkv|mp4|mpe?g|png|ttf|webm|webp|woff2?)$'
 # ]
 
-# A list of Crawlera XHeaders to propagate to real Crawlera from this
-# headless proxy.
+# A list of Zyte Smart Proxy Manager XHeaders to propagate to real Zyte Smart
+# Proxy Manager from this headless proxy.
 #
 # As you are going to use headless browser, we would recommend you
-# to use at least X-Crawlera-Cookies:disable and X-Crawlera-Profile:desktop
+# to use at least Zyte-Proxy-Cookies:disable and Zyte-Proxy-Profile:desktop
 # headers.
 
 # You can speficy sucn headers in full and short form. For example,
-# `X-Crawlera-Cookies` and `cookies` define the same header.
+# `Zyte-Proxy-Cookies` and `cookies` define the same header.
 #
 # A full list can be found here:
-# https://doc.scrapinghub.com/crawlera.html#request-headers
+# https://docs.zyte.com/smart-proxy-manager.html#request-headers
 [xheaders]
 # cookies = "disable"
 # profile = "desktop"
