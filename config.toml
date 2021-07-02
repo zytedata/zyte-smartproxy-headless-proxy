@@ -86,10 +86,8 @@ api_key = ""
 # Here is documentation on how to build your own filter list:
 # https://adblockplus.org/en/filters
 adblock_lists = [
-  "https://fanboy.co.nz/r/fanboy-ultimate.txt",
-  "https://fanboy.co.nz/fanboy-antifonts.txt",
-  "https://fanboy.co.nz/fanboy-antifacebook.txt",
-  "https://s3.amazonaws.com/lists.disconnect.me/simple_malware.txt"
+  "https://easylist.to/easylist/easylist.txt",
+  "https://easylist.to/easylist/easyprivacy.txt"
 ]
 
 # A list of regular expressions to match hostpath part of URL for direct
@@ -103,15 +101,16 @@ adblock_lists = [
 # work, but '.*?cat.*?' - will.
 #
 # Regular expressions are case sensitive.
-# direct_access_hostpath_regexps = [
-#   '.*?\.(?:txt|css|eot|gif|ico|jpe?g|js|less|mkv|mp4|mpe?g|png|ttf|webm|webp|woff2?)$'
-# ]
+
+direct_access_hostpath_regexps = [
+  '.*?\.(?:txt|css|eot|gif|ico|jpe?g|js|less|mkv|mp4|mpe?g|png|ttf|webm|webp|woff2?)$'
+]
 
 # A list of Crawlera XHeaders to propagate to real Crawlera from this
 # headless proxy.
 #
 # As you are going to use headless browser, we would recommend you
-# to use at least X-Crawlera-Cookies:disable and X-Crawlera-Profile:desktop
+# to use at least X-Crawlera-Cookies:disable and X-Crawlera-Profile:pass
 # headers.
 
 # You can speficy sucn headers in full and short form. For example,
@@ -120,5 +119,6 @@ adblock_lists = [
 # A full list can be found here:
 # https://doc.scrapinghub.com/crawlera.html#request-headers
 [xheaders]
-# cookies = "disable"
-# profile = "desktop"
+no-bancheck = "1"
+profile = "pass"
+cookies = "disable"
