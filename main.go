@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
@@ -158,6 +159,8 @@ func main() {
 
 	go stats.RunStats(statsContainer, conf)
 
+	appendClientHeader(conf)
+
 	if crawleraProxy, err := proxy.NewProxy(conf, statsContainer); err == nil {
 		if ln, err2 := net.Listen("tcp", listen); err2 != nil {
 			log.Fatal(err2)
@@ -206,6 +209,13 @@ func getConfig() (*config.Config, error) {
 	}
 
 	return conf, nil
+}
+
+func appendClientHeader(conf *config.Config) (err error){
+	var clientVersion = strings.Split(version, " ")[0]
+	var clientHdr = fmt.Sprintf("zyte-smartproxy-headless-proxy/%s", clientVersion)
+	conf.SetXHeader("x-crawlera-client", clientHdr)
+	return nil
 }
 
 func initCertificates(conf *config.Config) (err error) {
