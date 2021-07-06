@@ -13,7 +13,7 @@ RUN set -x \
     make \
     upx
 
-ADD https://doc.scrapinghub.com/_downloads/639adb203cdcb1249a5a7618d9f4fa96/crawlera-ca.crt /usr/local/share/ca-certificates/crawlera-ca.crt
+ADD https://docs.zyte.com/_downloads/753f39eae366f4d8c42249b7b1246c29/zyte-proxy-ca.crt /usr/local/share/ca-certificates/crawlera-ca.crt
 RUN set -x \
   && sha1sum /usr/local/share/ca-certificates/crawlera-ca.crt | cut -f1 -d' ' | \
     while read -r sum _; do \
