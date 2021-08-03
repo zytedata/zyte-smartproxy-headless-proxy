@@ -3,7 +3,7 @@ package layers
 import (
 	"time"
 
-	"github.com/9seconds/httransform"
+	"github.com/9seconds/httransform/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 	"github.com/valyala/fasthttp"

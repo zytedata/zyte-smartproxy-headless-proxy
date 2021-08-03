@@ -1,6 +1,6 @@
 package layers
 
-import "github.com/9seconds/httransform"
+import "github.com/9seconds/httransform/v2/layers"
 
 var headersProfileToRemove = [5]string{
 	"accept",
@@ -14,25 +14,26 @@ type XHeadersLayer struct {
 	XHeaders map[string]string
 }
 
-func (h *XHeadersLayer) OnRequest(state *httransform.LayerState) error {
+func (h *XHeadersLayer) OnRequest(ctx *layers.Context) error {
 	for k, v := range h.XHeaders {
-		state.RequestHeaders.SetString(k, v)
+		ctx.RequestHeaders.Append(k, v)
 	}
 
-	profile, ok := state.RequestHeaders.GetString("x-crawlera-profile")
-	if ok && (profile == "desktop" || profile == "mobile") {
+	profile := ctx.RequestHeaders.GetLast("x-crawlera-profile").Value()
+	if (profile == "desktop" || profile == "mobile") {
 		for _, v := range headersProfileToRemove {
-			state.RequestHeaders.DeleteString(v)
+			ctx.RequestHeaders.Remove(v)
 		}
 	}
 
 	return nil
 }
 
-func (h *XHeadersLayer) OnResponse(_ *httransform.LayerState, _ error) {
+func (h *XHeadersLayer) OnResponse(_ *layers.Context, err error) error {
+	return err
 }
 
-func NewXHeadersLayer(xheaders map[string]string) httransform.Layer {
+func NewXHeadersLayer(xheaders map[string]string) layers.Layer {
 	return &XHeadersLayer{
 		XHeaders: xheaders,
 	}

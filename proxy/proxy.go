@@ -5,7 +5,8 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/9seconds/httransform"
+	"github.com/9seconds/httransform/v2"
+	"github.com/9seconds/httransform/v2/layers"
 
 	"github.com/scrapinghub/crawlera-headless-proxy/config"
 	"github.com/scrapinghub/crawlera-headless-proxy/layers"
@@ -54,7 +55,7 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 	return srv, nil
 }
 
-func makeProxyLayers(conf *config.Config, crawleraExecutor httransform.Executor, statsContainer *stats.Stats) []httransform.Layer {
+func makeProxyLayers(conf *config.Config, crawleraExecutor httransform.Executor, statsContainer *stats.Stats) []layers.Layer {
 	proxyLayers := []httransform.Layer{
 		layers.NewBaseLayer(statsContainer),
 	}
