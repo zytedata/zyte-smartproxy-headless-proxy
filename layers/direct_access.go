@@ -4,8 +4,8 @@ import (
 	"errors"
 	"regexp"
 
-	log "github.com/sirupsen/logrus"
-	"github.com/valyala/fasthttp"
+//	log "github.com/sirupsen/logrus"
+//	"github.com/valyala/fasthttp"
 
 	"github.com/9seconds/httransform/v2/layers"
 	"github.com/9seconds/httransform/v2/executor"
