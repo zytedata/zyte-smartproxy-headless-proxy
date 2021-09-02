@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
@@ -212,7 +211,7 @@ func getConfig() (*config.Config, error) {
 }
 
 func appendClientHeader(conf *config.Config) (err error){
-	var clientVersion = strings.Split(version, " ")[0]
+	var clientVersion = "1"
 	var clientHdr = fmt.Sprintf("zyte-smartproxy-headless-proxy/%s", clientVersion)
 	conf.SetXHeader("x-crawlera-client", clientHdr)
 	return nil
