@@ -16,7 +16,7 @@ const (
 )
 
 func isCrawleraError(ctx *layers.Context) bool {
-	if ctx.ResponseHeaders.GetLast("x-crawlera-error") == nil {
+	if ctx.ResponseHeaders.GetLast("x-crawlera-error") != nil {
 		return true
 	}
 

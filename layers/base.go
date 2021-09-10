@@ -24,7 +24,7 @@ func (b *BaseLayer) OnRequest(ctx *layers.Context) error {
 	logger := log.WithFields(log.Fields{
 		"client_id":   clientID,
 		"request_id":  ctx.RequestID,
-		"remote_addr": ctx.RemoteAddr,
+		"remote_addr": ctx.RemoteAddr(),
 		"method":      string(ctx.Request().Header.Method()),
 		"url":         string(ctx.Request().URI().FullURI()),
 	})
