@@ -1,18 +1,17 @@
 package proxy
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"os"
 	"os/signal"
-	"context"
 	"syscall"
 
 	"github.com/9seconds/httransform/v2"
-	"github.com/9seconds/httransform/v2/auth"
-	"github.com/9seconds/httransform/v2/layers"
 	"github.com/9seconds/httransform/v2/dialers"
 	"github.com/9seconds/httransform/v2/executor"
+	"github.com/9seconds/httransform/v2/layers"
 
 	"github.com/scrapinghub/crawlera-headless-proxy/config"
 	customs "github.com/scrapinghub/crawlera-headless-proxy/layers"
@@ -30,23 +29,22 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 		}
 	}()
 
-	crawleraURL, err := url.Parse(conf.CrawleraURL())
+	_, err := url.Parse(conf.CrawleraURL())
 	if err != nil {
 		return nil, fmt.Errorf("incorrect crawlera url: %w", err)
 	}
 
 	dialer, err := dialers.DialerFromURL(dialers.Opts{}, conf.CrawleraURL())
+	if err != nil {
+		return nil, fmt.Errorf("dialer error: %w", err)
+	}
 	exe := executor.MakeDefaultExecutor(dialer)
-	pass, _ := crawleraURL.User.Password()
 
 	opts := httransform.ServerOpts{
 		Layers:        makeProxyLayers(conf, exe, statsContainer),
 		Executor:      exe,
 		TLSCertCA:     []byte(conf.TLSCaCertificate),
 		TLSPrivateKey: []byte(conf.TLSPrivateKey),
-		Authenticator: auth.NewBasicAuth(map[string]string{
-			crawleraURL.User.Username(): pass,
-		}),
 	}
 	/*if conf.Debug {
 		opts.TracerPool = httransform.NewTracerPool(func() httransform.Tracer {
@@ -64,6 +62,7 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 
 func makeProxyLayers(conf *config.Config, exe executor.Executor, statsContainer *stats.Stats) []layers.Layer {
 	proxyLayers := []layers.Layer{
+		customs.NewAuthLayer(conf.APIKey),
 		customs.NewBaseLayer(statsContainer),
 	}
 
