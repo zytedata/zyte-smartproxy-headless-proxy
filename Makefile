@@ -3,7 +3,7 @@ IMAGE_NAME := crawlera-headless-proxy
 APP_NAME   := $(IMAGE_NAME)
 
 APP_DEPS           := certs.go
-CC_BINARIES        := $(shell bash -c "echo -n $(APP_NAME)-{linux,windows,darwin,freebsd,openbsd}-{386,amd64} $(APP_NAME)-linux-{arm,arm64}")
+CC_BINARIES        := $(shell bash -c "echo -n $(APP_NAME)-{linux,windows,freebsd,openbsd,netbsd}-{386,amd64} $(APP_NAME)-linux-{arm,arm64} $(APP_NAME)-darwin-{arm64,amd64}")
 VERSION_GO         := $(shell go version)
 VERSION_DATE       := $(shell date -Ru)
 VERSION_TAG        := $(shell git describe --tags --always)
