@@ -1,9 +1,9 @@
-# Crawlera Headless Proxy
+# Zyte SmartProxy (formerly Crawlera) Headless Proxy
 
 [![Build Status](https://travis-ci.org/scrapinghub/crawlera-headless-proxy.svg?branch=master)](https://travis-ci.org/scrapinghub/crawlera-headless-proxy)
 [![Go Report Card](https://goreportcard.com/badge/github.com/scrapinghub/crawlera-headless-proxy)](https://goreportcard.com/report/github.com/scrapinghub/crawlera-headless-proxy)
 
-Crawlera Headless proxy is a proxy which main intent
+Zyte SmartProxy (formerly Crawlera) Headless Proxy is a proxy which main intent
 is to help users with headless browsers to use
 [Crawlera](https://scrapinghub.com/crawlera). This
 includes different implementations of headless browsers
