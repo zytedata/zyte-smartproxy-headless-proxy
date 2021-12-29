@@ -1,17 +1,16 @@
 package layers
 
 import (
-	"errors"
 	"regexp"
 
-//	log "github.com/sirupsen/logrus"
-//	"github.com/valyala/fasthttp"
-
-	"github.com/9seconds/httransform/v2/layers"
+	"github.com/9seconds/httransform/v2/dialers"
+	"github.com/9seconds/httransform/v2/errors"
 	"github.com/9seconds/httransform/v2/executor"
+	"github.com/9seconds/httransform/v2/layers"
+	log "github.com/sirupsen/logrus"
 )
 
-var errDirectAccess = errors.New("direct access to the URL")
+var errDirectAccess = errors.Annotate(nil, "direct access to the URL", "direct_executor", 0)
 
 type DirectAccessLayer struct {
 	rules    []*regexp.Regexp
@@ -36,13 +35,21 @@ func (d *DirectAccessLayer) OnRequest(ctx *layers.Context) error {
 
 func (d *DirectAccessLayer) OnResponse(ctx *layers.Context, err error) error {
 	if err == errDirectAccess {
-		/*httransform.HTTPExecutor(state)
+		if err := ctx.RequestHeaders.Push(); err != nil {
+			return errors.Annotate(err, "cannot sync request headers", "direct_executor", 0)
+		}
 
-		if err := httransform.ParseHeaders(state.ResponseHeaders, state.Response.Header.Header()); err != nil {
-			logger := getLogger(state)
-			logger.WithFields(log.Fields{"err": err}).Debug("Cannot process response")
-			httransform.MakeSimpleResponse(state.Response, "Malformed response headers", fasthttp.StatusBadRequest)
-		}*/
+		if err := d.executor(ctx); err != nil {
+			return errors.Annotate(err, "cannot execute a direct request", "direct_executor", 0)
+		}
+
+		if err := ctx.ResponseHeaders.Pull(); err != nil {
+			return errors.Annotate(err, "cannot read response headers", "direct_executor", 0)
+		}
+
+		logger := getLogger(ctx)
+		logger.WithFields(log.Fields{}).Debug("Request was direct accessed")
+		return nil
 	}
 	return err
 }
@@ -55,6 +62,6 @@ func NewDirectAccessLayer(regexps []string) layers.Layer {
 
 	return &DirectAccessLayer{
 		rules:    rules,
-		//executor: httransform.MakeStreamingReuseHTTPClient(),
+		executor: executor.MakeDefaultExecutor(dialers.NewBase(dialers.Opts{})),
 	}
 }

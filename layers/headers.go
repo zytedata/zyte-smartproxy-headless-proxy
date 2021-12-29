@@ -16,11 +16,12 @@ type XHeadersLayer struct {
 
 func (h *XHeadersLayer) OnRequest(ctx *layers.Context) error {
 	for k, v := range h.XHeaders {
-		ctx.RequestHeaders.Append(k, v)
+		ctx.RequestHeaders.Set(k, v, true)
 	}
 
 	profile := ctx.RequestHeaders.GetLast("x-crawlera-profile").Value()
-	if (profile == "desktop" || profile == "mobile") {
+	switch profile {
+	case "desktop", "mobile":
 		for _, v := range headersProfileToRemove {
 			ctx.RequestHeaders.Remove(v)
 		}

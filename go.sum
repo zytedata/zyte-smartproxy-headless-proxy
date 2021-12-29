@@ -1,5 +1,5 @@
-github.com/9seconds/httransform/v2 v2.0.5 h1:NQm6VQVMJQMUnxSO7HXEV0h1bMtd4tZYfuNKmdVuiFM=
-github.com/9seconds/httransform/v2 v2.0.5/go.mod h1:MqDAJ1IE1BRvERusH0TP4erWTekHCmACr86TuLKec8Y=
+github.com/9seconds/httransform/v2 v2.0.6-0.20211227144656-7176b749109b h1:WqLJznIuAqCGu3lcbno/9Fvp/VirwvDWzy74tx9fuIQ=
+github.com/9seconds/httransform/v2 v2.0.6-0.20211227144656-7176b749109b/go.mod h1:MqDAJ1IE1BRvERusH0TP4erWTekHCmACr86TuLKec8Y=
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/OneOfOne/xxhash v1.2.8 h1:31czK/TI9sNkxIKfaUfGlU47BAxQ0ztGgd9vPyqimf8=

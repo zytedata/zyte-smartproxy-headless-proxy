@@ -3,8 +3,9 @@ package layers
 import (
 	"sync"
 
-	"github.com/9seconds/httransform/v2/layers"
+	"github.com/9seconds/httransform/v2/errors"
 	"github.com/9seconds/httransform/v2/executor"
+	"github.com/9seconds/httransform/v2/layers"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/scrapinghub/crawlera-headless-proxy/config"
@@ -51,8 +52,7 @@ func (s *SessionsLayer) OnResponse(ctx *layers.Context, err error) error {
 	}
 
 	getMetrics(ctx).NewCrawleraError()
-	s.onResponseError(ctx)
-	return err
+	return s.onResponseError(ctx)
 }
 
 func (s *SessionsLayer) onResponseOK(ctx *layers.Context) {
@@ -69,7 +69,7 @@ func (s *SessionsLayer) onResponseOK(ctx *layers.Context) {
 	}
 }
 
-func (s *SessionsLayer) onResponseError(ctx *layers.Context) {
+func (s *SessionsLayer) onResponseError(ctx *layers.Context) error {
 	clientID := getClientID(ctx)
 	mgrRaw, _ := s.clients.Load(clientID)
 	mgr := mgrRaw.(*sessionManager)
@@ -83,22 +83,23 @@ func (s *SessionsLayer) onResponseError(ctx *layers.Context) {
 
 	switch value := mgr.getSessionID(true).(type) {
 	case chan<- string:
-		s.onResponseErrorRetryCreateSession(ctx, value)
+		return s.onResponseErrorRetryCreateSession(ctx, value)
 	case string:
-		s.onResponseErrorRetryWithSession(ctx, mgr, value)
+		return s.onResponseErrorRetryWithSession(ctx, mgr, value)
 	}
+	return errors.Annotate(nil, "Unexpected error in onResponseError", "session_manager", 0)
 }
 
-func (s *SessionsLayer) onResponseErrorRetryCreateSession(ctx *layers.Context, channel chan<- string) {
+func (s *SessionsLayer) onResponseErrorRetryCreateSession(ctx *layers.Context, channel chan<- string) error {
 	defer close(channel)
 
 	logger := getLogger(ctx)
 	ctx.RequestHeaders.Set("X-Crawlera-Session", "create", true)
-	s.executeRequest(ctx)
+	err := s.executeRequest(ctx)
 
-	if isCrawleraResponseError(ctx) {
+	if err != nil || isCrawleraResponseError(ctx) {
 		log.Warn("Could not obtain new session even after retry")
-		return
+		return errors.Annotate(err, "Could not obtain new session even after retry", "session_manager", 0)
 	}
 
 	sessionID := ctx.ResponseHeaders.GetLast("X-Crawlera-Session").Value()
@@ -109,33 +110,42 @@ func (s *SessionsLayer) onResponseErrorRetryCreateSession(ctx *layers.Context, c
 	logger.WithFields(log.Fields{
 		"session-id": sessionID,
 	}).Info("Got fresh session after retry.")
+
+	return nil
 }
 
-func (s *SessionsLayer) onResponseErrorRetryWithSession(ctx *layers.Context, mgr *sessionManager, sessionID string) {
+func (s *SessionsLayer) onResponseErrorRetryWithSession(ctx *layers.Context, mgr *sessionManager, sessionID string) error {
 	ctx.RequestHeaders.Set("X-Crawlera-Session", sessionID, true)
 	logger := getLogger(ctx).WithFields(log.Fields{
 		"session-id": sessionID,
 	})
 
-	s.executeRequest(ctx)
+	err := s.executeRequest(ctx)
 
-	if isCrawleraResponseError(ctx) {
+	if err != nil || isCrawleraResponseError(ctx) {
 		mgr.getBrokenSessionChan() <- sessionID
 		logger.Info("Request failed even with new session ID after retry")
-
-		return
+		return errors.Annotate(err, "Request failed even with new session ID after retry", "session_manager", 0)
 	}
 
 	logger.Info("Request succeed with new session ID after retry")
+	return nil
 }
 
-func (s *SessionsLayer) executeRequest(ctx *layers.Context) {
-	//ctx.Response.Reset()
-	//ctx.Response.Header.DisableNormalizing()
-	s.executor(ctx)
+func (s *SessionsLayer) executeRequest(ctx *layers.Context) error {
+	if err := ctx.RequestHeaders.Push(); err != nil {
+		return errors.Annotate(err, "cannot sync request headers", "session_manager", 0)
+	}
 
-	//ctx.ResponseHeaders.Clear()
-	//httransform.ParseHeaders(ctx.ResponseHeaders, ctx.Response.Header.Header()) // nolint: errcheck
+	if err := s.executor(ctx); err != nil {
+		return errors.Annotate(err, "cannot execute a request", "session_manager", 0)
+	}
+
+	if err := ctx.ResponseHeaders.Pull(); err != nil {
+		return errors.Annotate(err, "cannot read response headers", "session_manager", 0)
+	}
+
+	return nil
 }
 
 func NewSessionsLayer(conf *config.Config, executor executor.Executor) layers.Layer {

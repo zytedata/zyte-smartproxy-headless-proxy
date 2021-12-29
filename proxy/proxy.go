@@ -4,9 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/9seconds/httransform/v2"
 	"github.com/9seconds/httransform/v2/dialers"
@@ -18,17 +15,7 @@ import (
 	"github.com/scrapinghub/crawlera-headless-proxy/stats"
 )
 
-func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Server, error) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		for range signals {
-			cancel()
-		}
-	}()
-
+func NewProxy(conf *config.Config, statsContainer *stats.Stats, ctx *context.Context) (*httransform.Server, error) {
 	_, err := url.Parse(conf.CrawleraURL())
 	if err != nil {
 		return nil, fmt.Errorf("incorrect crawlera url: %w", err)
@@ -38,21 +25,16 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 	if err != nil {
 		return nil, fmt.Errorf("dialer error: %w", err)
 	}
-	exe := executor.MakeDefaultExecutor(dialer)
+	crawleraExecutor := executor.MakeDefaultExecutor(dialer)
 
 	opts := httransform.ServerOpts{
-		Layers:        makeProxyLayers(conf, exe, statsContainer),
-		Executor:      exe,
+		Layers:        makeProxyLayers(conf, crawleraExecutor, statsContainer),
+		Executor:      crawleraExecutor,
 		TLSCertCA:     []byte(conf.TLSCaCertificate),
 		TLSPrivateKey: []byte(conf.TLSPrivateKey),
 	}
-	/*if conf.Debug {
-		opts.TracerPool = httransform.NewTracerPool(func() httransform.Tracer {
-			return &httransform.LogTracer{}
-		})
-	}*/
 
-	srv, err := httransform.NewServer(ctx, opts)
+	srv, err := httransform.NewServer(*ctx, opts)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create an instance of proxy: %w", err)
 	}
@@ -60,9 +42,8 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats) (*httransform.Se
 	return srv, nil
 }
 
-func makeProxyLayers(conf *config.Config, exe executor.Executor, statsContainer *stats.Stats) []layers.Layer {
+func makeProxyLayers(conf *config.Config, crawleraExecutor executor.Executor, statsContainer *stats.Stats) []layers.Layer {
 	proxyLayers := []layers.Layer{
-		customs.NewAuthLayer(conf.APIKey),
 		customs.NewBaseLayer(statsContainer),
 	}
 
@@ -73,6 +54,8 @@ func makeProxyLayers(conf *config.Config, exe executor.Executor, statsContainer 
 	if len(conf.DirectAccessHostPathRegexps) > 0 {
 		proxyLayers = append(proxyLayers, customs.NewDirectAccessLayer(conf.DirectAccessHostPathRegexps))
 	}
+
+	proxyLayers = append(proxyLayers, customs.NewAuthLayer(conf.APIKey))
 
 	if conf.ConcurrentConnections > 0 {
 		proxyLayers = append(proxyLayers, customs.NewRateLimiterLayer(conf.ConcurrentConnections))
@@ -85,7 +68,7 @@ func makeProxyLayers(conf *config.Config, exe executor.Executor, statsContainer 
 	proxyLayers = append(proxyLayers, customs.NewRefererLayer())
 
 	if !conf.NoAutoSessions {
-		proxyLayers = append(proxyLayers, customs.NewSessionsLayer(conf, exe))
+		proxyLayers = append(proxyLayers, customs.NewSessionsLayer(conf, crawleraExecutor))
 	}
 
 	return proxyLayers

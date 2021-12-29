@@ -22,8 +22,8 @@ type RefererLayer struct {
 
 func (r *RefererLayer) OnRequest(ctx *layers.Context) error {
 	clientID := getClientID(ctx)
-	host := ctx.RequestHeaders.GetFirst("host").Value()
-	referer := ctx.RequestHeaders.GetFirst("referer").Value()
+	host := ctx.RequestHeaders.GetLast("host").Value()
+	referer := ctx.RequestHeaders.GetLast("referer").Value()
 
 	referer = r.clean(referer)
 	if referer == "" {

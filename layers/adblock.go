@@ -32,9 +32,9 @@ type AdblockLayer struct {
 }
 
 func (a *AdblockLayer) OnRequest(ctx *layers.Context) error {
-	host := ctx.RequestHeaders.GetFirst("host").Value()
-	contentType := ctx.RequestHeaders.GetFirst("content-type").Value()
-	referer := ctx.RequestHeaders.GetFirst("referer").Value()
+	host := ctx.RequestHeaders.GetLast("host").Value()
+	contentType := ctx.RequestHeaders.GetLast("content-type").Value()
+	referer := ctx.RequestHeaders.GetLast("referer").Value()
 	adblockRequest := &adblock.Request{
 		URL:          string(ctx.Request().URI().FullURI()),
 		Domain:       host,
@@ -65,14 +65,15 @@ func (a *AdblockLayer) OnRequest(ctx *layers.Context) error {
 }
 
 func (a *AdblockLayer) OnResponse(ctx *layers.Context, err error) error {
-	if err != errAdblockedRequest {
-		return err
+	if err == errAdblockedRequest {
+		getMetrics(ctx).NewAdblockedRequest()
+		ctx.Respond("Request was adblocked", http.StatusForbidden)
+		logger := getLogger(ctx)
+		logger.WithFields(log.Fields{}).Debug("Request was adblocked")
+		return nil
 	}
+	return err
 
-	getMetrics(ctx).NewAdblockedRequest()
-	ctx.Respond("Request was adblocked", http.StatusForbidden)
-
-	return errAdblockedRequest
 }
 
 func (a *AdblockLayer) sync(lists []string) {
