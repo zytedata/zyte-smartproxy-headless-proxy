@@ -3,7 +3,9 @@ package layers
 import (
 	"sync"
 
-	"github.com/9seconds/httransform"
+	"github.com/9seconds/httransform/v2/errors"
+	"github.com/9seconds/httransform/v2/executor"
+	"github.com/9seconds/httransform/v2/layers"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/scrapinghub/crawlera-headless-proxy/config"
@@ -14,11 +16,11 @@ type SessionsLayer struct {
 	crawleraHost string
 	crawleraPort int
 	clients      *sync.Map
-	executor     httransform.Executor
+	executor     executor.Executor
 }
 
-func (s *SessionsLayer) OnRequest(state *httransform.LayerState) error {
-	clientID := getClientID(state)
+func (s *SessionsLayer) OnRequest(ctx *layers.Context) error {
+	clientID := getClientID(ctx)
 	mgrRaw, loaded := s.clients.LoadOrStore(clientID,
 		newSessionManager(s.apiKey, s.crawleraHost, s.crawleraPort))
 	mgr := mgrRaw.(*sessionManager)
@@ -29,114 +31,124 @@ func (s *SessionsLayer) OnRequest(state *httransform.LayerState) error {
 
 	switch value := mgr.getSessionID(false).(type) {
 	case string:
-		state.RequestHeaders.SetString("X-Crawlera-Session", value)
+		ctx.RequestHeaders.Set("X-Crawlera-Session", value, true)
 	case chan<- string:
-		state.RequestHeaders.SetString("X-Crawlera-Session", "create")
-		state.Set(sessionChanContextType, value)
+		ctx.RequestHeaders.Set("X-Crawlera-Session", "create", true)
+		ctx.Set(sessionChanContextType, value)
 	}
 
 	return nil
 }
 
-func (s *SessionsLayer) OnResponse(state *httransform.LayerState, err error) {
-	if channelUntyped, ok := state.Get(sessionChanContextType); ok && err != nil {
+func (s *SessionsLayer) OnResponse(ctx *layers.Context, err error) error {
+	if channelUntyped := ctx.Get(sessionChanContextType); err != nil {
 		close(channelUntyped.(chan<- string))
-		return
+		return err
 	}
 
-	if !isCrawleraError(state) {
-		s.onResponseOK(state)
-		return
+	if !isCrawleraError(ctx) {
+		s.onResponseOK(ctx)
+		return err
 	}
 
-	getMetrics(state).NewCrawleraError()
-	s.onResponseError(state)
+	getMetrics(ctx).NewCrawleraError()
+	return s.onResponseError(ctx)
 }
 
-func (s *SessionsLayer) onResponseOK(state *httransform.LayerState) {
-	if channelUntyped, ok := state.Get(sessionChanContextType); ok {
-		sessionID, _ := state.ResponseHeaders.GetString("x-crawlera-session")
+func (s *SessionsLayer) onResponseOK(ctx *layers.Context) {
+	if channelUntyped := ctx.Get(sessionChanContextType); channelUntyped != nil {
+		sessionID := ctx.ResponseHeaders.GetLast("x-crawlera-session").Value()
 		channelUntyped.(chan<- string) <- sessionID
 		close(channelUntyped.(chan<- string))
 
-		getMetrics(state).NewSessionCreated()
+		getMetrics(ctx).NewSessionCreated()
 
-		getLogger(state).WithFields(log.Fields{
+		getLogger(ctx).WithFields(log.Fields{
 			"session-id": sessionID,
 		}).Info("Initialized new session")
 	}
 }
 
-func (s *SessionsLayer) onResponseError(state *httransform.LayerState) {
-	clientID := getClientID(state)
+func (s *SessionsLayer) onResponseError(ctx *layers.Context) error {
+	clientID := getClientID(ctx)
 	mgrRaw, _ := s.clients.Load(clientID)
 	mgr := mgrRaw.(*sessionManager)
 
-	if channelUntyped, ok := state.Get(sessionChanContextType); ok {
+	if channelUntyped := ctx.Get(sessionChanContextType); channelUntyped != nil {
 		close(channelUntyped.(chan<- string))
 	}
 
-	brokenSessionID, _ := state.ResponseHeaders.GetString("x-crawlera-session")
+	brokenSessionID := ctx.ResponseHeaders.GetLast("x-crawlera-session").Value()
 	mgr.getBrokenSessionChan() <- brokenSessionID
 
 	switch value := mgr.getSessionID(true).(type) {
 	case chan<- string:
-		s.onResponseErrorRetryCreateSession(state, value)
+		return s.onResponseErrorRetryCreateSession(ctx, value)
 	case string:
-		s.onResponseErrorRetryWithSession(state, mgr, value)
+		return s.onResponseErrorRetryWithSession(ctx, mgr, value)
 	}
+	return errors.Annotate(nil, "Unexpected error in onResponseError", "session_manager", 0)
 }
 
-func (s *SessionsLayer) onResponseErrorRetryCreateSession(state *httransform.LayerState, channel chan<- string) {
+func (s *SessionsLayer) onResponseErrorRetryCreateSession(ctx *layers.Context, channel chan<- string) error {
 	defer close(channel)
 
-	logger := getLogger(state)
-	state.Request.Header.Set("X-Crawlera-Session", "create")
-	s.executeRequest(state)
+	logger := getLogger(ctx)
+	ctx.RequestHeaders.Set("X-Crawlera-Session", "create", true)
+	err := s.executeRequest(ctx)
 
-	if isCrawleraResponseError(state) {
+	if err != nil || isCrawleraResponseError(ctx) {
 		log.Warn("Could not obtain new session even after retry")
-		return
+		return errors.Annotate(err, "Could not obtain new session even after retry", "session_manager", 0)
 	}
 
-	sessionID := string(state.Response.Header.Peek("X-Crawlera-Session"))
+	sessionID := ctx.ResponseHeaders.GetLast("X-Crawlera-Session").Value()
 	channel <- sessionID
 
-	getMetrics(state).NewSessionCreated()
+	getMetrics(ctx).NewSessionCreated()
 
 	logger.WithFields(log.Fields{
 		"session-id": sessionID,
 	}).Info("Got fresh session after retry.")
+
+	return nil
 }
 
-func (s *SessionsLayer) onResponseErrorRetryWithSession(state *httransform.LayerState, mgr *sessionManager, sessionID string) {
-	state.Request.Header.Set("X-Crawlera-Session", sessionID)
-	logger := getLogger(state).WithFields(log.Fields{
+func (s *SessionsLayer) onResponseErrorRetryWithSession(ctx *layers.Context, mgr *sessionManager, sessionID string) error {
+	ctx.RequestHeaders.Set("X-Crawlera-Session", sessionID, true)
+	logger := getLogger(ctx).WithFields(log.Fields{
 		"session-id": sessionID,
 	})
 
-	s.executeRequest(state)
+	err := s.executeRequest(ctx)
 
-	if isCrawleraResponseError(state) {
+	if err != nil || isCrawleraResponseError(ctx) {
 		mgr.getBrokenSessionChan() <- sessionID
 		logger.Info("Request failed even with new session ID after retry")
-
-		return
+		return errors.Annotate(err, "Request failed even with new session ID after retry", "session_manager", 0)
 	}
 
 	logger.Info("Request succeed with new session ID after retry")
+	return nil
 }
 
-func (s *SessionsLayer) executeRequest(state *httransform.LayerState) {
-	state.Response.Reset()
-	state.Response.Header.DisableNormalizing()
-	s.executor(state)
+func (s *SessionsLayer) executeRequest(ctx *layers.Context) error {
+	if err := ctx.RequestHeaders.Push(); err != nil {
+		return errors.Annotate(err, "cannot sync request headers", "session_manager", 0)
+	}
 
-	state.ResponseHeaders.Clear()
-	httransform.ParseHeaders(state.ResponseHeaders, state.Response.Header.Header()) // nolint: errcheck
+	if err := s.executor(ctx); err != nil {
+		return errors.Annotate(err, "cannot execute a request", "session_manager", 0)
+	}
+
+	if err := ctx.ResponseHeaders.Pull(); err != nil {
+		return errors.Annotate(err, "cannot read response headers", "session_manager", 0)
+	}
+
+	return nil
 }
 
-func NewSessionsLayer(conf *config.Config, executor httransform.Executor) httransform.Layer {
+func NewSessionsLayer(conf *config.Config, executor executor.Executor) layers.Layer {
 	return &SessionsLayer{
 		crawleraHost: conf.CrawleraHost,
 		crawleraPort: conf.CrawleraPort,

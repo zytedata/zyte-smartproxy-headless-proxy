@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/9seconds/httransform"
+	"github.com/9seconds/httransform/v2/layers"
 	"github.com/pmezard/adblock/adblock"
 	log "github.com/sirupsen/logrus"
 )
@@ -31,18 +31,18 @@ type AdblockLayer struct {
 	cond    *sync.Cond
 }
 
-func (a *AdblockLayer) OnRequest(state *httransform.LayerState) error {
-	host, _ := state.RequestHeaders.GetString("host")
-	contentType, _ := state.RequestHeaders.GetString("content-type")
-	referer, _ := state.RequestHeaders.GetString("referer")
+func (a *AdblockLayer) OnRequest(ctx *layers.Context) error {
+	host := ctx.RequestHeaders.GetLast("host").Value()
+	contentType := ctx.RequestHeaders.GetLast("content-type").Value()
+	referer := ctx.RequestHeaders.GetLast("referer").Value()
 	adblockRequest := &adblock.Request{
-		URL:          string(state.Request.URI().FullURI()),
+		URL:          string(ctx.Request().URI().FullURI()),
 		Domain:       host,
 		Timeout:      adblockTimeout,
 		ContentType:  contentType,
 		OriginDomain: referer,
 	}
-	logger := getLogger(state)
+	logger := getLogger(ctx)
 
 	if !a.loaded {
 		a.cond.L.Lock()
@@ -64,13 +64,16 @@ func (a *AdblockLayer) OnRequest(state *httransform.LayerState) error {
 	return nil
 }
 
-func (a *AdblockLayer) OnResponse(state *httransform.LayerState, err error) {
-	if err != errAdblockedRequest {
-		return
+func (a *AdblockLayer) OnResponse(ctx *layers.Context, err error) error {
+	if err == errAdblockedRequest {
+		getMetrics(ctx).NewAdblockedRequest()
+		ctx.Respond("Request was adblocked", http.StatusForbidden)
+		logger := getLogger(ctx)
+		logger.WithFields(log.Fields{}).Debug("Request was adblocked")
+		return nil
 	}
+	return err
 
-	getMetrics(state).NewAdblockedRequest()
-	httransform.MakeSimpleResponse(state.Response, "Request was adblocked", http.StatusForbidden)
 }
 
 func (a *AdblockLayer) sync(lists []string) {
@@ -196,7 +199,7 @@ func (a *AdblockLayer) consumeItems(channel <-chan *adblockParsedResult) {
 	a.cond.Broadcast()
 }
 
-func NewAdblockLayer(lists []string) httransform.Layer {
+func NewAdblockLayer(lists []string) layers.Layer {
 	layer := &AdblockLayer{
 		cond:    sync.NewCond(&sync.Mutex{}),
 		matcher: adblock.NewMatcher(),

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/9seconds/httransform"
+	"github.com/9seconds/httransform/v2/layers"
 	"github.com/karlseguin/ccache"
 )
 
@@ -20,26 +20,27 @@ type RefererLayer struct {
 	referers *ccache.LayeredCache
 }
 
-func (r *RefererLayer) OnRequest(state *httransform.LayerState) error {
-	clientID := getClientID(state)
-	host, _ := state.RequestHeaders.GetString("host")
-	referer, _ := state.RequestHeaders.GetString("referer")
+func (r *RefererLayer) OnRequest(ctx *layers.Context) error {
+	clientID := getClientID(ctx)
+	host := ctx.RequestHeaders.GetLast("host").Value()
+	referer := ctx.RequestHeaders.GetLast("referer").Value()
 
 	referer = r.clean(referer)
 	if referer == "" {
 		referer = r.get(clientID, host)
 		if referer == "" {
-			referer = r.clean(string(state.Request.URI().FullURI()))
+			referer = r.clean(string(ctx.Request().URI().FullURI()))
 		}
 	}
 
 	r.set(clientID, host, referer)
-	state.RequestHeaders.SetString("Referer", referer)
+	ctx.RequestHeaders.Set("Referer", referer, true)
 
 	return nil
 }
 
-func (r *RefererLayer) OnResponse(_ *httransform.LayerState, _ error) {
+func (r *RefererLayer) OnResponse(_ *layers.Context, err error) error {
+	return err
 }
 
 func (r *RefererLayer) clean(referer string) string {
@@ -83,7 +84,7 @@ func (r *RefererLayer) set(primary, secondary, item string) {
 	r.referers.Set(primary, secondary, item, refererLayerTTL)
 }
 
-func NewRefererLayer() httransform.Layer {
+func NewRefererLayer() layers.Layer {
 	return &RefererLayer{
 		referers: ccache.Layered(ccache.Configure()),
 	}

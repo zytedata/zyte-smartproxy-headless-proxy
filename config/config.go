@@ -210,8 +210,8 @@ func NewConfig() *Config {
 		BindIP:       "127.0.0.1",
 		BindPort:     3128, // nolint: gomnd
 		ProxyAPIPort: 3129, // nolint: gomnd
-		CrawleraHost: "proxy.crawlera.com",
-		CrawleraPort: 8010, // nolint: gomnd
+		CrawleraHost: "proxy.zyte.com",
+		CrawleraPort: 8011, // nolint: gomnd
 		XHeaders:     map[string]string{},
 	}
 }

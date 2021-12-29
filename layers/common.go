@@ -1,7 +1,7 @@
 package layers
 
 import (
-	"github.com/9seconds/httransform"
+	"github.com/9seconds/httransform/v2/layers"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/scrapinghub/crawlera-headless-proxy/stats"
@@ -15,29 +15,29 @@ const (
 	sessionChanContextType    = "session_chan"
 )
 
-func isCrawleraError(state *httransform.LayerState) bool {
-	if _, ok := state.ResponseHeaders.GetString("x-crawlera-error"); ok {
+func isCrawleraError(ctx *layers.Context) bool {
+	if ctx.ResponseHeaders.GetLast("x-crawlera-error") != nil {
 		return true
 	}
 
-	return isCrawleraResponseError(state)
+	return isCrawleraResponseError(ctx)
 }
 
-func isCrawleraResponseError(state *httransform.LayerState) bool {
-	return len(state.Response.Header.Peek("X-Crawlera-Error")) > 0
+func isCrawleraResponseError(ctx *layers.Context) bool {
+	return len(ctx.ResponseHeaders.GetLast("X-Crawlera-Error").Value()) > 0
 }
 
-func getClientID(state *httransform.LayerState) string {
-	clientIDUntyped, _ := state.Get(clientIDLayerContextType)
+func getClientID(ctx *layers.Context) string {
+	clientIDUntyped := ctx.Get(clientIDLayerContextType)
 	return clientIDUntyped.(string)
 }
 
-func getLogger(state *httransform.LayerState) *log.Entry {
-	loggerUntyped, _ := state.Get(logLayerContextType)
+func getLogger(ctx *layers.Context) *log.Entry {
+	loggerUntyped := ctx.Get(logLayerContextType)
 	return loggerUntyped.(*log.Entry)
 }
 
-func getMetrics(state *httransform.LayerState) *stats.Stats {
-	metrics, _ := state.Get(metricsLayerContextType)
+func getMetrics(ctx *layers.Context) *stats.Stats {
+	metrics := ctx.Get(metricsLayerContextType)
 	return metrics.(*stats.Stats)
 }
