@@ -134,7 +134,7 @@ the process is finished.
 To download prebuilt container, please do the following:
 
 ```console
-$ docker pull scrapinghub/crawlera-headless-proxy
+$ docker pull zytedata/zyte-smartproxy-headless-proxy
 ```
 
 If you want to build this image locally, please do it with make (also,
