@@ -22,6 +22,7 @@ func (h *AuthLayer) OnResponse(_ *layers.Context, err error) error {
 
 func NewAuthLayer(user string) layers.Layer {
 	encodedUser := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:", user)))
+
 	return &AuthLayer{
 		user: encodedUser,
 	}

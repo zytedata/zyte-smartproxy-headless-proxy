@@ -49,8 +49,10 @@ func (d *DirectAccessLayer) OnResponse(ctx *layers.Context, err error) error {
 
 		logger := getLogger(ctx)
 		logger.WithFields(log.Fields{}).Debug("Request was direct accessed")
+
 		return nil
 	}
+
 	return err
 }
 

@@ -70,10 +70,11 @@ func (a *AdblockLayer) OnResponse(ctx *layers.Context, err error) error {
 		ctx.Respond("Request was adblocked", http.StatusForbidden)
 		logger := getLogger(ctx)
 		logger.WithFields(log.Fields{}).Debug("Request was adblocked")
+
 		return nil
 	}
-	return err
 
+	return err
 }
 
 func (a *AdblockLayer) sync(lists []string) {

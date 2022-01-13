@@ -114,6 +114,7 @@ var ( // nolint: gochecknoglobals
 		Strings()
 )
 
+// nolint:funlen
 func main() {
 	// Root context is crucial here. When root context is closed, a
 	// proxy is shutdown.
@@ -123,6 +124,7 @@ func main() {
 	// Gracefully terminate context on SIGINT and SIGTERM signals.
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
 	go func() {
 		for range signals {
 			cancel()
@@ -227,11 +229,10 @@ func getConfig() (*config.Config, error) {
 	return conf, nil
 }
 
-func appendClientHeader(conf *config.Config) (err error) {
-	var clientVersion = "1"
-	var clientHdr = fmt.Sprintf("zyte-smartproxy-headless-proxy/%s", clientVersion)
+func appendClientHeader(conf *config.Config) {
+	clientVersion := "1"
+	clientHdr := fmt.Sprintf("zyte-smartproxy-headless-proxy/%s", clientVersion)
 	conf.SetXHeader("x-crawlera-client", clientHdr)
-	return nil
 }
 
 func initCertificates(conf *config.Config) (err error) {
