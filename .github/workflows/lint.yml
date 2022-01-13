@@ -5,8 +5,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Lint
-        uses: golangci/golangci-lint-action@v2
+      - name: Installing Go
+        uses: actions/setup-go@v2
         with:
-          version: v1.29
-          args: --config=.golangci.toml
+          go-version: "1.16"
+      - name: Installing Lint
+        run: sudo make install-lint
+      - name: Lint
+        run: make lint

@@ -15,7 +15,7 @@ func (suite *RateLimiterLayerTestSuite) TestRateLimiter() {
 
 	suite.Nil(layer.OnRequest(nil))
 	suite.Len(layer.limiter, 1)
-	layer.OnResponse(nil, nil)
+	layer.OnResponse(nil, nil) // nolint:errcheck
 	suite.Len(layer.limiter, 0)
 }
 

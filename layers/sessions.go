@@ -52,6 +52,7 @@ func (s *SessionsLayer) OnResponse(ctx *layers.Context, err error) error {
 	}
 
 	getMetrics(ctx).NewCrawleraError()
+
 	return s.onResponseError(ctx)
 }
 
@@ -87,6 +88,7 @@ func (s *SessionsLayer) onResponseError(ctx *layers.Context) error {
 	case string:
 		return s.onResponseErrorRetryWithSession(ctx, mgr, value)
 	}
+
 	return errors.Annotate(nil, "Unexpected error in onResponseError", "session_manager", 0)
 }
 
@@ -125,10 +127,12 @@ func (s *SessionsLayer) onResponseErrorRetryWithSession(ctx *layers.Context, mgr
 	if err != nil || isCrawleraResponseError(ctx) {
 		mgr.getBrokenSessionChan() <- sessionID
 		logger.Info("Request failed even with new session ID after retry")
+
 		return errors.Annotate(err, "Request failed even with new session ID after retry", "session_manager", 0)
 	}
 
 	logger.Info("Request succeed with new session ID after retry")
+
 	return nil
 }
 

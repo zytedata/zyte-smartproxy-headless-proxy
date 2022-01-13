@@ -25,6 +25,7 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats, ctx *context.Con
 	if err != nil {
 		return nil, fmt.Errorf("dialer error: %w", err)
 	}
+
 	crawleraExecutor := executor.MakeDefaultExecutor(dialer)
 
 	opts := httransform.ServerOpts{
