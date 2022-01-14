@@ -26,17 +26,8 @@ jobs:
           files: |
             ccbuilds/crawlera-headless-proxy-*
 
-  push_to_registry:
-    name: Push Docker image to Docker Hub
-    strategy:
-      matrix:
-        include:
-          - image: scrapinghub/crawlera-headless-proxy
-            username: ${{ secrets.SCRAPINGHUB_DOCKER_USERNAME }}
-            password: ${{ secrets.SCRAPINGHUB_DOCKER_USERNAME }}
-          - image: zytedata/zyte-smartproxy-headless-proxy
-            username: ${{ secrets.ZYTEDATA_DOCKER_USERNAME }}
-            password: ${{ secrets.ZYTEDATA_DOCKER_USERNAME }}
+  push_to_registry_scrapinghub:
+    name: Push Docker image to Scrapinghub Docker Hub
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -45,14 +36,41 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
-          username: ${{ matrix.username }}
-          password: ${{ matrix.password }}
+          username: ${{ secrets.SCRAPINGHUB_DOCKER_USERNAME }}
+          password: ${{ secrets.SCRAPINGHUB_DOCKER_PASSWORD }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
-          images: ${{ matrix.image }}
+          images: scrapinghub/crawlera-headless-proxy
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  push_to_registry_zytedata:
+    name: Push Docker image to Zytedata Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          username: ${{ secrets.ZYTEDATA_DOCKER_USERNAME }}
+          password: ${{ secrets.ZYTEDATA_DOCKER_PASSWORD }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: zytedata/zyte-smartproxy-headless-proxy
 
       - name: Build and push Docker image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
