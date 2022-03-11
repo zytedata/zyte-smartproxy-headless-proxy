@@ -66,8 +66,6 @@ func makeProxyLayers(conf *config.Config, crawleraExecutor executor.Executor, st
 		proxyLayers = append(proxyLayers, customs.NewXHeadersLayer(conf.XHeaders))
 	}
 
-	proxyLayers = append(proxyLayers, customs.NewRefererLayer())
-
 	if !conf.NoAutoSessions {
 		proxyLayers = append(proxyLayers, customs.NewSessionsLayer(conf, crawleraExecutor))
 	}

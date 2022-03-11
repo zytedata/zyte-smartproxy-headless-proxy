@@ -55,6 +55,8 @@ headers into the requests. Basically, you have to do a bare minimum:
 
 ## Installation
 
+Check out the [Using Headless Browsers with Zyte Smart Proxy Manager](https://docs.zyte.com/smart-proxy-manager/headless.html) manual.
+
 ### Install binaries
 
 There are some prebuilt binaries available on Release pages. Please download
