@@ -42,7 +42,10 @@ func (s *SessionsLayer) OnRequest(ctx *layers.Context) error {
 
 func (s *SessionsLayer) OnResponse(ctx *layers.Context, err error) error {
 	if channelUntyped := ctx.Get(sessionChanContextType); err != nil {
-		close(channelUntyped.(chan<- string))
+		if channelUntyped != nil {
+			close(channelUntyped.(chan<- string))
+		}
+
 		return err
 	}
 
@@ -79,8 +82,9 @@ func (s *SessionsLayer) onResponseError(ctx *layers.Context) error {
 		close(channelUntyped.(chan<- string))
 	}
 
-	brokenSessionID := ctx.ResponseHeaders.GetLast("x-crawlera-session").Value()
-	mgr.getBrokenSessionChan() <- brokenSessionID
+	if brokenSessionID := ctx.ResponseHeaders.GetLast("x-crawlera-session").Value(); brokenSessionID != "" {
+		mgr.getBrokenSessionChan() <- brokenSessionID
+	}
 
 	switch value := mgr.getSessionID(true).(type) {
 	case chan<- string:
@@ -126,12 +130,12 @@ func (s *SessionsLayer) onResponseErrorRetryWithSession(ctx *layers.Context, mgr
 
 	if err != nil || isCrawleraResponseError(ctx) {
 		mgr.getBrokenSessionChan() <- sessionID
-		logger.Info("Request failed even with new session ID after retry")
+		logger.Info("Request failed even after retry")
 
-		return errors.Annotate(err, "Request failed even with new session ID after retry", "session_manager", 0)
+		return errors.Annotate(err, "Request failed even after retry", "session_manager", 0)
 	}
 
-	logger.Info("Request succeed with new session ID after retry")
+	logger.Info("Request succeed after retry")
 
 	return nil
 }

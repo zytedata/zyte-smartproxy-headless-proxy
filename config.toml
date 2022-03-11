@@ -104,7 +104,7 @@ adblock_lists = [
 #
 # Regular expressions are case sensitive.
 # direct_access_hostpath_regexps = [
-#   '.*?\.(?:txt|css|eot|gif|ico|jpe?g|js|less|mkv|mp4|mpe?g|png|ttf|webm|webp|woff2?)$'
+#   '.*?\.(?:txt|json|css|less|js|mjs|cjs|gif|ico|jpe?g|svg|png|webp|mkv|mp4|mpe?g|webm|eot|ttf|woff2?)$'
 # ]
 
 # A list of Crawlera XHeaders to propagate to real Crawlera from this
