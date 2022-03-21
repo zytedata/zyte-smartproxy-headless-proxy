@@ -13,7 +13,7 @@ require (
 	github.com/pmezard/adblock v0.0.0-20171028110701-edfb97ad89cd
 	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.5.1
-	github.com/valyala/fasthttp v1.27.0
+	github.com/valyala/fasthttp v1.34.0
 	github.com/wsxiaoys/terminal v0.0.0-20160513160801-0940f3fc43a0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
