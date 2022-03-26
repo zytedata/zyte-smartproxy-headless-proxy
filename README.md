@@ -1,50 +1,50 @@
-# Crawlera Headless Proxy
+# Zyte SmartProxy (formerly Crawlera) Headless Proxy
 
 [![Build Status](https://travis-ci.org/scrapinghub/crawlera-headless-proxy.svg?branch=master)](https://travis-ci.org/scrapinghub/crawlera-headless-proxy)
 [![Go Report Card](https://goreportcard.com/badge/github.com/scrapinghub/crawlera-headless-proxy)](https://goreportcard.com/report/github.com/scrapinghub/crawlera-headless-proxy)
 
-Crawlera Headless proxy is a proxy which main intent
+Zyte SmartProxy (formerly Crawlera) Headless Proxy is a proxy which main intent
 is to help users with headless browsers to use
-[Crawlera](https://scrapinghub.com/crawlera). This
+[Zyte Smart Proxy Manager (formerly Crawlera)](https://www.zyte.com/smart-proxy-manager). This
 includes different implementations of headless browsers
 such as [Splash](https://scrapinghub.com/splash),
 headless [Chrome](https://google.com/chrome/), and
 [Firefox](https://www.mozilla.org/en-US/firefox/).
 Also, this proxy should help users of such frameworks
 as [Selenium](https://www.seleniumhq.org/) and
-[Puppeteer](https://github.com/GoogleChrome/puppeteer) to use Crawlera
+[Puppeteer](https://github.com/GoogleChrome/puppeteer) to use Zyte Smart Proxy
 without a need to build [Squid](http://www.squid-cache.org/) chains or
 install [Polipo](https://www.irif.fr/~jch/software/polipo/).
 
 The biggest problem with headless browsers is their configuration:
 
-1. Crawlera uses proxy authentication protocol described in
+1. Zyte Smart Proxy uses proxy authentication protocol described in
    [RFC 7235](https://tools.ietf.org/html/rfc7235#section-4.3) but it is
    rather hard to configure such authentication in headless browsers. The
    most popular way of bypassing this problem is to use Polipo which is,
    unfortunately, unsupported for a long time.
-2. Crawlera uses
+2. Zyte Smart Proxy uses
    [X-Headers as configuration](https://doc.scrapinghub.com/crawlera.html#request-headers).
    To use this API with headless browsers, users have to install plugins or
    extensions in their browsers and configure them to propagate such headers
-   to Crawlera.
+   to Zyte Smart Proxy.
 3. Also, it is rather hard and complex to maintain best practices of using
    these headers. For example,
    [support of Browser Profiles](https://doc.scrapinghub.com/crawlera.html#x-crawlera-profile)
    requires to have a minimal possible set of headers. For example, it is
    recommended to remove `Accept` header by default. It is rather hard
    to do that using headless browsers API.
-4. Crawlera works best with browsers only with some preconditions which
+4. Zyte Smart Proxy works best with browsers only with some preconditions which
    users have to repeat everytime: session usage, some recommended headers
    like `Referer` etc.
 
-Crawlera Headless Proxy intended to help users to avoid such
+Zyte Smart Proxy Headless Proxy intended to help users to avoid such
 problems. You should generally think about it as a proxy which should
 be accessible by your headless browser of Selenium grid. This proxy
-propagates your requests to Crawlera maintaining API key and injecting
+propagates your requests to Zyte Smart Proxy maintaining API key and injecting
 headers into the requests. Basically, you have to do a bare minimum:
 
-1. Get Crawlera API key
+1. Get Zyte Smart Proxy API key
 2. Run this proxy on your local machine or any machine accessible by
    headless browser, configuring it with a configuration file, command line
    parameters or environment variables.
@@ -97,21 +97,21 @@ If you use [HomeBrew](https://brew.sh) or
 proxy:
 
 ```console
-$ brew install https://raw.githubusercontent.com/scrapinghub/crawlera-headless-proxy/master/crawlera-headless-proxy.rb
+$ brew install https://github.com/zytedata/zyte-smartproxy-headless-proxy/blob/master/crawlera-headless-proxy.rb
 ```
 
 or if you want to have a development version:
 
 ```console
-$ brew install --HEAD https://raw.githubusercontent.com/scrapinghub/crawlera-headless-proxy/master/crawlera-headless-proxy.rb
+$ brew install --HEAD https://github.com/zytedata/zyte-smartproxy-headless-proxy/blob/master/crawlera-headless-proxy.rb
 ```
 
 
 #### Build binary
 
 ```console
-$ git clone https://github.com/scrapinghub/crawlera-headless-proxy.git
-$ cd crawlera-headless-proxy
+$ git clone https://github.com/zytedata/zyte-smartproxy-headless-proxy.git
+$ cd zyte-smartproxy-headless-proxy
 ```
 
 The next step is to execute make
