@@ -92,18 +92,11 @@ $ brew install go make git
 
 #### Install from HomeBrew
 
-If you use [HomeBrew](https://brew.sh) or
-[LinuxBrew](http://linuxbrew.sh/), you can use it to install headless
+If you use [HomeBrew](https://brew.sh), you can use it to install headless
 proxy:
 
 ```console
-$ brew install https://raw.githubusercontent.com/scrapinghub/crawlera-headless-proxy/master/crawlera-headless-proxy.rb
-```
-
-or if you want to have a development version:
-
-```console
-$ brew install --HEAD https://raw.githubusercontent.com/scrapinghub/crawlera-headless-proxy/master/crawlera-headless-proxy.rb
+$ curl -L https://raw.githubusercontent.com/scrapinghub/crawlera-headless-proxy/master/crawlera-headless-proxy.rb > crawlera-headless-proxy.rb && brew install --HEAD crawlera-headless-proxy.rb
 ```
 
 
