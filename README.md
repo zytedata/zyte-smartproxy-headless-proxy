@@ -96,15 +96,15 @@ If you use [HomeBrew](https://brew.sh), you can use it to install headless
 proxy:
 
 ```console
-$ curl -L https://raw.githubusercontent.com/scrapinghub/crawlera-headless-proxy/master/crawlera-headless-proxy.rb > crawlera-headless-proxy.rb && brew install --HEAD crawlera-headless-proxy.rb
+$ curl -L https://raw.githubusercontent.com/zytedata/zyte-smartproxy-headless-proxy/master/crawlera-headless-proxy.rb > crawlera-headless-proxy.rb && brew install --HEAD crawlera-headless-proxy.rb
 ```
 
 
 #### Build binary
 
 ```console
-$ git clone https://github.com/scrapinghub/crawlera-headless-proxy.git
-$ cd crawlera-headless-proxy
+$ git clone https://github.com/zytedata/zyte-smartproxy-headless-proxy.git
+$ cd zyte-smartproxy-headless-proxy
 ```
 
 The next step is to execute make
@@ -193,6 +193,11 @@ Flags:
       --version              Show application version.
 ```
 
+Docker example:
+```console
+$ docker run --name crawlera-headless-proxy -p 3128:3128 zytedata/zyte-smartproxy-headless-proxy --help
+```
+
 ### Configuration
 
 Defaults are sensible. If you run this tool without any configuration,
@@ -265,6 +270,11 @@ this order (1 has max priority, 4 - minimal):
 2. Commandline flags
 3. Configuration file
 4. Defaults
+
+Docker example:
+```console
+$ docker run --name crawlera-headless-proxy -p 3128:3128 zytedata/zyte-smartproxy-headless-proxy -a $APIKEY -d -x profile=pass -x cookies=disable -x no-bancheck=1 --direct-access-hostpath-regexps=".*?\.(?:txt|json|css|less|js|mjs|cjs|gif|ico|jpe?g|svg|png|webp|mkv|mp4|mpe?g|webm|eot|ttf|woff2?)$" --adblock-list="https://easylist.to/easylist/easylist.txt" --adblock-list="https://easylist.to/easylist/easyprivacy.txt"
+```
 
 
 ## Concurrency
