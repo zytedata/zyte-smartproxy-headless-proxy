@@ -128,6 +128,7 @@ func main() {
 	go func() {
 		for range signals {
 			cancel()
+			os.Exit(0)
 		}
 	}()
 
