@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -182,8 +183,8 @@ func main() {
 	if crawleraProxy, err := proxy.NewProxy(conf, statsContainer, &ctx); err == nil {
 		if ln, err2 := net.Listen("tcp", listen); err2 != nil {
 			log.Fatal(err2)
-		} else {
-			log.Fatal(crawleraProxy.Serve(ln))
+		} else if err := crawleraProxy.Serve(ln); err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
 		}
 	} else {
 		log.Fatal(err)
