@@ -28,6 +28,7 @@ type Config struct {
 	TLSPrivateKey               string   `toml:"tls_private_key"`
 	AdblockLists                []string `toml:"adblock_lists"`
 	DirectAccessHostPathRegexps []string `toml:"direct_access_hostpath_regexps"`
+	DirectAccessExceptHostPathRegexps []string `toml:"direct_access_except_hostpath_regexps"`
 	XHeaders                    map[string]string
 }
 
@@ -159,6 +160,14 @@ func (c *Config) MaybeSetAdblockLists(value []string) {
 func (c *Config) MaybeSetDirectAccessHostPathRegexps(value []string) {
 	if len(value) > 0 {
 		c.DirectAccessHostPathRegexps = value
+	}
+}
+
+// MaybeSetDirectAccessExceptHostPathRegexps sets a list of regular
+// expressions for proxied access. Takes priority over DirectAccessHostPathRegexps.
+func (c *Config) MaybeSetDirectAccessExceptHostPathRegexps(value []string) {
+	if len(value) > 0 {
+		c.DirectAccessExceptHostPathRegexps = value
 	}
 }
 

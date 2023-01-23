@@ -113,6 +113,11 @@ var ( // nolint: gochecknoglobals
 		Short('z').
 		Envar("CRAWLERA_HEADLESS_DIRECTACCESS").
 		Strings()
+	directAccessExceptHostPathRegexps = app.Flag("direct-access-except-hostpath-regexps",
+		"A list of regexps for hostpath to be proxied. Irrespective of direct-access-hostpath-regexps").
+		Short('e').
+		Envar("CRAWLERA_HEADLESS_DIRECTACCESS_EXCEPT").
+		Strings()
 )
 
 // nolint:funlen
@@ -172,6 +177,7 @@ func main() {
 		"concurrent-connections":         conf.ConcurrentConnections,
 		"xheaders":                       conf.XHeaders,
 		"direct-access-hostpath-regexps": conf.DirectAccessHostPathRegexps,
+		"direct-access-except-hostpath-regexps": conf.DirectAccessExceptHostPathRegexps,
 	}).Debugf("Listen on %s", listen)
 
 	statsContainer := stats.NewStats()
@@ -218,6 +224,7 @@ func getConfig() (*config.Config, error) {
 	conf.MaybeSetProxyAPIIP(*proxyAPIIP)
 	conf.MaybeSetProxyAPIPort(*proxyAPIPort)
 	conf.MaybeSetDirectAccessHostPathRegexps(*directAccessHostPathRegexps)
+	conf.MaybeSetDirectAccessExceptHostPathRegexps(*directAccessExceptHostPathRegexps)
 
 	for k, v := range *xheaders {
 		conf.SetXHeader(k, v)
