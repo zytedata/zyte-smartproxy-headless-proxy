@@ -13,23 +13,23 @@ import (
 
 // Config stores global configuration data of the application.
 type Config struct {
-	Debug                       bool     `toml:"debug"`
-	DoNotVerifyCrawleraCert     bool     `toml:"dont_verify_crawlera_cert"`
-	NoAutoSessions              bool     `toml:"no_auto_sessions"`
-	ConcurrentConnections       int      `toml:"concurrent_connections"`
-	BindPort                    int      `toml:"bind_port"`
-	CrawleraPort                int      `toml:"crawlera_port"`
-	ProxyAPIPort                int      `toml:"proxy_api_port"`
-	BindIP                      string   `toml:"bind_ip"`
-	ProxyAPIIP                  string   `toml:"proxy_api_ip"`
-	APIKey                      string   `toml:"api_key"`
-	CrawleraHost                string   `toml:"crawlera_host"`
-	TLSCaCertificate            string   `toml:"tls_ca_certificate"`
-	TLSPrivateKey               string   `toml:"tls_private_key"`
-	AdblockLists                []string `toml:"adblock_lists"`
-	DirectAccessHostPathRegexps []string `toml:"direct_access_hostpath_regexps"`
+	Debug                             bool     `toml:"debug"`
+	DoNotVerifyCrawleraCert           bool     `toml:"dont_verify_crawlera_cert"`
+	NoAutoSessions                    bool     `toml:"no_auto_sessions"`
+	ConcurrentConnections             int      `toml:"concurrent_connections"`
+	BindPort                          int      `toml:"bind_port"`
+	CrawleraPort                      int      `toml:"crawlera_port"`
+	ProxyAPIPort                      int      `toml:"proxy_api_port"`
+	BindIP                            string   `toml:"bind_ip"`
+	ProxyAPIIP                        string   `toml:"proxy_api_ip"`
+	APIKey                            string   `toml:"api_key"`
+	CrawleraHost                      string   `toml:"crawlera_host"`
+	TLSCaCertificate                  string   `toml:"tls_ca_certificate"`
+	TLSPrivateKey                     string   `toml:"tls_private_key"`
+	AdblockLists                      []string `toml:"adblock_lists"`
+	DirectAccessHostPathRegexps       []string `toml:"direct_access_hostpath_regexps"`
 	DirectAccessExceptHostPathRegexps []string `toml:"direct_access_except_hostpath_regexps"`
-	XHeaders                    map[string]string
+	XHeaders                          map[string]string
 }
 
 // Bind returns a string for the http.ListenAndServe based on config

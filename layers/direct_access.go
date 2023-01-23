@@ -13,9 +13,9 @@ import (
 var errDirectAccess = errors.Annotate(nil, "direct access to the URL", "direct_executor", 0)
 
 type DirectAccessLayer struct {
-	rules    []*regexp.Regexp
+	rules      []*regexp.Regexp
 	exceptions []*regexp.Regexp
-	executor executor.Executor
+	executor   executor.Executor
 }
 
 func (d *DirectAccessLayer) OnRequest(ctx *layers.Context) error {
@@ -75,8 +75,8 @@ func NewDirectAccessLayer(regexps []string, exceptRegxeps []string) layers.Layer
 	}
 
 	return &DirectAccessLayer{
-		rules:    rules,
+		rules:      rules,
 		exceptions: exceptions,
-		executor: executor.MakeDefaultExecutor(dialers.NewBase(dialers.Opts{})),
+		executor:   executor.MakeDefaultExecutor(dialers.NewBase(dialers.Opts{})),
 	}
 }
