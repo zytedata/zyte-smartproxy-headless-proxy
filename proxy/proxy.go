@@ -53,11 +53,7 @@ func makeProxyLayers(conf *config.Config, crawleraExecutor executor.Executor, st
 	}
 
 	if len(conf.DirectAccessHostPathRegexps) > 0 {
-		if len(conf.DirectAccessExceptHostPathRegexps) > 0 {
-			proxyLayers = append(proxyLayers, customs.NewDirectAccessLayer(conf.DirectAccessHostPathRegexps, conf.DirectAccessExceptHostPathRegexps))
-		} else {
-			proxyLayers = append(proxyLayers, customs.NewDirectAccessLayer(conf.DirectAccessHostPathRegexps, nil))
-		}
+		proxyLayers = append(proxyLayers, customs.NewDirectAccessLayer(conf.DirectAccessHostPathRegexps, conf.DirectAccessExceptHostPathRegexps))
 	}
 
 	proxyLayers = append(proxyLayers, customs.NewAuthLayer(conf.APIKey))
