@@ -63,14 +63,14 @@ func (d *DirectAccessLayer) OnResponse(ctx *layers.Context, err error) error {
 	return err
 }
 
-func NewDirectAccessLayer(regexps []string, except_regexps []string) layers.Layer {
+func NewDirectAccessLayer(regexps []string, exceptRegxeps []string) layers.Layer {
 	rules := make([]*regexp.Regexp, len(regexps))
 	for i, v := range regexps {
 		rules[i] = regexp.MustCompile(v)
 	}
 
-	exceptions := make([]*regexp.Regexp, len(except_regexps))
-	for i, v := range except_regexps {
+	exceptions := make([]*regexp.Regexp, len(exceptRegxeps))
+	for i, v := range exceptRegxeps {
 		exceptions[i] = regexp.MustCompile(v)
 	}
 
