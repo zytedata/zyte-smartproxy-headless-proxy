@@ -23,7 +23,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Test in FreeBSD
       id: test
-      uses: vmactions/freebsd-vm@v0.1.5
+      uses: vmactions/freebsd-vm@v0.3.0
       with:
         prepare: pkg install -y go golangci-lint
         run: |

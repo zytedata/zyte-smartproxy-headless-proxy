@@ -103,9 +103,22 @@ adblock_lists = [
 # work, but '.*?cat.*?' - will.
 #
 # Regular expressions are case sensitive.
+# direct_access_except_hostpath_regexps takes priority over this.
 # direct_access_hostpath_regexps = [
 #   '.*?\.(?:txt|json|css|less|js|mjs|cjs|gif|ico|jpe?g|svg|png|webp|mkv|mp4|mpe?g|webm|eot|ttf|woff2?)$'
 # ]
+
+# List of regular expressions for URLs that should go through Crawlera
+# irrespective of the direct_access_hostpath_regexps.
+# If a match is found within these regexps, direct_access check is skipped
+# for those and requests to those URLs will always go through crawlera.
+#
+# Example: direct_access_except_hostpath_regexps = ['.*example.*']
+#
+# This will make all requests containing httpbin go through crawlera.
+# Even the requests like example.com/dummy.txt will be proxied through crawlera
+# even though the direct_access_hostpath_regexps have '.txt' in them
+# direct_access_except_hostpath_regexps = ['.*example.*']
 
 # A list of Crawlera XHeaders to propagate to real Crawlera from this
 # headless proxy.

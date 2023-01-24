@@ -13,8 +13,9 @@ import (
 var errDirectAccess = errors.Annotate(nil, "direct access to the URL", "direct_executor", 0)
 
 type DirectAccessLayer struct {
-	rules    []*regexp.Regexp
-	executor executor.Executor
+	rules      []*regexp.Regexp
+	exceptions []*regexp.Regexp
+	executor   executor.Executor
 }
 
 func (d *DirectAccessLayer) OnRequest(ctx *layers.Context) error {
@@ -23,6 +24,12 @@ func (d *DirectAccessLayer) OnRequest(ctx *layers.Context) error {
 	hostpath = append(hostpath, url.Host()...)
 	hostpath = append(hostpath, '/')
 	hostpath = append(hostpath, url.Path()...)
+
+	for _, v := range d.exceptions {
+		if v.Match(hostpath) {
+			return nil
+		}
+	}
 
 	for _, v := range d.rules {
 		if v.Match(hostpath) {
@@ -56,14 +63,20 @@ func (d *DirectAccessLayer) OnResponse(ctx *layers.Context, err error) error {
 	return err
 }
 
-func NewDirectAccessLayer(regexps []string) layers.Layer {
+func NewDirectAccessLayer(regexps []string, exceptRegxeps []string) layers.Layer {
 	rules := make([]*regexp.Regexp, len(regexps))
 	for i, v := range regexps {
 		rules[i] = regexp.MustCompile(v)
 	}
 
+	exceptions := make([]*regexp.Regexp, len(exceptRegxeps))
+	for i, v := range exceptRegxeps {
+		exceptions[i] = regexp.MustCompile(v)
+	}
+
 	return &DirectAccessLayer{
-		rules:    rules,
-		executor: executor.MakeDefaultExecutor(dialers.NewBase(dialers.Opts{})),
+		rules:      rules,
+		exceptions: exceptions,
+		executor:   executor.MakeDefaultExecutor(dialers.NewBase(dialers.Opts{})),
 	}
 }
