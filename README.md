@@ -548,7 +548,12 @@ $ crawlera-headless-proxy ... -x profile=desktop
 $ crawlera-headless-proxy -p 3128 -a "$MYAPIKEY" -x profile=desktop
 $ curl -x localhost:3128 -sLI https://scrapinghub.com
 ```
+## Docker Command with Direct-Access Regex:
 
+```console
+$ docker run --name crawlera-headless-proxy -p 3128:3128 scrapinghub/crawlera-headless-proxy -d -u proxy.crawlera.com -o 8011 -a $API-KEY --direct-access-hostpath-regexps="(.pagead2.googlesyndication.com.$|.accounts.google.com.$|.dl.google.com.$|.clients2.google.com.$|.*?\.(?:txt|css|eot|svg|gif|ico|jpe?g|js|less|mkv|min|mp4|mpe?g|png|ttf|webm|webp|woff2?)$)" -x profile=desktop -x cookies=disable -x timeout=180000
+```
+                                           
 ## Selenium (Python)
 
 ```python
