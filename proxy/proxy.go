@@ -33,6 +33,7 @@ func NewProxy(conf *config.Config, statsContainer *stats.Stats, ctx *context.Con
 		Executor:      crawleraExecutor,
 		TLSCertCA:     []byte(conf.TLSCaCertificate),
 		TLSPrivateKey: []byte(conf.TLSPrivateKey),
+		TLSSkipVerify: conf.DoNotVerifyCrawleraCert,
 	}
 
 	srv, err := httransform.NewServer(*ctx, opts)
