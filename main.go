@@ -118,6 +118,11 @@ var ( // nolint: gochecknoglobals
 		Short('e').
 		Envar("CRAWLERA_HEADLESS_DIRECTACCESS_EXCEPT").
 		Strings()
+	directAccessProxy = app.Flag("direct-access-proxy",
+		"Another proxy for direct access, bypassing Crawlera.").
+		Short('y').
+		Envar("CRAWLERA_HEADLESS_DIRECTACCESS_PROXY").
+		String()
 )
 
 // nolint:funlen
@@ -225,6 +230,7 @@ func getConfig() (*config.Config, error) {
 	conf.MaybeSetProxyAPIPort(*proxyAPIPort)
 	conf.MaybeSetDirectAccessHostPathRegexps(*directAccessHostPathRegexps)
 	conf.MaybeSetDirectAccessExceptHostPathRegexps(*directAccessExceptHostPathRegexps)
+	conf.MaybeSetDirectAccessProxy(*directAccessProxy)
 
 	for k, v := range *xheaders {
 		conf.SetXHeader(k, v)

@@ -29,6 +29,7 @@ type Config struct {
 	AdblockLists                      []string `toml:"adblock_lists"`
 	DirectAccessHostPathRegexps       []string `toml:"direct_access_hostpath_regexps"`
 	DirectAccessExceptHostPathRegexps []string `toml:"direct_access_except_hostpath_regexps"`
+	DirectAccessProxy                 string   `toml:"direct_access_proxy"`
 	XHeaders                          map[string]string
 }
 
@@ -168,6 +169,12 @@ func (c *Config) MaybeSetDirectAccessHostPathRegexps(value []string) {
 func (c *Config) MaybeSetDirectAccessExceptHostPathRegexps(value []string) {
 	if len(value) > 0 {
 		c.DirectAccessExceptHostPathRegexps = value
+	}
+}
+
+func (c *Config) MaybeSetDirectAccessProxy(value string) {
+	if len(value) > 0 {
+		c.DirectAccessProxy = value
 	}
 }
 

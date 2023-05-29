@@ -63,7 +63,7 @@ func (d *DirectAccessLayer) OnResponse(ctx *layers.Context, err error) error {
 	return err
 }
 
-func NewDirectAccessLayer(regexps []string, exceptRegxeps []string) layers.Layer {
+func NewDirectAccessLayer(regexps []string, exceptRegxeps []string, proxy string) layers.Layer {
 	rules := make([]*regexp.Regexp, len(regexps))
 	for i, v := range regexps {
 		rules[i] = regexp.MustCompile(v)
@@ -77,6 +77,17 @@ func NewDirectAccessLayer(regexps []string, exceptRegxeps []string) layers.Layer
 	return &DirectAccessLayer{
 		rules:      rules,
 		exceptions: exceptions,
-		executor:   executor.MakeDefaultExecutor(dialers.NewBase(dialers.Opts{})),
+		executor:   executor.MakeDefaultExecutor(createBaseDialer(proxy)),
 	}
+}
+
+func createBaseDialer(proxy string) dialers.Dialer {
+	if proxy != "" {
+		dialer, err := dialers.DialerFromURL(dialers.Opts{}, proxy)
+		if err == nil {
+			return dialer
+		}
+	}
+
+	return dialers.NewBase(dialers.Opts{})
 }
