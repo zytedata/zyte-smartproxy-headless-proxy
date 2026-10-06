@@ -11,8 +11,8 @@ require (
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/montanaflynn/stats v0.6.3
 	github.com/pmezard/adblock v0.0.0-20171028110701-edfb97ad89cd
-	github.com/sirupsen/logrus v1.6.0
-	github.com/stretchr/testify v1.5.1
+	github.com/sirupsen/logrus v1.8.3
+	github.com/stretchr/testify v1.7.0
 	github.com/valyala/fasthttp v1.27.0
 	github.com/wsxiaoys/terminal v0.0.0-20160513160801-0940f3fc43a0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
